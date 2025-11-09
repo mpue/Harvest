@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: cb743b8a555f45b4597337b21e5ba738
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152261
+  packageName: RTS.92 - Barracks
+  packageVersion: 1.0
+  assetPath: Assets/RTS_92/Materials/RTS92_camo.mat
+  uploadId: 658805

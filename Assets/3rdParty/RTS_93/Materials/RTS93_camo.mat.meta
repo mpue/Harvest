@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c1ffbc5b8554abd4c99acd9afbbccf40
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 153554
+  packageName: RTS.93 - Headquarter
+  packageVersion: 1.0
+  assetPath: Assets/RTS_93/Materials/RTS93_camo.mat
+  uploadId: 659334

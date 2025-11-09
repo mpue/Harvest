@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: db72994711fd0e949ac576a2c4b90fd8
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152261
+  packageName: RTS.92 - Barracks
+  packageVersion: 1.0
+  assetPath: Assets/RTS_92/Materials/RTS92_green.mat
+  uploadId: 658805

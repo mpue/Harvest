@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 19b65385560e8924d8a9b269eb590368
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152379
+  packageName: RTS.48 - Hangar
+  packageVersion: 1.0
+  assetPath: Assets/RTS_48/Materials/RTS48_green.mat
+  uploadId: 659067

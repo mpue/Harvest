@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 945b89f874dce2e488a21953663f0a75
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 152476
+  packageName: RTS.15 - Factory
+  packageVersion: 1.0
+  assetPath: Assets/RTS_15/Materials/RTS15_camo.mat
+  uploadId: 658940
