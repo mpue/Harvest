@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 8ce479664ba53634180a4e5d653cfd41
+timeCreated: 1503929931
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 66610
+  packageName: SciFi Ground Units Vol.#01
+  packageVersion: 2.0
+  assetPath: Assets/SF_Ground-Units_Vol1/Materials/SF_Heavy-MK3_Diffuse.mat
+  uploadId: 249007

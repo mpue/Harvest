@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: dd1b7b14ac64b6a4f91fea4b33ea4b51
+timeCreated: 1503930460
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 66610
+  packageName: SciFi Ground Units Vol.#01
+  packageVersion: 2.0
+  assetPath: Assets/SF_Ground-Units_Vol1/Prefabs/MX6.prefab
+  uploadId: 249007

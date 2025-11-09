@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 03fa73d9e8a154547ad7fb0705c22c3f
+timeCreated: 1503930347
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 66610
+  packageName: SciFi Ground Units Vol.#01
+  packageVersion: 2.0
+  assetPath: Assets/SF_Ground-Units_Vol1/Prefabs/MK1.prefab
+  uploadId: 249007

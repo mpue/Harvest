@@ -103,29 +103,56 @@ public class Weapon : MonoBehaviour
         if (currentTarget == null) return;
 
         Vector3 targetPosition = currentTarget.position;
-        Vector3 directionToTarget = targetPosition - transform.position;
 
         // Aim turret (horizontal rotation)
         if (turretTransform != null)
         {
-            Vector3 horizontalDirection = new Vector3(directionToTarget.x, 0, directionToTarget.z);
-            if (horizontalDirection != Vector3.zero)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(horizontalDirection);
-                turretTransform.rotation = Quaternion.RotateTowards(turretTransform.rotation, targetRotation, turretRotationSpeed * Time.deltaTime );
+            // Arbeite im World Space für präzisere Berechnungen
+            Vector3 directionToTarget = targetPosition - turretTransform.position;
 
-                // Check if turret is aimed
-                float angle = Quaternion.Angle(turretTransform.rotation, targetRotation);
-                isAimed = angle < 5f; // Within 5 degrees = aimed
+            // Projiziere auf die horizontale Ebene
+            directionToTarget.y = 0;
+
+            if (directionToTarget.sqrMagnitude > 0.001f)
+            {
+                // Berechne die Ziel-Rotation
+                Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+
+                // Konvertiere zu lokaler Rotation wenn Parent existiert
+                if (turretTransform.parent != null)
+                {
+                    targetRotation = Quaternion.Inverse(turretTransform.parent.rotation) * targetRotation;
+                }
+
+                // Extrahiere nur die Y-Achsen-Rotation
+                Vector3 targetEuler = targetRotation.eulerAngles;
+                Vector3 currentEuler = turretTransform.localEulerAngles;
+
+                // Interpoliere nur die Y-Rotation
+                float newYAngle = Mathf.MoveTowardsAngle(
+                    currentEuler.y,
+                    targetEuler.y,
+                    turretRotationSpeed * Time.deltaTime
+                );
+
+                // Setze neue Rotation - WICHTIG: Bewahre X und Z exakt
+                turretTransform.localRotation = Quaternion.Euler(
+                    currentEuler.x,
+                    newYAngle,
+                    currentEuler.z
+                );
+
+                // Prüfe ob ausgerichtet
+                float angleDiff = Mathf.Abs(Mathf.DeltaAngle(currentEuler.y, targetEuler.y));
+                isAimed = angleDiff < 5f;
             }
         }
         else
         {
-            // No turret, always aimed
             isAimed = true;
         }
 
-        // Aim barrel (vertical rotation)
+        // Barrel aiming bleibt gleich
         if (barrelTransform != null && turretTransform != null)
         {
             Vector3 localTarget = turretTransform.InverseTransformPoint(targetPosition);

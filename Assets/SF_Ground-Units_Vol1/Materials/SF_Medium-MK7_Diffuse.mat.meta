@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 29a2005b73140b24c941c4100b01adce
+timeCreated: 1503929931
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 66610
+  packageName: SciFi Ground Units Vol.#01
+  packageVersion: 2.0
+  assetPath: Assets/SF_Ground-Units_Vol1/Materials/SF_Medium-MK7_Diffuse.mat
+  uploadId: 249007

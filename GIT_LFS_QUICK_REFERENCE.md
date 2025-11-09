@@ -1,6 +1,6 @@
-# ?? Git LFS - Quick Reference Card
+ï»¿# ğŸ“ Git LFS - Quick Reference Card
 
-## ?? Schnellstart
+## ğŸš€ Schnellstart
 
 ```bash
 # 1. LFS installieren (einmalig)
@@ -20,7 +20,7 @@ git commit -m "Add assets"
 git push
 ```
 
-## ?? Status & Info
+## ğŸ“Š Status & Info
 
 ```bash
 # LFS-getrackte Dateien anzeigen
@@ -29,22 +29,22 @@ git lfs ls-files
 # LFS-Status
 git lfs status
 
-# Dateigröße anzeigen
+# DateigrÃ¶ÃŸe anzeigen
 git lfs ls-files -s
 
 # Tracking-Regeln anzeigen
 git lfs track
 
-# Welche Dateien würden getrackt?
+# Welche Dateien wÃ¼rden getrackt?
 git lfs track --list
 
 # LFS Environment Info
 git lfs env
 ```
 
-## ?? Häufige Befehle
+## ğŸ”§ HÃ¤ufige Befehle
 
-### Tracking hinzufügen:
+### Tracking hinzufÃ¼gen:
 ```bash
 # Einzelner Dateityp
 git lfs track "*.png"
@@ -76,23 +76,23 @@ git lfs pull
 # Nur bestimmte Dateien
 git lfs pull --include="Assets/Textures/*"
 
-# Außer bestimmte Dateien
+# AuÃŸer bestimmte Dateien
 git lfs pull --exclude="Assets/Videos/*"
 ```
 
-### Aufräumen:
+### AufrÃ¤umen:
 ```bash
-# Alte LFS-Objekte löschen
+# Alte LFS-Objekte lÃ¶schen
 git lfs prune
 
-# Alte Objekte älter als X Tage
+# Alte Objekte Ã¤lter als X Tage
 git lfs prune --verify-remote --older-than 7d
 
-# Was würde gelöscht?
+# Was wÃ¼rde gelÃ¶scht?
 git lfs prune --dry-run --verbose
 ```
 
-## ?? Diagnose
+## ğŸ” Diagnose
 
 ### Problem: Dateien sind Pointer
 ```bash
@@ -104,9 +104,9 @@ git lfs checkout
 git lfs pull --include="path/to/file.png"
 ```
 
-### Problem: Große Repository-Größe
+### Problem: GroÃŸe Repository-GrÃ¶ÃŸe
 ```bash
-# Größe prüfen
+# GrÃ¶ÃŸe prÃ¼fen
 du -sh .git/lfs
 
 # Cache bereinigen
@@ -116,7 +116,7 @@ git lfs prune
 git lfs migrate import --everything
 ```
 
-### Problem: Push schlägt fehl
+### Problem: Push schlÃ¤gt fehl
 ```bash
 # Nur LFS-Dateien pushen
 git lfs push origin main
@@ -128,7 +128,7 @@ git lfs push origin main --object-id <OID>
 git lfs push origin --all
 ```
 
-## ?? Migration
+## ğŸ“¦ Migration
 
 ### Existierende Dateien zu LFS migrieren:
 ```bash
@@ -142,11 +142,11 @@ git lfs migrate import --include="*.psd,*.fbx" --include-ref=refs/heads/main
 git lfs migrate info --include="*.psd"
 ```
 
-## ?? Konfiguration
+## ğŸ” Konfiguration
 
 ### Globale Einstellungen:
 ```bash
-# Concurrent Transfers erhöhen (schnellerer Upload)
+# Concurrent Transfers erhÃ¶hen (schnellerer Upload)
 git config lfs.concurrenttransfers 10
 
 # Batch-Size anpassen
@@ -164,18 +164,18 @@ git config lfs.url "https://your-lfs-server.com"
     concurrent = 10
 ```
 
-## ?? Dateien ausschließen
+## ğŸš« Dateien ausschlieÃŸen
 
 ### .gitattributes anpassen:
 ```gitattributes
-# LFS für alle PNGs
+# LFS fÃ¼r alle PNGs
 *.png filter=lfs diff=lfs merge=lfs -text
 
 # ABER nicht in diesem Ordner
 Assets/Icons/*.png !filter !diff !merge
 ```
 
-## ?? Performance
+## ğŸ“ˆ Performance
 
 ### Schnelleres Clonen:
 ```bash
@@ -185,13 +185,13 @@ cd repo
 git lfs install --skip-smudge
 git checkout main
 
-# Später: Dateien bei Bedarf holen
+# SpÃ¤ter: Dateien bei Bedarf holen
 git lfs pull --include="Assets/Textures/*"
 ```
 
 ### Partielle Checkouts:
 ```bash
-# LFS Download überspringen
+# LFS Download Ã¼berspringen
 GIT_LFS_SKIP_SMUDGE=1 git clone ...
 
 # Nur bestimmte Dateien
@@ -199,27 +199,27 @@ git lfs fetch --include="Assets/Audio/*"
 git lfs checkout Assets/Audio/
 ```
 
-## ?? Statistiken
+## ğŸ”¢ Statistiken
 
 ```bash
 # Anzahl LFS-Dateien
 git lfs ls-files | wc -l
 
-# Gesamtgröße
+# GesamtgrÃ¶ÃŸe
 git lfs ls-files -s | awk '{s+=$1} END {print s/1024/1024 " MB"}'
 
-# Top 10 größte Dateien
+# Top 10 grÃ¶ÃŸte Dateien
 git lfs ls-files -s | sort -k1 -n -r | head -10
 
 # Nach Dateityp
 git lfs ls-files | grep -o '\.[^.]*$' | sort | uniq -c | sort -rn
 ```
 
-## ??? Troubleshooting
+## ğŸ› ï¸ Troubleshooting
 
 ### "Repository over quota"
 ```bash
-# Überprüfen Sie Ihr LFS-Kontingent
+# ÃœberprÃ¼fen Sie Ihr LFS-Kontingent
 git lfs ls-files -s
 
 # Alte Dateien aus Geschichte entfernen
@@ -236,36 +236,36 @@ git lfs pull --include="Assets/broken-file.psd"
 
 ### "Smudge error"
 ```bash
-# LFS Cache zurücksetzen
+# LFS Cache zurÃ¼cksetzen
 rm -rf .git/lfs
 git lfs fetch --all
 git lfs checkout
 ```
 
-## ?? Best Practices
+## ğŸ¯ Best Practices
 
-### ? Empfohlen:
+### âœ… Empfohlen:
 - Dateien >100 KB via LFS
 - .gitattributes vor erstem Commit
-- Regelmäßig `git lfs prune`
-- Team über LFS informieren
+- RegelmÃ¤ÃŸig `git lfs prune`
+- Team Ã¼ber LFS informieren
 
-### ? Vermeiden:
-- Code-Dateien über LFS
-- Häufige Änderungen an LFS-Dateien
-- Tracking nach erstem Push ändern
+### âŒ Vermeiden:
+- Code-Dateien Ã¼ber LFS
+- HÃ¤ufige Ã„nderungen an LFS-Dateien
+- Tracking nach erstem Push Ã¤ndern
 - Zu viele kleine Dateien (<100 KB)
 
-## ?? Workflow
+## ğŸ“± Workflow
 
-### Tägliche Arbeit:
+### TÃ¤gliche Arbeit:
 ```bash
 # 1. Pullen (mit LFS)
 git pull
 git lfs pull
 
 # 2. Arbeiten...
-# Assets bearbeiten, hinzufügen, etc.
+# Assets bearbeiten, hinzufÃ¼gen, etc.
 
 # 3. Committen
 git add .
@@ -281,7 +281,7 @@ git push
 # Vor dem Pullen
 git lfs fetch
 
-# Status prüfen
+# Status prÃ¼fen
 git lfs status
 
 # Dann pullen
@@ -289,14 +289,14 @@ git pull
 git lfs pull
 ```
 
-## ?? Nützliche Links
+## ğŸ”— NÃ¼tzliche Links
 
 - **Offizielle Docs**: https://git-lfs.github.com/
 - **GitHub LFS**: https://docs.github.com/en/repositories/working-with-files/managing-large-files
 - **GitLab LFS**: https://docs.gitlab.com/ee/topics/git/lfs/
 - **Atlassian Tutorial**: https://www.atlassian.com/git/tutorials/git-lfs
 
-## ?? Pro-Tipps
+## ğŸ’¡ Pro-Tipps
 
 ### Tip 1: LFS Log
 ```bash
@@ -322,12 +322,12 @@ git lfs pre-push "$@"
 
 ### Tip 4: Automatisches Prune
 ```bash
-# Nach jedem Pull aufräumen
+# Nach jedem Pull aufrÃ¤umen
 git config --global alias.lpull '!git pull && git lfs prune'
 # Nutzen: git lpull
 ```
 
-## ?? Checkliste - Neues Projekt
+## ğŸ“‹ Checkliste - Neues Projekt
 
 - [ ] Git LFS installiert (`git lfs version`)
 - [ ] LFS initialisiert (`git lfs install`)
@@ -337,16 +337,16 @@ git config --global alias.lpull '!git pull && git lfs prune'
 - [ ] .gitattributes committed
 - [ ] Erstes Commit mit Assets
 - [ ] Remote Repository konfiguriert
-- [ ] Team informiert über LFS-Nutzung
-- [ ] LFS-Quote geprüft (GitHub/GitLab)
+- [ ] Team informiert Ã¼ber LFS-Nutzung
+- [ ] LFS-Quote geprÃ¼ft (GitHub/GitLab)
 
 ---
 
 **Quick Help:**
 ```bash
 git lfs help           # Hilfe anzeigen
-git lfs help [command] # Hilfe für Befehl
-git lfs version        # Version prüfen
+git lfs help [command] # Hilfe fÃ¼r Befehl
+git lfs version        # Version prÃ¼fen
 ```
 
 **Schnell-Setup:**

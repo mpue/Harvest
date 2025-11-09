@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: ea093a64893de1847aa98725f425cb49
+timeCreated: 1503929931
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 66610
+  packageName: SciFi Ground Units Vol.#01
+  packageVersion: 2.0
+  assetPath: Assets/SF_Ground-Units_Vol1/Materials/SF_MX6_Diffuse.mat
+  uploadId: 249007
