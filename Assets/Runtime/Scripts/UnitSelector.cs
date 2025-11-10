@@ -22,11 +22,17 @@ public class UnitSelector : MonoBehaviour
     [SerializeField] private bool useFormations = true;
     [SerializeField] private float formationSpacing = 2f;
 
+    [Header("Audio Feedback")]
+    [SerializeField] private AudioClip[] unitSelectSounds; // Random selection sound when clicking unit
+    [SerializeField] private AudioClip[] unitMoveSounds; // Random sound when giving move command
+    [SerializeField] private float audioVolume = 1f;
+
     private List<BaseUnit> selectedUnits = new List<BaseUnit>();
     private Vector3 mouseDownPosition;
     private bool isDragging = false;
     private float mouseDownTime;
     private RTSCamera rtsCamera;
+    private AudioSource audioSource;
 
     // GUI
     private Rect selectionBox;
@@ -53,6 +59,15 @@ public class UnitSelector : MonoBehaviour
         {
             rtsCamera = mainCamera.GetComponent<RTSCamera>();
         }
+
+        // Setup AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false;
+        audioSource.volume = audioVolume;
 
         // Create textures for box selection
         boxTexture = CreateTexture(boxColor);
@@ -150,6 +165,9 @@ public class UnitSelector : MonoBehaviour
 
             if (controllableUnits.Count > 0)
             {
+                // Play random move command sound
+                PlayRandomSound(unitMoveSounds);
+
                 if (useFormations && controllableUnits.Count > 1)
                 {
                     // Move units in formation
@@ -238,6 +256,12 @@ public class UnitSelector : MonoBehaviour
                 {
                     // Select the unit
                     SelectUnit(unit);
+
+                    // Play selection sound only for non-building units
+                    if (!unit.IsBuilding)
+                    {
+                        PlayRandomSound(unitSelectSounds);
+                    }
                 }
             }
             else
@@ -275,6 +299,7 @@ public class UnitSelector : MonoBehaviour
 
         // Find all BaseUnits in the scene
         BaseUnit[] allUnits = FindObjectsOfType<BaseUnit>();
+        bool hasSelectedNonBuilding = false;
 
         foreach (BaseUnit unit in allUnits)
         {
@@ -287,8 +312,20 @@ public class UnitSelector : MonoBehaviour
             // Check if unit is within selection box
             if (unit.IsWithinSelectionBounds(selectionBox, mainCamera))
             {
-                SelectUnit(unit);
+                SelectUnit(unit, false); // Don't play sound for each unit
+                
+                // Track if we selected at least one non-building
+                if (!unit.IsBuilding)
+                {
+                    hasSelectedNonBuilding = true;
+                }
             }
+        }
+
+        // Play one sound for the entire box selection if non-buildings were selected
+        if (hasSelectedNonBuilding)
+        {
+            PlayRandomSound(unitSelectSounds);
         }
     }
 
@@ -312,7 +349,7 @@ public class UnitSelector : MonoBehaviour
     /// <summary>
     /// Selects a single unit
     /// </summary>
-    public void SelectUnit(BaseUnit unit)
+    public void SelectUnit(BaseUnit unit, bool playSound = false)
     {
         if (unit == null || unit.IsSelected) return;
 
@@ -323,6 +360,12 @@ public class UnitSelector : MonoBehaviour
 
         unit.Select();
         selectedUnits.Add(unit);
+
+        // Play selection sound only if requested
+        if (playSound && !unit.IsBuilding)
+        {
+            PlayRandomSound(unitSelectSounds);
+        }
     }
 
     /// <summary>
@@ -415,6 +458,26 @@ public class UnitSelector : MonoBehaviour
         GUI.DrawTexture(new Rect(rect.x, rect.y, thickness, rect.height), texture);
         // Right
         GUI.DrawTexture(new Rect(rect.x + rect.width - thickness, rect.y, thickness, rect.height), texture);
+    }
+
+    /// <summary>
+    /// Plays a random sound from an array of audio clips
+    /// </summary>
+    private void PlayRandomSound(AudioClip[] sounds)
+    {
+        if (sounds == null || sounds.Length == 0 || audioSource == null)
+        {
+            return;
+        }
+
+        // Pick random sound
+        int randomIndex = Random.Range(0, sounds.Length);
+        AudioClip clip = sounds[randomIndex];
+
+        if (clip != null)
+        {
+            audioSource.PlayOneShot(clip, audioVolume);
+        }
     }
 
     void OnDestroy()
