@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: a79e32952a28d144c8ee96f65aa56189
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Shared/Shaders/SH_Vefects_URP_VFX_Distortion_Mesh.shader
+  uploadId: 707238

@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: de120555d2a38d542ac7c5d02a8a5008
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _Texture: {fileID: 2800000, guid: ba35328a4d48e664b87b8dd3572535c0, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Shared/Shaders/SH_Vefects_URP_VFX_Dirt_Debris.shader
+  uploadId: 707238

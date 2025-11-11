@@ -147,12 +147,12 @@ public class Projectile : MonoBehaviour
     {
         Debug.Log($"Projectile hit {target.UnitName} for {damage} damage at {hitPoint}");
 
-        // TODO: Apply damage when Health system is implemented
-        // Health healthComponent = target.GetComponent<Health>();
-        // if (healthComponent != null)
-        // {
-        //     healthComponent.TakeDamage(damage, ownerTeam);
-        // }
+        // Apply damage to health component
+        Health healthComponent = target.GetComponent<Health>();
+        if (healthComponent != null)
+        {
+            healthComponent.TakeDamage(damage, ownerTeam);
+        }
 
         SpawnImpactEffect(hitPoint);
     }

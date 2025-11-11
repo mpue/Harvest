@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e14392512eaf51a45a2b4c6c0fe0bc85
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Explosions VFX/Artillery/Materials/M_VFX_Dirt_Debris_01.mat
+  uploadId: 707238

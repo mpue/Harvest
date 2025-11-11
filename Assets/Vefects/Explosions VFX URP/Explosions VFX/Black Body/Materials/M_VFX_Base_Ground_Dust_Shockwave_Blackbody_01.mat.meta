@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a3877618b3ff6ce49a25b285feac739c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Explosions VFX/Black Body/Materials/M_VFX_Base_Ground_Dust_Shockwave_Blackbody_01.mat
+  uploadId: 707238

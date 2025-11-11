@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: f992730baebe4f048b159ca297b70c0b
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _DistortionNoise: {fileID: 2800000, guid: a5f0c118a4851a349803dced2fe48e97, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Shared/Shaders/SH_Vefects_URP_VFX_Distortion_Shockwave.shader
+  uploadId: 707238

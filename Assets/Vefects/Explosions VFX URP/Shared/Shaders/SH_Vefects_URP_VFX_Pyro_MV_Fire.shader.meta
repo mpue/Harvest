@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 6ae8f7deaedeafc4590ceadfe55b7bd4
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _EmissiveLUT: {fileID: 2800000, guid: f57767c513f8ca64dbef45a46c4349a2, type: 3}
+  - _Flipbook: {fileID: 2800000, guid: ed6687c9960a116458506b65af3096b2, type: 3}
+  - _MotionVector: {fileID: 2800000, guid: 09e3861119e538b4293c4b43d661868b, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Shared/Shaders/SH_Vefects_URP_VFX_Pyro_MV_Fire.shader
+  uploadId: 707238

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 274f65e55b72d0942aefa95726bde1c4
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Explosions VFX/Gas Grenade/Particles/VFX_Explosion_Gas_Aerial.prefab
+  uploadId: 707238

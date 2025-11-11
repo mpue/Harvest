@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 708a0ff3711a516488845d3a088553f3
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Explosions VFX/Generic/Particles/VFX_Explosion_Generic_Large_Aerial.prefab
+  uploadId: 707238

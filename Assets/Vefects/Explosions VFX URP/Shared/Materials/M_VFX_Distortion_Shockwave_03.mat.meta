@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8542728ab1e94b746a930b3cfd08d73f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Shared/Materials/M_VFX_Distortion_Shockwave_03.mat
+  uploadId: 707238

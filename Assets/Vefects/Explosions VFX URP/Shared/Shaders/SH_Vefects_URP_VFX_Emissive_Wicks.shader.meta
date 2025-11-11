@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 040d3ff9022faa8449bfbd0044057e97
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _Texture: {fileID: 2800000, guid: f989d6c3888d4784fba87897c4382644, type: 3}
+  - _Noise: {fileID: 2800000, guid: a5f0c118a4851a349803dced2fe48e97, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Shared/Shaders/SH_Vefects_URP_VFX_Emissive_Wicks.shader
+  uploadId: 707238

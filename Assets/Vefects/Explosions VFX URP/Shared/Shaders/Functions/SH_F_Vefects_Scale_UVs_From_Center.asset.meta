@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b86944c5f835ca14690dbc0d1e53ee23
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Shared/Shaders/Functions/SH_F_Vefects_Scale_UVs_From_Center.asset
+  uploadId: 707238

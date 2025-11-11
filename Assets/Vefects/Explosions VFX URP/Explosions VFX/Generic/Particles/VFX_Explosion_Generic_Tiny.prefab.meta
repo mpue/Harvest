@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5ab06caa32fd35343b4f1b671439988e
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Explosions VFX/Generic/Particles/VFX_Explosion_Generic_Tiny.prefab
+  uploadId: 707238

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9cee9d1e99f41e94494e5337cf55045a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Explosions VFX/Sci-Fi/Materials/M_VFX_Energy_Disk.mat
+  uploadId: 707238

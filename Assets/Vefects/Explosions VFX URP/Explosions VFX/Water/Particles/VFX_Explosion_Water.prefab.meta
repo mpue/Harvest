@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a338d7d53e45e5045952075ea8f3b96a
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Explosions VFX/Water/Particles/VFX_Explosion_Water.prefab
+  uploadId: 707238

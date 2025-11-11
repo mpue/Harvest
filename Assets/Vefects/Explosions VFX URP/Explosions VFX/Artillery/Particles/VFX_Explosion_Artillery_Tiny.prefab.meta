@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a0d17fd173a7d8142852a59d0d1916d0
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265893
+  packageName: Explosions VFX - URP
+  packageVersion: 1.0.2
+  assetPath: Assets/Vefects/Explosions VFX URP/Explosions VFX/Artillery/Particles/VFX_Explosion_Artillery_Tiny.prefab
+  uploadId: 707238
