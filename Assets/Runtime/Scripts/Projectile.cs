@@ -178,7 +178,15 @@ public class Projectile : MonoBehaviour
 
         if (impactSound != null)
         {
-            AudioSource.PlayClipAtPoint(impactSound, position);
+            // Use AudioManager if available for proper mixer group assignment
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayOneShot(impactSound, position, AudioManager.AudioCategory.WeaponSounds);
+            }
+            else
+            {
+                AudioSource.PlayClipAtPoint(impactSound, position);
+            }
         }
     }
 

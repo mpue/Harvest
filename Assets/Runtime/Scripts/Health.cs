@@ -61,12 +61,26 @@ public class Health : MonoBehaviour
         baseUnit = GetComponent<BaseUnit>();
         unitRenderers = GetComponentsInChildren<Renderer>();
 
-        // Setup AudioSource
+        // Setup AudioSource with AudioManager
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
-            audioSource = gameObject.AddComponent<AudioSource>();
+            // Use AudioManager if available to create AudioSource with proper mixer group
+            if (AudioManager.Instance != null)
+            {
+                audioSource = AudioManager.Instance.CreateAudioSource(gameObject, AudioManager.AudioCategory.UnitSounds, false);
+            }
+            else
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
         }
+        else if (AudioManager.Instance != null)
+        {
+            // Setup existing AudioSource with mixer group
+            AudioManager.Instance.SetupAudioSource(audioSource, AudioManager.AudioCategory.UnitSounds);
+        }
+
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 1f; // 3D sound
         audioSource.volume = audioVolume;

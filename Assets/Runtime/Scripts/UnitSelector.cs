@@ -26,6 +26,7 @@ public class UnitSelector : MonoBehaviour
     [SerializeField] private AudioClip[] unitSelectSounds; // Random selection sound when clicking unit
     [SerializeField] private AudioClip[] unitMoveSounds; // Random sound when giving move command
     [SerializeField] private float audioVolume = 1f;
+    [SerializeField] private AudioManager.AudioCategory audioCategory = AudioManager.AudioCategory.UnitSounds;
 
     private List<BaseUnit> selectedUnits = new List<BaseUnit>();
     private Vector3 mouseDownPosition;
@@ -60,13 +61,27 @@ public class UnitSelector : MonoBehaviour
             rtsCamera = mainCamera.GetComponent<RTSCamera>();
         }
 
-        // Setup AudioSource
+        // Setup AudioSource with AudioManager
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
-            audioSource = gameObject.AddComponent<AudioSource>();
+            // Use AudioManager if available to create AudioSource with proper mixer group
+            if (AudioManager.Instance != null)
+            {
+                audioSource = AudioManager.Instance.CreateAudioSource(gameObject, audioCategory, false);
+            }
+            else
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false;
+            }
         }
-        audioSource.playOnAwake = false;
+        else if (AudioManager.Instance != null)
+        {
+            // Setup existing AudioSource with mixer group
+            AudioManager.Instance.SetupAudioSource(audioSource, audioCategory);
+        }
+
         audioSource.volume = audioVolume;
 
         // Create textures for box selection
