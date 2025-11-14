@@ -15,10 +15,12 @@ public class BaseUnit : MonoBehaviour
     private Renderer[] unitRenderers;
     private Material[] originalMaterials;
     private Color originalOutlineColor;
+    private ProductionComponent productionComponent;
 
     public bool IsSelected => isSelected;
     public bool IsBuilding => isBuilding;
     public string UnitName => unitName;
+    public ProductionComponent ProductionComponent => productionComponent;
 
     void Awake()
     {
@@ -34,6 +36,9 @@ public class BaseUnit : MonoBehaviour
                 originalMaterials[i] = unitRenderers[i].material;
             }
         }
+
+        // Get ProductionComponent if available
+        productionComponent = GetComponent<ProductionComponent>();
     }
 
     void Start()
@@ -109,6 +114,45 @@ public class BaseUnit : MonoBehaviour
     protected virtual void OnSelected()
     {
         Debug.Log($"{unitName} selected");
+
+        // Open/switch production panel if this unit has production capability
+        if (productionComponent != null)
+        {
+            // Try to use ProductionUIManager first
+            if (ProductionUIManager.Instance != null)
+            {
+                ProductionUIManager.Instance.ShowProductionPanel(this);
+            }
+            else
+            {
+                // Fallback to direct panel search
+                ProductionPanel panel = FindObjectOfType<ProductionPanel>();
+                if (panel != null)
+                {
+                    panel.Show(this);
+                }
+                else
+                {
+                    Debug.LogWarning("ProductionPanel not found in scene. Please add a ProductionPanel to your UI.");
+                }
+            }
+        }
+        else
+        {
+            // If this unit has no production capability, close any open production panel
+            if (ProductionUIManager.Instance != null)
+            {
+                ProductionUIManager.Instance.HideProductionPanel();
+            }
+            else
+            {
+                ProductionPanel panel = FindObjectOfType<ProductionPanel>();
+                if (panel != null)
+                {
+                    panel.Hide();
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -117,6 +161,10 @@ public class BaseUnit : MonoBehaviour
     protected virtual void OnDeselected()
     {
         Debug.Log($"{unitName} deselected");
+
+        // Don't close production panel automatically
+      // Panel should only close via Close button or when selecting a different production unit
+        // This is typical RTS behavior (StarCraft, Age of Empires, etc.)
     }
 
     /// <summary>
