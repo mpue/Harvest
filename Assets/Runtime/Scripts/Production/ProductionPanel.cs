@@ -24,6 +24,13 @@ public class ProductionPanel : MonoBehaviour
     [SerializeField] private Button cancelCurrentButton;
     [SerializeField] private Button clearQueueButton;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip productionStartSound;
+    [SerializeField] private AudioClip productionCompleteSound;
+    [SerializeField] private AudioClip productionCancelSound;
+    [SerializeField] private AudioClip buttonClickSound;
+    [SerializeField, Range(0f, 1f)] private float soundVolume = 1f;
+
     private ProductionComponent currentProductionComponent;
     private List<ProductionSlot> productSlots = new List<ProductionSlot>();
     private List<ProductionSlot> queueSlots = new List<ProductionSlot>();
@@ -33,7 +40,7 @@ public class ProductionPanel : MonoBehaviour
         // Hook up button events
         if (closeButton != null)
         {
-            closeButton.onClick.AddListener(Hide);
+            closeButton.onClick.AddListener(OnCloseButtonClicked);
         }
 
         if (cancelCurrentButton != null)
@@ -95,6 +102,9 @@ public class ProductionPanel : MonoBehaviour
 
         // Subscribe to production events
         currentProductionComponent.OnQueueChanged += UpdateQueueDisplay;
+        currentProductionComponent.OnProductionStarted += OnProductionStarted;
+        currentProductionComponent.OnProductionCompleted += OnProductionCompleted;
+        currentProductionComponent.OnProductionCancelled += OnProductionCancelled;
 
         // Initial queue update
         UpdateQueueDisplay();
@@ -114,6 +124,9 @@ public class ProductionPanel : MonoBehaviour
         if (currentProductionComponent != null)
         {
             currentProductionComponent.OnQueueChanged -= UpdateQueueDisplay;
+            currentProductionComponent.OnProductionStarted -= OnProductionStarted;
+            currentProductionComponent.OnProductionCompleted -= OnProductionCompleted;
+            currentProductionComponent.OnProductionCancelled -= OnProductionCancelled;
         }
 
         currentProductionComponent = null;
@@ -263,7 +276,7 @@ public class ProductionPanel : MonoBehaviour
         if (success)
         {
             Debug.Log($"Added {product.ProductName} to production queue");
-            // TODO: Play sound effect
+            PlaySound(buttonClickSound);
         }
         else
         {
@@ -273,49 +286,119 @@ public class ProductionPanel : MonoBehaviour
     }
 
     /// <summary>
+    /// Called when production starts
+    /// </summary>
+    private void OnProductionStarted(Product product)
+    {
+        if (product != null)
+        {
+            Debug.Log($"Production started: {product.ProductName}");
+            PlaySound(productionStartSound);
+        }
+    }
+
+    /// <summary>
+    /// Called when production completes
+    /// </summary>
+    private void OnProductionCompleted(Product product, GameObject spawnedUnit)
+    {
+        if (product != null)
+        {
+            Debug.Log($"Production completed: {product.ProductName}");
+            PlaySound(productionCompleteSound);
+        }
+    }
+
+    /// <summary>
+    /// Called when production is cancelled
+    /// </summary>
+    private void OnProductionCancelled(Product product)
+    {
+        if (product != null)
+        {
+            Debug.Log($"Production cancelled: {product.ProductName}");
+            PlaySound(productionCancelSound);
+        }
+    }
+
+    /// <summary>
+    /// Play a UI sound
+    /// </summary>
+    private void PlaySound(AudioClip clip)
+    {
+        if (clip == null) return;
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayOneShot2D(clip, AudioManager.AudioCategory.UI, soundVolume);
+        }
+        else
+        {
+            // Fallback if no AudioManager exists
+            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, soundVolume);
+        }
+    }
+
+    /// <summary>
     /// Cancel the current production
     /// </summary>
     private void OnCancelCurrentClicked()
     {
+        PlaySound(buttonClickSound);
+   
         if (currentProductionComponent != null)
         {
-            currentProductionComponent.CancelCurrentProduction();
-        }
+        currentProductionComponent.CancelCurrentProduction();
+      }
     }
 
     /// <summary>
     /// Clear the entire production queue
     /// </summary>
     private void OnClearQueueClicked()
+  {
+     PlaySound(buttonClickSound);
+        
+ if (currentProductionComponent != null)
+{
+      currentProductionComponent.CancelQueue();
+     }
+    }
+
+    /// <summary>
+/// Called when close button is clicked
+/// </summary>
+    private void OnCloseButtonClicked()
     {
-        if (currentProductionComponent != null)
-        {
-            currentProductionComponent.CancelQueue();
-        }
+  PlaySound(buttonClickSound);
+        Hide();
     }
 
     void OnDestroy()
     {
-        // Clean up button listeners
-        if (closeButton != null)
-        {
-            closeButton.onClick.RemoveListener(Hide);
+   // Clean up button listeners
+ if (closeButton != null)
+   {
+  closeButton.onClick.RemoveListener(OnCloseButtonClicked);
         }
 
         if (cancelCurrentButton != null)
-        {
-            cancelCurrentButton.onClick.RemoveListener(OnCancelCurrentClicked);
+{
+      cancelCurrentButton.onClick.RemoveListener(OnCancelCurrentClicked);
         }
 
-        if (clearQueueButton != null)
+ if (clearQueueButton != null)
         {
-            clearQueueButton.onClick.RemoveListener(OnClearQueueClicked);
-        }
+    clearQueueButton.onClick.RemoveListener(OnClearQueueClicked);
+   }
 
-        // Unsubscribe from production events
-        if (currentProductionComponent != null)
+     // Unsubscribe from production events
+   if (currentProductionComponent != null)
         {
             currentProductionComponent.OnQueueChanged -= UpdateQueueDisplay;
+     currentProductionComponent.OnProductionStarted -= OnProductionStarted;
+ currentProductionComponent.OnProductionCompleted -= OnProductionCompleted;
+  currentProductionComponent.OnProductionCancelled -= OnProductionCancelled;
         }
     }
 }

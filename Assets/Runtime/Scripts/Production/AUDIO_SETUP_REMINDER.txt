@@ -1,0 +1,33 @@
+// This is a placeholder file to remind you to add audio clips
+// 
+// Recommended audio clips to add to ProductionPanel:
+//
+// 1. Production Start Sound
+//    - Mechanical sound (hammer, construction)
+//    - Voice line: "Construction begun", "Training commenced"
+//    - 0.5-2 seconds duration
+//
+// 2. Production Complete Sound
+//    - Success sound (ding, bell)
+//    - Voice line: "Unit ready", "Construction complete"
+//    - 1-3 seconds duration
+//
+// 3. Production Cancel Sound
+//    - Negative sound (buzz, beep)
+//    - Short: 0.2-0.5 seconds
+//
+// 4. Button Click Sound
+//    - UI click sound
+//    - Very short: 0.1-0.2 seconds
+//
+// Where to find sounds:
+// - Freesound.org
+// - OpenGameArt.org
+// - Unity Asset Store (free sound packs)
+// - Zapsplat.com
+//
+// After adding sounds:
+// 1. Import audio files to Assets/Audio/UI/ folder
+// 2. Select ProductionPanel in scene
+// 3. Drag audio clips to Inspector fields
+// 4. Adjust Sound Volume slider (0-1)
