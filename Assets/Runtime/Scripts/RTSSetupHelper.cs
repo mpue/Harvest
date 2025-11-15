@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.UI; // Add UI namespace
+using Harvest.Minimap; // Add Minimap namespace
 
 /// <summary>
 /// Quick Setup Helper Script
@@ -9,6 +11,7 @@ public class RTSSetupHelper : MonoBehaviour
     [Header("Setup Configuration")]
     [SerializeField] private bool createSelectionManager = true;
     [SerializeField] private bool createTestUnits = true;
+    [SerializeField] private bool createMinimap = true; // New
     [SerializeField] private int numberOfTestUnits = 5;
     [SerializeField] private Vector3 spawnAreaCenter = Vector3.zero;
     [SerializeField] private float spawnRadius = 10f;
@@ -29,6 +32,11 @@ public class RTSSetupHelper : MonoBehaviour
         if (createTestUnits && unitPrefab == null)
         {
             CreateTestUnits();
+        }
+
+        if (createMinimap) // Minimap-Setup hinzufügen
+        {
+            CreateMinimapSystem();
         }
 #endif
     }
@@ -162,6 +170,124 @@ public class RTSSetupHelper : MonoBehaviour
         Debug.Log("   3. Bake NavMesh: Window → AI → Navigation → Bake");
     }
 
+    [ContextMenu("Create Minimap System")]
+    public void CreateMinimapSystem()
+    {
+        Debug.Log("=== Creating Minimap System ===");
+
+        // 1. Create Canvas if needed
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null)
+        {
+            GameObject canvasObj = new GameObject("MinimapCanvas");
+            canvas = canvasObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvasObj.AddComponent<CanvasScaler>();
+            canvasObj.AddComponent<GraphicRaycaster>();
+            Debug.Log("✓ Created Canvas");
+        }
+
+        // 2. Create Minimap Container
+        GameObject minimapContainer = new GameObject("MinimapContainer");
+        minimapContainer.transform.SetParent(canvas.transform, false);
+
+        RectTransform containerRect = minimapContainer.AddComponent<RectTransform>();
+        containerRect.anchorMin = new Vector2(1, 0); // Bottom-right corner
+        containerRect.anchorMax = new Vector2(1, 0);
+        containerRect.pivot = new Vector2(1, 0);
+        containerRect.anchoredPosition = new Vector2(-20, 20);
+        containerRect.sizeDelta = new Vector2(250, 250);
+
+        // Add background
+        Image containerBg = minimapContainer.AddComponent<Image>();
+        containerBg.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+
+        // 3. Create Minimap Image (for camera render texture)
+        GameObject minimapImageObj = new GameObject("MinimapImage");
+        minimapImageObj.transform.SetParent(minimapContainer.transform, false);
+
+        RectTransform imageRect = minimapImageObj.AddComponent<RectTransform>();
+        imageRect.anchorMin = Vector2.zero;
+        imageRect.anchorMax = Vector2.one;
+        imageRect.sizeDelta = Vector2.zero;
+        imageRect.anchoredPosition = Vector2.zero;
+
+        RawImage minimapImage = minimapImageObj.AddComponent<RawImage>();
+        minimapImage.color = Color.white;
+
+        // 4. Create Icon Container
+        GameObject iconContainer = new GameObject("IconContainer");
+        iconContainer.transform.SetParent(minimapContainer.transform, false);
+
+        RectTransform iconRect = iconContainer.AddComponent<RectTransform>();
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.sizeDelta = Vector2.zero;
+        iconRect.anchoredPosition = Vector2.zero;
+
+        // 5. Create Camera View Indicator
+        GameObject viewIndicator = new GameObject("CameraViewIndicator");
+        viewIndicator.transform.SetParent(iconContainer.transform, false);
+
+        RectTransform indicatorRect = viewIndicator.AddComponent<RectTransform>();
+        indicatorRect.sizeDelta = new Vector2(50, 50);
+
+        Image indicatorImage = viewIndicator.AddComponent<Image>();
+        indicatorImage.color = new Color(1f, 1f, 1f, 0.3f);
+
+        // 6. Create Minimap Controller
+        GameObject controllerObj = new GameObject("MinimapController");
+        MinimapController controller = controllerObj.AddComponent<MinimapController>();
+
+        // Setup controller references via reflection (since fields are serialized)
+        var controllerType = typeof(MinimapController);
+
+        controllerType.GetField("minimapImage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(controller, minimapImage);
+        controllerType.GetField("minimapContainer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(controller, containerRect);
+        controllerType.GetField("iconContainer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(controller, iconRect);
+        controllerType.GetField("cameraViewIndicator", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(controller, indicatorRect);
+        controllerType.GetField("mainCamera", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(controller, Camera.main);
+
+        Debug.Log("✓ Minimap System created!");
+        Debug.Log("📝 Next steps:");
+        Debug.Log("   1. Select MinimapController in hierarchy");
+        Debug.Log("   2. Assign missing references if needed");
+        Debug.Log("   3. Adjust World Size to match your terrain");
+        Debug.Log("   4. Test in Play Mode - units with TeamComponent get automatic icons!");
+
+        return;
+    }
+
+    [ContextMenu("Add Minimap To Existing Units")]
+    public void AddMinimapToExistingUnits()
+    {
+        TeamComponent[] allTeams = FindObjectsOfType<TeamComponent>();
+        int count = 0;
+
+        foreach (TeamComponent team in allTeams)
+        {
+            if (team.GetComponent<MinimapUnit>() == null)
+            {
+                MinimapUnit minimapUnit = team.gameObject.AddComponent<MinimapUnit>();
+
+                // Set icon shape based on unit type
+                if (team.GetComponent<BaseUnit>() != null)
+                {
+                    minimapUnit.SetIconShape(MinimapIcon.IconShape.Circle);
+                }
+
+                count++;
+            }
+        }
+
+        Debug.Log($"✓ Added MinimapUnit to {count} units");
+    }
+
     [ContextMenu("Full Auto Setup")]
     public void FullAutoSetup()
     {
@@ -178,6 +304,26 @@ public class RTSSetupHelper : MonoBehaviour
         Debug.Log("   3. Configure UnitSelector layers");
         Debug.Log("   4. Make ground Navigation Static and bake NavMesh");
         Debug.Log("   5. Test: Left-click to select, Right-click to move");
+    }
+
+    [ContextMenu("Full Auto Setup (with Minimap)")]
+    public void FullAutoSetupWithMinimap()
+    {
+        Debug.Log("=== Starting Full RTS Setup (with Minimap) ===");
+
+        CreateGroundPlane();
+        CreateSelectionManager();
+        CreateTestUnits();
+        CreateMinimapSystem();
+
+        Debug.Log("=== Setup Complete! ===");
+        Debug.Log("   Manual steps required:");
+        Debug.Log("   1. Create layers: 'Selectable' (Layer 7) and 'Ground' (Layer 6)");
+        Debug.Log("   2. Assign layers to units and ground");
+        Debug.Log("   3. Configure UnitSelector layers");
+        Debug.Log("   4. Make ground Navigation Static and bake NavMesh");
+        Debug.Log("   5. Configure MinimapController world bounds");
+        Debug.Log("   6. Test: Minimap should show colored unit dots!");
     }
 
     // Gizmos für Spawn-Bereich

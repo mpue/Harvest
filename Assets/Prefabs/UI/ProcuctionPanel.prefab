@@ -251,6 +251,39 @@ MonoBehaviour:
   closeButton: {fileID: 0}
   cancelCurrentButton: {fileID: 5782674354511725252}
   clearQueueButton: {fileID: 5321863281152699255}
+  slideAnimationDuration: 0.3
+  slideAnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  offScreenOffsetX: 100
+  panelFadeInSound: {fileID: 8300000, guid: 773e02e3f7cc0914ca89991d84a99019, type: 3}
+  panelFadeOutSound: {fileID: 8300000, guid: 773e02e3f7cc0914ca89991d84a99019, type: 3}
+  productionStartSound: {fileID: 8300000, guid: f313e59a63c07814cba1ea009a0a7a84, type: 3}
+  productionCompleteSound: {fileID: 8300000, guid: 54cedbddde9f3d1438ea7dcc26bf844b, type: 3}
+  productionCancelSound: {fileID: 8300000, guid: 8d117e684354c7746aba2ca890bd1188, type: 3}
+  buttonClickSound: {fileID: 8300000, guid: b807ae078b652f742b84ade4e6fe2eaf, type: 3}
+  soundVolume: 0.453
 --- !u!1 &2219648440130944404
 GameObject:
   m_ObjectHideFlags: 0

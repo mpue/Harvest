@@ -167,16 +167,18 @@ public class ProductionComponent : MonoBehaviour
     /// <summary>
     /// Start the next production in queue
     /// </summary>
- private void StartNextProduction()
+    private void StartNextProduction()
     {
         if (productionQueue.Count > 0)
         {
-            currentProduction = productionQueue.Dequeue();
+        currentProduction = productionQueue.Dequeue();
+            // Reset startTime to NOW when production actually starts
+    currentProduction.startTime = Time.time;
             currentProductionProgress = 0f;
-     OnProductionStarted?.Invoke(currentProduction.product);
-          OnQueueChanged?.Invoke();
-            
-  Debug.Log($"Started production of {currentProduction.product.ProductName}");
+        OnProductionStarted?.Invoke(currentProduction.product);
+ OnQueueChanged?.Invoke();
+    
+Debug.Log($"Started production of {currentProduction.product.ProductName}");
         }
     }
 

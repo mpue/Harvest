@@ -31,6 +31,8 @@ public class ProductionPanel : MonoBehaviour
     [SerializeField] private float offScreenOffsetX = 100f; // Additional offset beyond screen edge
 
     [Header("Audio")]
+    [SerializeField] private AudioClip panelFadeInSound;
+    [SerializeField] private AudioClip panelFadeOutSound;
     [SerializeField] private AudioClip productionStartSound;
     [SerializeField] private AudioClip productionCompleteSound;
     [SerializeField] private AudioClip productionCancelSound;
@@ -93,7 +95,8 @@ public class ProductionPanel : MonoBehaviour
         // Update queue display if panel is open
         if (panelRoot != null && panelRoot.activeSelf && currentProductionComponent != null)
         {
-            UpdateQueueDisplay();
+            // Only update progress, not recreate slots every frame
+            UpdateQueueProgress();
         }
     }
 
@@ -188,6 +191,9 @@ public class ProductionPanel : MonoBehaviour
     {
         if (panelRectTransform == null) return;
 
+        // Play fade in sound
+        PlaySound(panelFadeInSound);
+
         // Stop any existing animation
         if (currentSlideCoroutine != null)
         {
@@ -207,6 +213,9 @@ public class ProductionPanel : MonoBehaviour
             CleanupAndHide();
             return;
         }
+
+        // Play fade out sound
+        PlaySound(panelFadeOutSound);
 
         // Stop any existing animation
         if (currentSlideCoroutine != null)
@@ -325,25 +334,64 @@ public class ProductionPanel : MonoBehaviour
     {
         if (currentProductionComponent == null) return;
 
-        // Update queue count text
+    // Update queue count text
         if (queueCountText != null)
         {
             queueCountText.text = $"Queue: {currentProductionComponent.QueueCount}/{currentProductionComponent.MaxQueueSize}";
-        }
+ }
 
         // Update button states
-        if (cancelCurrentButton != null)
+    if (cancelCurrentButton != null)
         {
-            cancelCurrentButton.interactable = currentProductionComponent.IsProducing;
+   cancelCurrentButton.interactable = currentProductionComponent.IsProducing;
         }
+
+     if (clearQueueButton != null)
+   {
+     clearQueueButton.interactable = currentProductionComponent.QueueCount > 0;
+     }
+
+        // Update queue slots (recreate if count changed)
+        UpdateQueueSlots();
+    }
+
+    /// <summary>
+    /// Update only the progress of queue slots (called every frame)
+    /// </summary>
+    private void UpdateQueueProgress()
+    {
+      if (currentProductionComponent == null) return;
+
+        // Update button states
+if (cancelCurrentButton != null)
+        {
+   cancelCurrentButton.interactable = currentProductionComponent.IsProducing;
+ }
 
         if (clearQueueButton != null)
-        {
-            clearQueueButton.interactable = currentProductionComponent.QueueCount > 0;
-        }
+   {
+     clearQueueButton.interactable = currentProductionComponent.QueueCount > 0;
+     }
 
-        // Update queue slots
-        UpdateQueueSlots();
+        // Update progress for existing slots without recreating them
+        if (queueSlots.Count > 0)
+        {
+     for (int i = 0; i < queueSlots.Count; i++)
+            {
+     if (queueSlots[i] != null)
+   {
+        // Update progress for the first item (currently producing)
+        if (i == 0 && currentProductionComponent.IsProducing)
+      {
+    queueSlots[i].UpdateProgress(currentProductionComponent.CurrentProductionProgress);
+  }
+         else
+                {
+          queueSlots[i].UpdateProgress(0f);
+        }
+       }
+   }
+        }
     }
 
     /// <summary>
@@ -351,63 +399,45 @@ public class ProductionPanel : MonoBehaviour
     /// </summary>
     private void UpdateQueueSlots()
     {
-        if (queueContainer == null || queueSlotPrefab == null) return;
+  if (queueContainer == null || queueSlotPrefab == null) return;
 
         // Get queued products
-        List<Product> queuedProducts = currentProductionComponent.GetQueuedProducts();
+     List<Product> queuedProducts = currentProductionComponent.GetQueuedProducts();
 
         // If slot count doesn't match, recreate all slots
-        if (queueSlots.Count != queuedProducts.Count)
-        {
+      if (queueSlots.Count != queuedProducts.Count)
+ {
             // Clear existing slots
-            ClearQueueSlots();
+  ClearQueueSlots();
 
             // Create slots for queued products
             for (int i = 0; i < queuedProducts.Count; i++)
             {
-                Product product = queuedProducts[i];
+  Product product = queuedProducts[i];
 
-                GameObject slotObj = Instantiate(queueSlotPrefab, queueContainer);
-                ProductionSlot slot = slotObj.GetComponent<ProductionSlot>();
+   GameObject slotObj = Instantiate(queueSlotPrefab, queueContainer);
+       ProductionSlot slot = slotObj.GetComponent<ProductionSlot>();
 
-                if (slot != null)
+            if (slot != null)
                 {
-                    slot.Initialize(product, null); // No callback needed for queue slots
+    slot.Initialize(product, null); // No callback needed for queue slots
 
-                    // Set initial progress immediately after initialization
-                    if (i == 0 && currentProductionComponent.IsProducing)
-                    {
-                        slot.UpdateProgress(currentProductionComponent.CurrentProductionProgress);
-                    }
-                    else
-                    {
-                        slot.UpdateProgress(0f);
-                    }
+       // Set initial progress
+    if (i == 0 && currentProductionComponent.IsProducing)
+      {
+  slot.UpdateProgress(currentProductionComponent.CurrentProductionProgress);
+      }
+      else
+  {
+            slot.UpdateProgress(0f);
+                }
 
-                    queueSlots.Add(slot);
-                }
+        queueSlots.Add(slot);
+             }
             }
-        }
-        else
-        {
-            // Update progress for existing slots
-            for (int i = 0; i < queueSlots.Count; i++)
-            {
-                if (queueSlots[i] != null)
-                {
-                    // Update progress for the first item (currently producing)
-                    if (i == 0 && currentProductionComponent.IsProducing)
-                    {
-                        queueSlots[i].UpdateProgress(currentProductionComponent.CurrentProductionProgress);
-                    }
-                    else
-                    {
-                        queueSlots[i].UpdateProgress(0f);
-                    }
-                }
-            }
-        }
-    }
+   }
+        // If count matches, just update progress (this is now handled by UpdateQueueProgress)
+  }
 
     /// <summary>
     /// Clear all queue slots
