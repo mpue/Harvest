@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
@@ -24,6 +25,11 @@ public class ProductionPanel : MonoBehaviour
     [SerializeField] private Button cancelCurrentButton;
     [SerializeField] private Button clearQueueButton;
 
+    [Header("Animation Settings")]
+    [SerializeField] private float slideAnimationDuration = 0.3f;
+    [SerializeField] private AnimationCurve slideAnimationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [SerializeField] private float offScreenOffsetX = 100f; // Additional offset beyond screen edge
+
     [Header("Audio")]
     [SerializeField] private AudioClip productionStartSound;
     [SerializeField] private AudioClip productionCompleteSound;
@@ -35,8 +41,33 @@ public class ProductionPanel : MonoBehaviour
     private List<ProductionSlot> productSlots = new List<ProductionSlot>();
     private List<ProductionSlot> queueSlots = new List<ProductionSlot>();
 
+    private RectTransform panelRectTransform;
+    private Vector2 onScreenPosition;
+    private Vector2 offScreenPosition;
+    private Coroutine currentSlideCoroutine;
+
     void Awake()
     {
+        // Get RectTransform for animation
+        if (panelRoot != null)
+        {
+            panelRectTransform = panelRoot.GetComponent<RectTransform>();
+            if (panelRectTransform != null)
+            {
+                // Store the on-screen position (from the editor/prefab)
+                onScreenPosition = panelRectTransform.anchoredPosition;
+
+                // Calculate off-screen position (to the right)
+                offScreenPosition = new Vector2(
+                   onScreenPosition.x + panelRectTransform.rect.width + offScreenOffsetX,
+                  onScreenPosition.y
+                        );
+
+                // Start off-screen
+                panelRectTransform.anchoredPosition = offScreenPosition;
+            }
+        }
+
         // Hook up button events
         if (closeButton != null)
         {
@@ -85,6 +116,22 @@ public class ProductionPanel : MonoBehaviour
             return;
         }
 
+        // Check if panel is already visible
+        bool wasVisible = panelRoot != null && panelRoot.activeSelf;
+
+        // If panel is already visible, unsubscribe from old events first
+        if (wasVisible && currentProductionComponent != null)
+        {
+            var oldComponent = currentProductionComponent;
+            if (oldComponent != null)
+            {
+                oldComponent.OnQueueChanged -= UpdateQueueDisplay;
+                oldComponent.OnProductionStarted -= OnProductionStarted;
+                oldComponent.OnProductionCompleted -= OnProductionCompleted;
+                oldComponent.OnProductionCancelled -= OnProductionCancelled;
+            }
+        }
+
         // Set title
         if (titleText != null)
         {
@@ -94,10 +141,19 @@ public class ProductionPanel : MonoBehaviour
         // Create product slots
         CreateProductSlots();
 
-        // Show panel
+        // Show panel with animation only if it wasn't visible before
         if (panelRoot != null)
         {
-            panelRoot.SetActive(true);
+            if (!wasVisible)
+            {
+                panelRoot.SetActive(true);
+                AnimateSlideIn();
+            }
+            // If already visible, just ensure it stays active
+            else
+            {
+                panelRoot.SetActive(true);
+            }
         }
 
         // Subscribe to production events
@@ -114,6 +170,86 @@ public class ProductionPanel : MonoBehaviour
     /// Hide the production panel
     /// </summary>
     public void Hide()
+    {
+        if (panelRoot != null && panelRoot.activeSelf)
+        {
+            AnimateSlideOut();
+        }
+        else
+        {
+            CleanupAndHide();
+        }
+    }
+
+    /// <summary>
+    /// Animate panel sliding in from the right
+    /// </summary>
+    private void AnimateSlideIn()
+    {
+        if (panelRectTransform == null) return;
+
+        // Stop any existing animation
+        if (currentSlideCoroutine != null)
+        {
+            StopCoroutine(currentSlideCoroutine);
+        }
+
+        currentSlideCoroutine = StartCoroutine(SlideCoroutine(offScreenPosition, onScreenPosition));
+    }
+
+    /// <summary>
+    /// Animate panel sliding out to the right
+    /// </summary>
+    private void AnimateSlideOut()
+    {
+        if (panelRectTransform == null)
+        {
+            CleanupAndHide();
+            return;
+        }
+
+        // Stop any existing animation
+        if (currentSlideCoroutine != null)
+        {
+            StopCoroutine(currentSlideCoroutine);
+        }
+
+        currentSlideCoroutine = StartCoroutine(SlideCoroutine(panelRectTransform.anchoredPosition, offScreenPosition, true));
+    }
+
+    /// <summary>
+    /// Coroutine for smooth sliding animation
+    /// </summary>
+    private IEnumerator SlideCoroutine(Vector2 startPos, Vector2 endPos, bool hideOnComplete = false)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < slideAnimationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / slideAnimationDuration);
+            float curveValue = slideAnimationCurve.Evaluate(t);
+
+            panelRectTransform.anchoredPosition = Vector2.Lerp(startPos, endPos, curveValue);
+
+            yield return null;
+        }
+
+        // Ensure final position is set
+        panelRectTransform.anchoredPosition = endPos;
+
+        if (hideOnComplete)
+        {
+            CleanupAndHide();
+        }
+
+        currentSlideCoroutine = null;
+    }
+
+    /// <summary>
+    /// Cleanup and hide the panel without animation
+    /// </summary>
+    private void CleanupAndHide()
     {
         if (panelRoot != null)
         {
@@ -132,6 +268,12 @@ public class ProductionPanel : MonoBehaviour
         currentProductionComponent = null;
         ClearProductSlots();
         ClearQueueSlots();
+
+        // Reset position to off-screen
+        if (panelRectTransform != null)
+        {
+            panelRectTransform.anchoredPosition = offScreenPosition;
+        }
     }
 
     /// <summary>
@@ -214,32 +356,55 @@ public class ProductionPanel : MonoBehaviour
         // Get queued products
         List<Product> queuedProducts = currentProductionComponent.GetQueuedProducts();
 
-        // Clear existing slots
-        ClearQueueSlots();
-
-        // Create slots for queued products
-        for (int i = 0; i < queuedProducts.Count; i++)
+        // If slot count doesn't match, recreate all slots
+        if (queueSlots.Count != queuedProducts.Count)
         {
-            Product product = queuedProducts[i];
+            // Clear existing slots
+            ClearQueueSlots();
 
-            GameObject slotObj = Instantiate(queueSlotPrefab, queueContainer);
-            ProductionSlot slot = slotObj.GetComponent<ProductionSlot>();
-
-            if (slot != null)
+            // Create slots for queued products
+            for (int i = 0; i < queuedProducts.Count; i++)
             {
-                slot.Initialize(product, null); // No callback needed for queue slots
+                Product product = queuedProducts[i];
 
-                // Update progress for the first item (currently producing)
-                if (i == 0 && currentProductionComponent.IsProducing)
-                {
-                    slot.UpdateProgress(currentProductionComponent.CurrentProductionProgress);
-                }
-                else
-                {
-                    slot.UpdateProgress(0f);
-                }
+                GameObject slotObj = Instantiate(queueSlotPrefab, queueContainer);
+                ProductionSlot slot = slotObj.GetComponent<ProductionSlot>();
 
-                queueSlots.Add(slot);
+                if (slot != null)
+                {
+                    slot.Initialize(product, null); // No callback needed for queue slots
+
+                    // Set initial progress immediately after initialization
+                    if (i == 0 && currentProductionComponent.IsProducing)
+                    {
+                        slot.UpdateProgress(currentProductionComponent.CurrentProductionProgress);
+                    }
+                    else
+                    {
+                        slot.UpdateProgress(0f);
+                    }
+
+                    queueSlots.Add(slot);
+                }
+            }
+        }
+        else
+        {
+            // Update progress for existing slots
+            for (int i = 0; i < queueSlots.Count; i++)
+            {
+                if (queueSlots[i] != null)
+                {
+                    // Update progress for the first item (currently producing)
+                    if (i == 0 && currentProductionComponent.IsProducing)
+                    {
+                        queueSlots[i].UpdateProgress(currentProductionComponent.CurrentProductionProgress);
+                    }
+                    else
+                    {
+                        queueSlots[i].UpdateProgress(0f);
+                    }
+                }
             }
         }
     }
@@ -345,60 +510,60 @@ public class ProductionPanel : MonoBehaviour
     private void OnCancelCurrentClicked()
     {
         PlaySound(buttonClickSound);
-   
+
         if (currentProductionComponent != null)
         {
-        currentProductionComponent.CancelCurrentProduction();
-      }
+            currentProductionComponent.CancelCurrentProduction();
+        }
     }
 
     /// <summary>
     /// Clear the entire production queue
     /// </summary>
     private void OnClearQueueClicked()
-  {
-     PlaySound(buttonClickSound);
-        
- if (currentProductionComponent != null)
-{
-      currentProductionComponent.CancelQueue();
-     }
+    {
+        PlaySound(buttonClickSound);
+
+        if (currentProductionComponent != null)
+        {
+            currentProductionComponent.CancelQueue();
+        }
     }
 
     /// <summary>
-/// Called when close button is clicked
-/// </summary>
+    /// Called when close button is clicked
+    /// </summary>
     private void OnCloseButtonClicked()
     {
-  PlaySound(buttonClickSound);
+        PlaySound(buttonClickSound);
         Hide();
     }
 
     void OnDestroy()
     {
-   // Clean up button listeners
- if (closeButton != null)
-   {
-  closeButton.onClick.RemoveListener(OnCloseButtonClicked);
+        // Clean up button listeners
+        if (closeButton != null)
+        {
+            closeButton.onClick.RemoveListener(OnCloseButtonClicked);
         }
 
         if (cancelCurrentButton != null)
-{
-      cancelCurrentButton.onClick.RemoveListener(OnCancelCurrentClicked);
+        {
+            cancelCurrentButton.onClick.RemoveListener(OnCancelCurrentClicked);
         }
 
- if (clearQueueButton != null)
+        if (clearQueueButton != null)
         {
-    clearQueueButton.onClick.RemoveListener(OnClearQueueClicked);
-   }
+            clearQueueButton.onClick.RemoveListener(OnClearQueueClicked);
+        }
 
-     // Unsubscribe from production events
-   if (currentProductionComponent != null)
+        // Unsubscribe from production events
+        if (currentProductionComponent != null)
         {
             currentProductionComponent.OnQueueChanged -= UpdateQueueDisplay;
-     currentProductionComponent.OnProductionStarted -= OnProductionStarted;
- currentProductionComponent.OnProductionCompleted -= OnProductionCompleted;
-  currentProductionComponent.OnProductionCancelled -= OnProductionCancelled;
+            currentProductionComponent.OnProductionStarted -= OnProductionStarted;
+            currentProductionComponent.OnProductionCompleted -= OnProductionCompleted;
+            currentProductionComponent.OnProductionCancelled -= OnProductionCancelled;
         }
     }
 }

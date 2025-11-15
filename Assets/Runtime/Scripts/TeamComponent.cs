@@ -13,6 +13,35 @@ public class TeamComponent : MonoBehaviour
     public Team CurrentTeam => team;
     public Color TeamColor => teamColor;
 
+    void Awake()
+    {
+        // Set default team colors if not customized
+        if (teamColor == Color.blue || teamColor == new Color(0, 0, 1, 1))
+        {
+            teamColor = GetDefaultTeamColor(team);
+        }
+    }
+
+    /// <summary>
+    /// Get default color for a team
+    /// </summary>
+    public static Color GetDefaultTeamColor(Team team)
+    {
+        switch (team)
+        {
+            case Team.Player:
+                return new Color(0.2f, 0.5f, 1f); // Bright Blue
+            case Team.Enemy:
+                return new Color(1f, 0.2f, 0.2f); // Bright Red
+            case Team.Ally:
+                return new Color(0.2f, 1f, 0.2f); // Bright Green
+            case Team.Neutral:
+                return new Color(0.7f, 0.7f, 0.7f); // Gray
+            default:
+                return Color.white;
+        }
+    }
+
     /// <summary>
     /// Check if another unit is an enemy
     /// </summary>

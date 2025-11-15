@@ -497,6 +497,7 @@ GameObject:
   - component: {fileID: 8767031724306376768}
   - component: {fileID: 3904101791465009691}
   - component: {fileID: 6744967094620984488}
+  - component: {fileID: 111223698468327139}
   m_Layer: 6
   m_Name: MK3
   m_TagString: Untagged
@@ -710,7 +711,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 8028278880543250550}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 4.5637083
+  m_Radius: 7
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -765,6 +766,37 @@ MonoBehaviour:
   OnFullyHealed:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &111223698468327139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8028278880543250550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af610afc9c2451a4981dbc1b75b2cb6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeamVisualIndicator
+  indicatorType: 2
+  showIndicator: 1
+  indicatorHeightOffset: 7.55
+  indicatorScale: 1
+  colorRingPrefab: {fileID: 0}
+  ringRotationSpeed: 30
+  pulseEffect: 1
+  pulseSpeed: 2
+  pulseAmount: 0.2
+  shieldIconPrefab: {fileID: 0}
+  billboardIcon: 1
+  tintMaterials: 1
+  tintStrength: 0.6
+  materialPropertyNames:
+  - _BaseColor
+  - _Color
+  - _TintColor
+  useOutline: 0
+  outlineWidth: 0.05
 --- !u!1 &9047012629539055707
 GameObject:
   m_ObjectHideFlags: 0

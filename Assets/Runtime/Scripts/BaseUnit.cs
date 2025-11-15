@@ -16,11 +16,14 @@ public class BaseUnit : MonoBehaviour
     private Material[] originalMaterials;
     private Color originalOutlineColor;
     private ProductionComponent productionComponent;
+    private TeamComponent teamComponent;
+    private TeamVisualIndicator teamVisualIndicator;
 
     public bool IsSelected => isSelected;
     public bool IsBuilding => isBuilding;
     public string UnitName => unitName;
     public ProductionComponent ProductionComponent => productionComponent;
+    public TeamComponent TeamComponent => teamComponent;
 
     void Awake()
     {
@@ -39,6 +42,20 @@ public class BaseUnit : MonoBehaviour
 
         // Get ProductionComponent if available
         productionComponent = GetComponent<ProductionComponent>();
+  
+        // Get TeamComponent if available
+        teamComponent = GetComponent<TeamComponent>();
+        
+        // Get or add TeamVisualIndicator if unit has a team
+        if (teamComponent != null)
+        {
+            teamVisualIndicator = GetComponent<TeamVisualIndicator>();
+            if (teamVisualIndicator == null)
+            {
+                // Auto-add visual indicator if team exists but no indicator
+                teamVisualIndicator = gameObject.AddComponent<TeamVisualIndicator>();
+            }
+        }
     }
 
     void Start()

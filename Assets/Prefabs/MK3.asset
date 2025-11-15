@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MK3
   m_EditorClassIdentifier: Assembly-CSharp::Product
   productName: MK3
-  previewImage: {fileID: 21300000, guid: 723e00ea51301134b969e0e5978a6764, type: 3}
+  previewImage: {fileID: 21300000, guid: ef20857f51b462f43b64a5f5f1a215f1, type: 3}
   description: Heavy Tankl
   prefab: {fileID: 8028278880543250550, guid: 556b8d856d4a0224c81fd5554ef6f46d, type: 3}
   productionDuration: 10
