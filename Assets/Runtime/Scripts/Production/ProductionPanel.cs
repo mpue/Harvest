@@ -20,6 +20,13 @@ public class ProductionPanel : MonoBehaviour
     [SerializeField] private GameObject queueSlotPrefab;
     [SerializeField] private TextMeshProUGUI queueCountText;
 
+    [Header("Resource Display")]
+    [SerializeField] private TextMeshProUGUI energyText;
+    [SerializeField] private TextMeshProUGUI foodText;
+    [SerializeField] private TextMeshProUGUI woodText;
+    [SerializeField] private TextMeshProUGUI stoneText;
+    [SerializeField] private TextMeshProUGUI goldText;
+
     [Header("Buttons")]
     [SerializeField] private Button closeButton;
     [SerializeField] private Button cancelCurrentButton;
@@ -139,6 +146,23 @@ public class ProductionPanel : MonoBehaviour
         if (titleText != null)
         {
             titleText.text = $"{baseUnit.UnitName} - Production";
+        }
+
+        // Subscribe to resource manager events
+        if (currentProductionComponent.ResourceManager != null)
+        {
+            currentProductionComponent.ResourceManager.OnResourcesChanged += UpdateResourceDisplay;
+            currentProductionComponent.ResourceManager.OnEnergyChanged += UpdateEnergyDisplay;
+            UpdateResourceDisplay(
+    currentProductionComponent.ResourceManager.Food,
+        currentProductionComponent.ResourceManager.Wood,
+      currentProductionComponent.ResourceManager.Stone,
+        currentProductionComponent.ResourceManager.Gold
+            );
+            UpdateEnergyDisplay(
+               currentProductionComponent.ResourceManager.CurrentEnergy,
+                    currentProductionComponent.ResourceManager.MaxEnergy
+                  );
         }
 
         // Create product slots
@@ -272,6 +296,13 @@ public class ProductionPanel : MonoBehaviour
             currentProductionComponent.OnProductionStarted -= OnProductionStarted;
             currentProductionComponent.OnProductionCompleted -= OnProductionCompleted;
             currentProductionComponent.OnProductionCancelled -= OnProductionCancelled;
+
+            // Unsubscribe from resource manager
+            if (currentProductionComponent.ResourceManager != null)
+            {
+                currentProductionComponent.ResourceManager.OnResourcesChanged -= UpdateResourceDisplay;
+                currentProductionComponent.ResourceManager.OnEnergyChanged -= UpdateEnergyDisplay;
+            }
         }
 
         currentProductionComponent = null;
@@ -334,22 +365,22 @@ public class ProductionPanel : MonoBehaviour
     {
         if (currentProductionComponent == null) return;
 
-    // Update queue count text
+        // Update queue count text
         if (queueCountText != null)
         {
             queueCountText.text = $"Queue: {currentProductionComponent.QueueCount}/{currentProductionComponent.MaxQueueSize}";
- }
-
-        // Update button states
-    if (cancelCurrentButton != null)
-        {
-   cancelCurrentButton.interactable = currentProductionComponent.IsProducing;
         }
 
-     if (clearQueueButton != null)
-   {
-     clearQueueButton.interactable = currentProductionComponent.QueueCount > 0;
-     }
+        // Update button states
+        if (cancelCurrentButton != null)
+        {
+            cancelCurrentButton.interactable = currentProductionComponent.IsProducing;
+        }
+
+        if (clearQueueButton != null)
+        {
+            clearQueueButton.interactable = currentProductionComponent.QueueCount > 0;
+        }
 
         // Update queue slots (recreate if count changed)
         UpdateQueueSlots();
@@ -360,37 +391,37 @@ public class ProductionPanel : MonoBehaviour
     /// </summary>
     private void UpdateQueueProgress()
     {
-      if (currentProductionComponent == null) return;
+        if (currentProductionComponent == null) return;
 
         // Update button states
-if (cancelCurrentButton != null)
+        if (cancelCurrentButton != null)
         {
-   cancelCurrentButton.interactable = currentProductionComponent.IsProducing;
- }
+            cancelCurrentButton.interactable = currentProductionComponent.IsProducing;
+        }
 
         if (clearQueueButton != null)
-   {
-     clearQueueButton.interactable = currentProductionComponent.QueueCount > 0;
-     }
+        {
+            clearQueueButton.interactable = currentProductionComponent.QueueCount > 0;
+        }
 
         // Update progress for existing slots without recreating them
         if (queueSlots.Count > 0)
         {
-     for (int i = 0; i < queueSlots.Count; i++)
+            for (int i = 0; i < queueSlots.Count; i++)
             {
-     if (queueSlots[i] != null)
-   {
-        // Update progress for the first item (currently producing)
-        if (i == 0 && currentProductionComponent.IsProducing)
-      {
-    queueSlots[i].UpdateProgress(currentProductionComponent.CurrentProductionProgress);
-  }
-         else
+                if (queueSlots[i] != null)
                 {
-          queueSlots[i].UpdateProgress(0f);
-        }
-       }
-   }
+                    // Update progress for the first item (currently producing)
+                    if (i == 0 && currentProductionComponent.IsProducing)
+                    {
+                        queueSlots[i].UpdateProgress(currentProductionComponent.CurrentProductionProgress);
+                    }
+                    else
+                    {
+                        queueSlots[i].UpdateProgress(0f);
+                    }
+                }
+            }
         }
     }
 
@@ -399,45 +430,45 @@ if (cancelCurrentButton != null)
     /// </summary>
     private void UpdateQueueSlots()
     {
-  if (queueContainer == null || queueSlotPrefab == null) return;
+        if (queueContainer == null || queueSlotPrefab == null) return;
 
         // Get queued products
-     List<Product> queuedProducts = currentProductionComponent.GetQueuedProducts();
+        List<Product> queuedProducts = currentProductionComponent.GetQueuedProducts();
 
         // If slot count doesn't match, recreate all slots
-      if (queueSlots.Count != queuedProducts.Count)
- {
+        if (queueSlots.Count != queuedProducts.Count)
+        {
             // Clear existing slots
-  ClearQueueSlots();
+            ClearQueueSlots();
 
             // Create slots for queued products
             for (int i = 0; i < queuedProducts.Count; i++)
             {
-  Product product = queuedProducts[i];
+                Product product = queuedProducts[i];
 
-   GameObject slotObj = Instantiate(queueSlotPrefab, queueContainer);
-       ProductionSlot slot = slotObj.GetComponent<ProductionSlot>();
+                GameObject slotObj = Instantiate(queueSlotPrefab, queueContainer);
+                ProductionSlot slot = slotObj.GetComponent<ProductionSlot>();
 
-            if (slot != null)
+                if (slot != null)
                 {
-    slot.Initialize(product, null); // No callback needed for queue slots
+                    slot.Initialize(product, null); // No callback needed for queue slots
 
-       // Set initial progress
-    if (i == 0 && currentProductionComponent.IsProducing)
-      {
-  slot.UpdateProgress(currentProductionComponent.CurrentProductionProgress);
-      }
-      else
-  {
-            slot.UpdateProgress(0f);
+                    // Set initial progress
+                    if (i == 0 && currentProductionComponent.IsProducing)
+                    {
+                        slot.UpdateProgress(currentProductionComponent.CurrentProductionProgress);
+                    }
+                    else
+                    {
+                        slot.UpdateProgress(0f);
+                    }
+
+                    queueSlots.Add(slot);
                 }
-
-        queueSlots.Add(slot);
-             }
             }
-   }
+        }
         // If count matches, just update progress (this is now handled by UpdateQueueProgress)
-  }
+    }
 
     /// <summary>
     /// Clear all queue slots
@@ -464,8 +495,6 @@ if (cancelCurrentButton != null)
             return;
         }
 
-        // TODO: Check if player can afford the product when resource system is implemented
-
         bool success = currentProductionComponent.AddToQueue(product);
 
         if (success)
@@ -476,7 +505,45 @@ if (cancelCurrentButton != null)
         else
         {
             Debug.LogWarning($"Failed to add {product.ProductName} to queue");
-            // TODO: Show error message to player
+            // Show error feedback
+            PlaySound(productionCancelSound);
+        }
+    }
+
+    /// <summary>
+    /// Update resource display
+    /// </summary>
+    private void UpdateResourceDisplay(int food, int wood, int stone, int gold)
+    {
+        if (foodText != null) foodText.text = $"Food: {food}";
+        if (woodText != null) woodText.text = $"Wood: {wood}";
+        if (stoneText != null) stoneText.text = $"Stone: {stone}";
+        if (goldText != null) goldText.text = $"Gold: {gold}";
+    }
+
+    /// <summary>
+    /// Update energy display
+    /// </summary>
+    private void UpdateEnergyDisplay(int current, int max)
+    {
+        if (energyText != null)
+        {
+            int available = max - current;
+            energyText.text = $"Energy: {available}/{max}";
+
+            // Color code based on energy availability
+            if (available <= 0)
+            {
+                energyText.color = Color.red;
+            }
+            else if (available < max * 0.3f)
+            {
+                energyText.color = Color.yellow;
+            }
+            else
+            {
+                energyText.color = Color.green;
+            }
         }
     }
 
@@ -594,6 +661,13 @@ if (cancelCurrentButton != null)
             currentProductionComponent.OnProductionStarted -= OnProductionStarted;
             currentProductionComponent.OnProductionCompleted -= OnProductionCompleted;
             currentProductionComponent.OnProductionCancelled -= OnProductionCancelled;
+
+            // Unsubscribe from resource manager
+            if (currentProductionComponent.ResourceManager != null)
+            {
+                currentProductionComponent.ResourceManager.OnResourcesChanged -= UpdateResourceDisplay;
+                currentProductionComponent.ResourceManager.OnEnergyChanged -= UpdateEnergyDisplay;
+            }
         }
     }
 }
