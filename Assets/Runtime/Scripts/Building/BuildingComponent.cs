@@ -17,7 +17,7 @@ public class BuildingComponent : MonoBehaviour
     private Health healthComponent;
 
     // Properties
- public Product BuildingProduct => buildingProduct;
+    public Product BuildingProduct => buildingProduct;
     public bool IsConstructed => isConstructed;
     public bool IsPowered => isPowered;
     public bool IsEnergyProducer => buildingProduct != null && buildingProduct.EnergyProduction > 0;
@@ -25,26 +25,26 @@ public class BuildingComponent : MonoBehaviour
 
     void Awake()
     {
-  healthComponent = GetComponent<Health>();
-  if (healthComponent == null)
-   {
-        healthComponent = gameObject.AddComponent<Health>();
+        healthComponent = GetComponent<Health>();
+        if (healthComponent == null)
+        {
+            healthComponent = gameObject.AddComponent<Health>();
         }
     }
 
     void Start()
     {
         // Subscribe to death event
-  if (healthComponent != null)
-      {
- healthComponent.OnDeath.AddListener(OnBuildingDestroyed);
+        if (healthComponent != null)
+        {
+            healthComponent.OnDeath.AddListener(OnBuildingDestroyed);
         }
 
-   // Add energy production if applicable
- if (IsEnergyProducer && resourceManager != null)
-    {
-    resourceManager.IncreaseMaxEnergy(buildingProduct.EnergyProduction);
-          Debug.Log($"{buildingProduct.ProductName} providing {buildingProduct.EnergyProduction} energy");
+        // Add energy production if applicable
+        if (IsEnergyProducer && resourceManager != null)
+        {
+            resourceManager.IncreaseMaxEnergy(buildingProduct.EnergyProduction);
+            Debug.Log($"{buildingProduct.ProductName} providing {buildingProduct.EnergyProduction} energy");
         }
 
         // Check if we have enough energy
@@ -57,33 +57,33 @@ public class BuildingComponent : MonoBehaviour
     public void Initialize(Product product, ResourceManager manager)
     {
         buildingProduct = product;
-    resourceManager = manager;
+        resourceManager = manager;
 
         // Set building properties based on product
-   if (product != null)
+        if (product != null)
         {
-      // You can set health, armor, etc. from product here
+            // You can set health, armor, etc. from product here
             gameObject.name = product.ProductName;
-    }
+        }
     }
 
- /// <summary>
+    /// <summary>
     /// Update power status based on available energy
     /// </summary>
     private void UpdatePowerStatus()
     {
-     if (buildingProduct == null || resourceManager == null)
-     {
+        if (buildingProduct == null || resourceManager == null)
+        {
             isPowered = true;
-     return;
+            return;
         }
 
         // Energy blocks are always powered
- if (buildingProduct.BuildingType == BuildingType.EnergyBlock)
-  {
+        if (buildingProduct.BuildingType == BuildingType.EnergyBlock)
+        {
             isPowered = true;
-  return;
- }
+            return;
+        }
 
         // Check if we have the required energy
         isPowered = resourceManager.HasAvailableEnergy(buildingProduct.EnergyCost);
@@ -106,16 +106,16 @@ public class BuildingComponent : MonoBehaviour
         }
 
         // Release consumed energy
- if (buildingProduct.EnergyCost > 0)
+        if (buildingProduct.EnergyCost > 0)
         {
-    resourceManager.ReleaseEnergy(buildingProduct.EnergyCost);
-        Debug.Log($"{buildingProduct.ProductName} released {buildingProduct.EnergyCost} energy");
+            resourceManager.ReleaseEnergy(buildingProduct.EnergyCost);
+            Debug.Log($"{buildingProduct.ProductName} released {buildingProduct.EnergyCost} energy");
         }
 
-      // Remove energy production
-     if (buildingProduct.EnergyProduction > 0)
+        // Remove energy production
+        if (buildingProduct.EnergyProduction > 0)
         {
-  resourceManager.DecreaseMaxEnergy(buildingProduct.EnergyProduction);
+            resourceManager.DecreaseMaxEnergy(buildingProduct.EnergyProduction);
             Debug.Log($"{buildingProduct.ProductName} removed {buildingProduct.EnergyProduction} energy production");
         }
     }
@@ -125,17 +125,17 @@ public class BuildingComponent : MonoBehaviour
         // Unsubscribe from events
         if (healthComponent != null)
         {
-        healthComponent.OnDeath.RemoveListener(OnBuildingDestroyed);
-      }
-  }
+            healthComponent.OnDeath.RemoveListener(OnBuildingDestroyed);
+        }
+    }
 
     void OnDrawGizmos()
- {
-    // Draw building info
+    {
+        // Draw building info
         if (buildingProduct != null)
         {
             Gizmos.color = isPowered ? Color.green : Color.red;
-       Gizmos.DrawWireSphere(transform.position + Vector3.up * 2, 0.5f);
+            Gizmos.DrawWireSphere(transform.position + Vector3.up * 2, 0.5f);
         }
     }
 }

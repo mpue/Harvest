@@ -12,7 +12,10 @@ public class Product : ScriptableObject
     [SerializeField, TextArea(3, 5)] private string description;
 
     [Header("Product Type")]
+    [Tooltip("Is this product a building that needs to be placed?")]
     [SerializeField] private bool isBuilding = false;
+  
+    [Tooltip("Type of building (only for buildings)")]
     [SerializeField] private BuildingType buildingType = BuildingType.None;
 
     [Header("Production Settings")]
@@ -25,9 +28,12 @@ public class Product : ScriptableObject
     [SerializeField] private int stoneCost = 0;
     [SerializeField] private int goldCost = 0;
 
-    [Header("Energy Settings")]
-    [SerializeField] private int energyCost = 0; // Energy consumed when placed
-    [SerializeField] private int energyProduction = 0; // Energy provided (for power plants)
+    [Header("Energy Settings (Buildings Only)")]
+    [Tooltip("Energy consumed when building is active")]
+    [SerializeField] private int energyCost = 0;
+    
+    [Tooltip("Energy provided by this building (e.g., power plants)")]
+    [SerializeField] private int energyProduction = 0;
 
     // Properties
     public string ProductName => productName;
@@ -47,13 +53,12 @@ public class Product : ScriptableObject
     /// <summary>
     /// Check if the player can afford this product
     /// </summary>
-    /// </summary>
     public bool CanAfford(int availableFood, int availableWood, int availableStone, int availableGold)
     {
         return availableFood >= foodCost &&
-        availableWood >= woodCost &&
-        availableStone >= stoneCost &&
-        availableGold >= goldCost;
+               availableWood >= woodCost &&
+               availableStone >= stoneCost &&
+               availableGold >= goldCost;
     }
 
     /// <summary>
@@ -88,6 +93,16 @@ public class Product : ScriptableObject
         }
 
         return sb.ToString().TrimEnd();
+    }
+
+    // Validation in Editor
+    void OnValidate()
+    {
+        // Auto-set buildingType to None if not a building
+        if (!isBuilding && buildingType != BuildingType.None)
+        {
+            buildingType = BuildingType.None;
+        }
     }
 }
 

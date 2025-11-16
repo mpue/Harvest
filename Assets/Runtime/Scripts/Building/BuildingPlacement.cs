@@ -7,19 +7,25 @@ using System.Collections;
 public class BuildingPlacement : MonoBehaviour
 {
     [Header("Placement Settings")]
-    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask groundLayer = -1; // Default: all layers
     [SerializeField] private float placementHeight = 0.1f;
     [SerializeField] private float gridSize = 1f;
     [SerializeField] private bool snapToGrid = true;
+    [SerializeField] private Camera targetCamera;
 
     [Header("Visual Feedback")]
     [SerializeField] private Material validPlacementMaterial;
     [SerializeField] private Material invalidPlacementMaterial;
     [SerializeField] private float rotationSpeed = 90f;
+    [SerializeField] private Color validColor = new Color(0, 1, 0, 0.5f);
+    [SerializeField] private Color invalidColor = new Color(1, 0, 0, 0.5f);
 
     [Header("Collision Check")]
     [SerializeField] private float collisionCheckRadius = 2f;
     [SerializeField] private LayerMask obstacleLayer;
+
+    [Header("UI Feedback")]
+    [SerializeField] private bool showPlacementUI = true;
 
     private GameObject currentBuildingPreview;
     private Product currentProduct;
@@ -29,27 +35,79 @@ public class BuildingPlacement : MonoBehaviour
     private float currentRotation = 0f;
     private Renderer[] previewRenderers;
     private Material[][] originalMaterials;
+    private Material[] previewMaterials;
 
     public bool IsPlacing => isPlacing;
+    public Product CurrentProduct => currentProduct;
+    public bool CanPlace => canPlace;
+
+    void Awake()
+    {
+        // Find camera if not set
+        if (targetCamera == null)
+        {
+            targetCamera = Camera.main;
+            if (targetCamera == null)
+            {
+                targetCamera = FindObjectOfType<Camera>();
+            }
+        }
+
+        // Create default materials if not set
+        if (validPlacementMaterial == null)
+        {
+            validPlacementMaterial = CreateTransparentMaterial(validColor);
+        }
+
+        if (invalidPlacementMaterial == null)
+        {
+            invalidPlacementMaterial = CreateTransparentMaterial(invalidColor);
+        }
+    }
 
     void Update()
     {
         if (isPlacing && currentBuildingPreview != null)
         {
-  UpdateBuildingPreview();
-    HandleRotation();
+            UpdateBuildingPreview();
+            HandleRotation();
 
             // Place on left click
-     if (Input.GetMouseButtonDown(0) && canPlace)
-        {
-                PlaceBuilding();
-        }
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (canPlace)
+                {
+                    PlaceBuilding();
+                }
+                else
+                {
+                    Debug.LogWarning("Cannot place building here!");
+                }
+            }
 
-   // Cancel on right click or ESC
-       if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
- {
+            // Cancel on right click or ESC
+            if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
+            {
                 CancelPlacement();
             }
+        }
+    }
+
+    void OnGUI()
+    {
+        if (isPlacing && showPlacementUI && currentProduct != null)
+        {
+            // Show placement instructions
+            GUIStyle style = new GUIStyle(GUI.skin.box);
+            style.fontSize = 16;
+            style.alignment = TextAnchor.MiddleCenter;
+            style.normal.textColor = canPlace ? Color.green : Color.red;
+
+            string instructions = $"Placing: {currentProduct.ProductName}\n";
+            instructions += canPlace ? "Left Click to Place\n" : "Invalid Location!\n";
+            instructions += "Q/E to Rotate | Right Click/ESC to Cancel";
+
+            GUI.Box(new Rect(Screen.width / 2 - 200, 20, 400, 80), instructions, style);
         }
     }
 
@@ -59,18 +117,30 @@ public class BuildingPlacement : MonoBehaviour
     public void StartPlacement(Product product, ResourceManager manager)
     {
         if (product == null || !product.IsBuilding || product.Prefab == null)
-   {
-   Debug.LogWarning("Cannot start placement: invalid product");
-       return;
+        {
+            Debug.LogWarning("Cannot start placement: invalid product");
+            return;
+        }
+
+        if (targetCamera == null)
+        {
+            Debug.LogError("No camera found for building placement!");
+            return;
+        }
+
+        // Cancel any existing placement
+        if (isPlacing)
+        {
+            CancelPlacement();
         }
 
         currentProduct = product;
         resourceManager = manager;
 
-      // Create preview
+        // Create preview
         currentBuildingPreview = Instantiate(product.Prefab);
-   currentRotation = 0f;
-   currentBuildingPreview.transform.rotation = Quaternion.Euler(0, currentRotation, 0);
+        currentRotation = 0f;
+        currentBuildingPreview.transform.rotation = Quaternion.Euler(0, currentRotation, 0);
 
         // Disable all components on preview
         DisableComponentsOnPreview(currentBuildingPreview);
@@ -79,54 +149,71 @@ public class BuildingPlacement : MonoBehaviour
         previewRenderers = currentBuildingPreview.GetComponentsInChildren<Renderer>();
         StoreOriginalMaterials();
 
-        // Make preview semi-transparent
-        SetPreviewTransparency(0.5f);
+        // Create preview materials
+        CreatePreviewMaterials();
+
+        // Apply initial material
+        UpdatePreviewMaterial(false);
 
         isPlacing = true;
-        Debug.Log($"Started placing {product.ProductName}");
+        Debug.Log($"Started placing {product.ProductName}. Use mouse to position, Q/E to rotate, Left Click to place, Right Click to cancel.");
     }
 
-  /// <summary>
+    /// <summary>
     /// Update building preview position
     /// </summary>
     private void UpdateBuildingPreview()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-    RaycastHit hit;
+        if (targetCamera == null) return;
 
- if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
+        Ray ray = targetCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
         {
-    Vector3 position = hit.point;
-       position.y = placementHeight;
+            Vector3 position = hit.point;
+            position.y += placementHeight;
 
             // Snap to grid if enabled
             if (snapToGrid)
             {
-    position.x = Mathf.Round(position.x / gridSize) * gridSize;
-            position.z = Mathf.Round(position.z / gridSize) * gridSize;
+                position.x = Mathf.Round(position.x / gridSize) * gridSize;
+                position.z = Mathf.Round(position.z / gridSize) * gridSize;
             }
 
- currentBuildingPreview.transform.position = position;
+            currentBuildingPreview.transform.position = position;
 
-     // Check if placement is valid
+            // Check if placement is valid
             canPlace = IsValidPlacement(position);
             UpdatePreviewMaterial(canPlace);
         }
-}
+        else
+        {
+            // No ground hit - show as invalid
+            canPlace = false;
+            UpdatePreviewMaterial(false);
+        }
+    }
 
     /// <summary>
     /// Handle building rotation
     /// </summary>
     private void HandleRotation()
     {
+        float rotationInput = 0f;
+
         if (Input.GetKey(KeyCode.Q))
-    {
-         currentRotation -= rotationSpeed * Time.deltaTime;
-            currentBuildingPreview.transform.rotation = Quaternion.Euler(0, currentRotation, 0);
-        }
-     else if (Input.GetKey(KeyCode.E))
         {
-        currentRotation += rotationSpeed * Time.deltaTime;
+            rotationInput = -rotationSpeed * Time.deltaTime;
+        }
+        else if (Input.GetKey(KeyCode.E))
+        {
+            rotationInput = rotationSpeed * Time.deltaTime;
+        }
+
+        if (rotationInput != 0f)
+        {
+            currentRotation += rotationInput;
             currentBuildingPreview.transform.rotation = Quaternion.Euler(0, currentRotation, 0);
         }
     }
@@ -137,25 +224,26 @@ public class BuildingPlacement : MonoBehaviour
     private bool IsValidPlacement(Vector3 position)
     {
         // Check for collisions with other buildings/obstacles
-    Collider[] colliders = Physics.OverlapSphere(position, collisionCheckRadius, obstacleLayer);
-     
-   // Filter out the preview itself
-  foreach (var collider in colliders)
+        Collider[] colliders = Physics.OverlapSphere(position, collisionCheckRadius, obstacleLayer);
+
+        // Filter out the preview itself
+        foreach (var collider in colliders)
         {
-            if (collider.gameObject != currentBuildingPreview)
-    {
-     return false;
-        }
+            if (collider.gameObject != currentBuildingPreview &&
+                !collider.transform.IsChildOf(currentBuildingPreview.transform))
+            {
+                return false;
+            }
         }
 
         // Check energy requirements (except for energy blocks)
         if (currentProduct.BuildingType != BuildingType.EnergyBlock)
-  {
-          if (resourceManager != null && !resourceManager.HasAvailableEnergy(currentProduct.EnergyCost))
-       {
-       return false;
+        {
+            if (resourceManager != null && !resourceManager.HasAvailableEnergy(currentProduct.EnergyCost))
+            {
+                return false;
             }
-    }
+        }
 
         return true;
     }
@@ -167,59 +255,60 @@ public class BuildingPlacement : MonoBehaviour
     {
         if (!canPlace || currentProduct == null)
         {
-     return;
+            return;
         }
 
-    // Consume energy
+        // Consume energy
         if (currentProduct.BuildingType != BuildingType.EnergyBlock)
         {
             if (resourceManager != null && !resourceManager.ConsumeEnergy(currentProduct.EnergyCost))
-    {
-   Debug.LogWarning("Not enough energy to place building");
-   return;
+            {
+                Debug.LogWarning("Not enough energy to place building");
+                return;
             }
         }
 
         // Create the actual building
         GameObject building = Instantiate(
-       currentProduct.Prefab, 
-        currentBuildingPreview.transform.position,
-    currentBuildingPreview.transform.rotation
+            currentProduct.Prefab,
+            currentBuildingPreview.transform.position,
+            currentBuildingPreview.transform.rotation
         );
 
         // Add BuildingComponent if it doesn't exist
         BuildingComponent buildingComp = building.GetComponent<BuildingComponent>();
-  if (buildingComp == null)
+        if (buildingComp == null)
         {
-         buildingComp = building.AddComponent<BuildingComponent>();
-      }
-buildingComp.Initialize(currentProduct, resourceManager);
+            buildingComp = building.AddComponent<BuildingComponent>();
+        }
+        buildingComp.Initialize(currentProduct, resourceManager);
 
-        Debug.Log($"Placed {currentProduct.ProductName} at {building.transform.position}");
+        Debug.Log($"? Placed {currentProduct.ProductName} at {building.transform.position}");
 
         // Cleanup and exit placement mode
-      CancelPlacement();
+        CancelPlacement();
     }
 
     /// <summary>
- /// Cancel building placement
+    /// Cancel building placement
     /// </summary>
     public void CancelPlacement()
     {
-   if (currentBuildingPreview != null)
-  {
+        if (currentBuildingPreview != null)
+        {
             Destroy(currentBuildingPreview);
         }
 
         currentBuildingPreview = null;
-    currentProduct = null;
+        currentProduct = null;
         resourceManager = null;
         isPlacing = false;
-  canPlace = false;
+        canPlace = false;
         originalMaterials = null;
-  previewRenderers = null;
+        previewRenderers = null;
+        previewMaterials = null;
 
-     Debug.Log("Placement cancelled");
+        Debug.Log("Placement cancelled");
     }
 
     /// <summary>
@@ -229,24 +318,24 @@ buildingComp.Initialize(currentProduct, resourceManager);
     {
         // Disable all MonoBehaviours except Transform
         MonoBehaviour[] components = preview.GetComponentsInChildren<MonoBehaviour>();
-   foreach (var comp in components)
+        foreach (var comp in components)
         {
-         comp.enabled = false;
+            comp.enabled = false;
         }
 
         // Disable colliders
         Collider[] colliders = preview.GetComponentsInChildren<Collider>();
         foreach (var col in colliders)
         {
-       col.enabled = false;
-  }
+            col.enabled = false;
+        }
 
-     // Keep rigidbodies kinematic
-    Rigidbody[] rigidbodies = preview.GetComponentsInChildren<Rigidbody>();
-     foreach (var rb in rigidbodies)
+        // Keep rigidbodies kinematic
+        Rigidbody[] rigidbodies = preview.GetComponentsInChildren<Rigidbody>();
+        foreach (var rb in rigidbodies)
         {
             rb.isKinematic = true;
- }
+        }
     }
 
     /// <summary>
@@ -258,8 +347,37 @@ buildingComp.Initialize(currentProduct, resourceManager);
 
         originalMaterials = new Material[previewRenderers.Length][];
         for (int i = 0; i < previewRenderers.Length; i++)
-   {
-     originalMaterials[i] = previewRenderers[i].materials;
+        {
+            originalMaterials[i] = previewRenderers[i].materials;
+        }
+    }
+
+    /// <summary>
+    /// Create preview materials with transparency
+    /// </summary>
+    private void CreatePreviewMaterials()
+    {
+        if (previewRenderers == null || previewRenderers.Length == 0) return;
+
+        previewMaterials = new Material[previewRenderers.Length];
+        for (int i = 0; i < previewRenderers.Length; i++)
+        {
+            // Create a transparent material based on the original
+            Material[] originalMats = previewRenderers[i].materials;
+            if (originalMats.Length > 0)
+            {
+                previewMaterials[i] = new Material(originalMats[0]);
+
+                // Enable transparency
+                previewMaterials[i].SetFloat("_Mode", 3); // Transparent mode
+                previewMaterials[i].SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                previewMaterials[i].SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                previewMaterials[i].SetInt("_ZWrite", 0);
+                previewMaterials[i].DisableKeyword("_ALPHATEST_ON");
+                previewMaterials[i].EnableKeyword("_ALPHABLEND_ON");
+                previewMaterials[i].DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                previewMaterials[i].renderQueue = 3000;
+            }
         }
     }
 
@@ -268,51 +386,57 @@ buildingComp.Initialize(currentProduct, resourceManager);
     /// </summary>
     private void UpdatePreviewMaterial(bool valid)
     {
-  if (previewRenderers == null) return;
+        if (previewRenderers == null) return;
 
-        Material material = valid ? validPlacementMaterial : invalidPlacementMaterial;
+        Color targetColor = valid ? validColor : invalidColor;
 
-     if (material != null)
+        for (int i = 0; i < previewRenderers.Length; i++)
         {
-            foreach (var renderer in previewRenderers)
+            if (previewMaterials != null && i < previewMaterials.Length && previewMaterials[i] != null)
             {
-  Material[] mats = new Material[renderer.materials.Length];
-        for (int i = 0; i < mats.Length; i++)
- {
-            mats[i] = material;
-  }
- renderer.materials = mats;
-      }
+                // Set color with transparency
+                previewMaterials[i].color = targetColor;
+
+                if (previewMaterials[i].HasProperty("_Color"))
+                {
+                    previewMaterials[i].SetColor("_Color", targetColor);
+                }
+
+                // Apply to renderer
+                Material[] mats = new Material[previewRenderers[i].materials.Length];
+                for (int j = 0; j < mats.Length; j++)
+                {
+                    mats[j] = previewMaterials[i];
+                }
+                previewRenderers[i].materials = mats;
+            }
         }
     }
 
     /// <summary>
-    /// Set transparency on preview
+    /// Create a transparent material with a color
     /// </summary>
-    private void SetPreviewTransparency(float alpha)
+    private Material CreateTransparentMaterial(Color color)
     {
-        if (previewRenderers == null) return;
-
-        foreach (var renderer in previewRenderers)
-    {
-            foreach (var mat in renderer.materials)
-   {
-       if (mat.HasProperty("_Color"))
-       {
-        Color color = mat.color;
-       color.a = alpha;
-            mat.color = color;
-         }
-        }
-   }
+        Material mat = new Material(Shader.Find("Standard"));
+        mat.SetFloat("_Mode", 3); // Transparent mode
+        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        mat.SetInt("_ZWrite", 0);
+        mat.DisableKeyword("_ALPHATEST_ON");
+        mat.EnableKeyword("_ALPHABLEND_ON");
+        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        mat.renderQueue = 3000;
+        mat.color = color;
+        return mat;
     }
 
     void OnDrawGizmosSelected()
     {
         if (isPlacing && currentBuildingPreview != null)
-    {
+        {
             // Draw collision check radius
-     Gizmos.color = canPlace ? Color.green : Color.red;
+            Gizmos.color = canPlace ? Color.green : Color.red;
             Gizmos.DrawWireSphere(currentBuildingPreview.transform.position, collisionCheckRadius);
         }
     }
