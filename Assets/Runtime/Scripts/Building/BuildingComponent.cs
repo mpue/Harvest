@@ -15,6 +15,7 @@ public class BuildingComponent : MonoBehaviour
     [SerializeField] private bool isPowered = true;
 
     private Health healthComponent;
+    private bool energyApplied = false; // Prevent double application
 
     // Properties
     public Product BuildingProduct => buildingProduct;
@@ -40,15 +41,12 @@ public class BuildingComponent : MonoBehaviour
             healthComponent.OnDeath.AddListener(OnBuildingDestroyed);
         }
 
-        // Add energy production if applicable
-        if (IsEnergyProducer && resourceManager != null)
+        // Only run energy logic if already initialized
+        // (Initialize() will handle it if called before Start())
+        if (buildingProduct != null && resourceManager != null)
         {
-            resourceManager.IncreaseMaxEnergy(buildingProduct.EnergyProduction);
-            Debug.Log($"{buildingProduct.ProductName} providing {buildingProduct.EnergyProduction} energy");
+            ApplyEnergyChanges();
         }
-
-        // Check if we have enough energy
-        UpdatePowerStatus();
     }
 
     /// <summary>
@@ -65,6 +63,42 @@ public class BuildingComponent : MonoBehaviour
             // You can set health, armor, etc. from product here
             gameObject.name = product.ProductName;
         }
+
+        // Apply energy changes immediately (before Start() might run)
+        if (product != null && manager != null)
+        {
+            ApplyEnergyChanges();
+        }
+    }
+
+    /// <summary>
+    /// Apply energy production/consumption
+    /// </summary>
+    private void ApplyEnergyChanges()
+    {
+        if (buildingProduct == null || resourceManager == null)
+        {
+            return;
+        }
+
+        // Prevent double application
+        if (!IsEnergyProducer && energyApplied)
+        {
+            Debug.LogWarning($"{buildingProduct.ProductName}: Energy already applied, skipping.");
+            return;
+        }
+
+        // Add energy production if applicable
+        if (IsEnergyProducer)
+        {
+            resourceManager.IncreaseMaxEnergy(buildingProduct.EnergyProduction);
+            Debug.Log($"? {buildingProduct.ProductName} providing {buildingProduct.EnergyProduction} energy. New max: {resourceManager.MaxEnergy}");
+        }
+
+        // Check if we have enough energy for buildings that consume it
+        UpdatePowerStatus();
+
+        energyApplied = true;
     }
 
     /// <summary>
@@ -78,8 +112,16 @@ public class BuildingComponent : MonoBehaviour
             return;
         }
 
-        // Energy blocks are always powered
-        if (buildingProduct.BuildingType == BuildingType.EnergyBlock)
+        // Headquarters and Energy blocks are always powered (they don't consume energy)
+        if (buildingProduct.BuildingType == BuildingType.Headquarter ||
+          buildingProduct.BuildingType == BuildingType.EnergyBlock)
+        {
+            isPowered = true;
+            return;
+        }
+
+        // Buildings with 0 energy cost are always powered
+        if (buildingProduct.EnergyCost == 0)
         {
             isPowered = true;
             return;
@@ -90,7 +132,7 @@ public class BuildingComponent : MonoBehaviour
 
         if (!isPowered)
         {
-            Debug.LogWarning($"{buildingProduct.ProductName} is not powered!");
+            Debug.LogWarning($"{buildingProduct.ProductName} is not powered! Needs {buildingProduct.EnergyCost} energy, but only {resourceManager.AvailableEnergy} available.");
             // TODO: Add visual feedback for unpowered state
         }
     }

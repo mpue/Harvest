@@ -27,6 +27,11 @@ public class BuildingPlacement : MonoBehaviour
     [Header("UI Feedback")]
     [SerializeField] private bool showPlacementUI = true;
 
+    [Header("Grid")]
+    [SerializeField] private bool showGrid = true;
+    [SerializeField] private PlacementGrid placementGrid;
+    [SerializeField] private bool autoCreateGrid = true;
+
     [Header("Audio")]
     [SerializeField] private AudioClip placementStartSound;
     [SerializeField] private AudioClip placementSuccessSound;

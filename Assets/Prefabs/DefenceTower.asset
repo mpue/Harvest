@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e76a2f1aa40c02043842f8513426f73c, type: 3}
-  m_Name: Energy Block
+  m_Name: DefenceTower
   m_EditorClassIdentifier: Assembly-CSharp::Product
-  productName: Energy Block
-  previewImage: {fileID: 21300000, guid: 9a8fac2dd265860489303ba67d329aa9, type: 3}
-  description: The main energy source
+  productName: Defence Tower
+  previewImage: {fileID: 21300000, guid: 8b33e553091df8b43bb34eba098785d7, type: 3}
+  description: 
   isBuilding: 1
-  buildingType: 2
-  prefab: {fileID: 8471731948498044112, guid: 7b2418894a2ddec4594f99c50301d347, type: 3}
-  productionDuration: 10
+  buildingType: 0
+  prefab: {fileID: 4493670028303466774, guid: 2790e6f2d10bdbf40bd85307a84c7275, type: 3}
+  productionDuration: 5
   foodCost: 0
   woodCost: 0
   stoneCost: 0
-  goldCost: 100
+  goldCost: 20
   energyCost: 0
-  energyProduction: 100
+  energyProduction: 0

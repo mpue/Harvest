@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e76a2f1aa40c02043842f8513426f73c, type: 3}
-  m_Name: Energy Block
+  m_Name: Harvester
   m_EditorClassIdentifier: Assembly-CSharp::Product
-  productName: Energy Block
-  previewImage: {fileID: 21300000, guid: 9a8fac2dd265860489303ba67d329aa9, type: 3}
-  description: The main energy source
-  isBuilding: 1
-  buildingType: 2
-  prefab: {fileID: 8471731948498044112, guid: 7b2418894a2ddec4594f99c50301d347, type: 3}
+  productName: Harvester
+  previewImage: {fileID: 21300000, guid: d5c014678b526ca4885a76eef6fe1c6b, type: 3}
+  description: 
+  isBuilding: 0
+  buildingType: 0
+  prefab: {fileID: 7687701594627422497, guid: 4614a555710062b4c8100703021e91e7, type: 3}
   productionDuration: 10
   foodCost: 0
   woodCost: 0
   stoneCost: 0
-  goldCost: 100
+  goldCost: 200
   energyCost: 0
-  energyProduction: 100
+  energyProduction: 0
