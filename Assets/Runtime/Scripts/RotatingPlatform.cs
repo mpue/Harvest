@@ -11,7 +11,7 @@ public class RotatingPlatform : MonoBehaviour
     void Update()
     {
         rotationAxis = rotationAxis.normalized;
-        rotationAxis*= Time.deltaTime * speed;
+        rotationAxis *= Time.deltaTime * speed;
         transform.Rotate(rotationAxis);
     }
 }

@@ -10,7 +10,7 @@ public class ResourceManager : MonoBehaviour
     [SerializeField] private int food = 500;
     [SerializeField] private int wood = 500;
     [SerializeField] private int stone = 500;
-[SerializeField] private int gold = 500;
+    [SerializeField] private int gold = 500;
 
     [Header("Energy System")]
     [SerializeField] private int currentEnergy = 0;
@@ -23,7 +23,7 @@ public class ResourceManager : MonoBehaviour
 
     // Properties
     public int Food => food;
- public int Wood => wood;
+    public int Wood => wood;
     public int Stone => stone;
     public int Gold => gold;
     public int CurrentEnergy => currentEnergy;
@@ -43,9 +43,9 @@ public class ResourceManager : MonoBehaviour
     /// </summary>
     public bool CanAfford(int foodCost, int woodCost, int stoneCost, int goldCost)
     {
-        return food >= foodCost && 
-     wood >= woodCost && 
-          stone >= stoneCost && 
+        return food >= foodCost &&
+     wood >= woodCost &&
+          stone >= stoneCost &&
                gold >= goldCost;
     }
 
@@ -64,37 +64,37 @@ public class ResourceManager : MonoBehaviour
     {
         if (!CanAfford(foodCost, woodCost, stoneCost, goldCost))
         {
-    return false;
+            return false;
         }
 
-     food -= foodCost;
-   wood -= woodCost;
+        food -= foodCost;
+        wood -= woodCost;
         stone -= stoneCost;
- gold -= goldCost;
+        gold -= goldCost;
 
-     NotifyResourcesChanged();
-   return true;
+        NotifyResourcesChanged();
+        return true;
     }
 
     /// <summary>
     /// Add resources
     /// </summary>
- public void AddResources(int foodAmount, int woodAmount, int stoneAmount, int goldAmount)
+    public void AddResources(int foodAmount, int woodAmount, int stoneAmount, int goldAmount)
     {
-    food += foodAmount;
+        food += foodAmount;
         wood += woodAmount;
-     stone += stoneAmount;
+        stone += stoneAmount;
         gold += goldAmount;
 
         NotifyResourcesChanged();
     }
 
     /// <summary>
- /// Increase max energy capacity
-/// </summary>
+    /// Increase max energy capacity
+    /// </summary>
     public void IncreaseMaxEnergy(int amount)
     {
-      maxEnergy += amount;
+        maxEnergy += amount;
         NotifyEnergyChanged();
         Debug.Log($"Max energy increased by {amount}. New max: {maxEnergy}");
     }
@@ -105,9 +105,9 @@ public class ResourceManager : MonoBehaviour
     public void DecreaseMaxEnergy(int amount)
     {
         maxEnergy = Mathf.Max(0, maxEnergy - amount);
-     currentEnergy = Mathf.Min(currentEnergy, maxEnergy);
-    NotifyEnergyChanged();
-      Debug.Log($"Max energy decreased by {amount}. New max: {maxEnergy}");
+        currentEnergy = Mathf.Min(currentEnergy, maxEnergy);
+        NotifyEnergyChanged();
+        Debug.Log($"Max energy decreased by {amount}. New max: {maxEnergy}");
     }
 
     /// <summary>
@@ -117,7 +117,7 @@ public class ResourceManager : MonoBehaviour
     {
         if (!HasAvailableEnergy(amount))
         {
-        return false;
+            return false;
         }
 
         currentEnergy += amount;
@@ -125,12 +125,12 @@ public class ResourceManager : MonoBehaviour
         return true;
     }
 
- /// <summary>
+    /// <summary>
     /// Release energy when a building is destroyed
     /// </summary>
     public void ReleaseEnergy(int amount)
     {
-   currentEnergy = Mathf.Max(0, currentEnergy - amount);
+        currentEnergy = Mathf.Max(0, currentEnergy - amount);
         NotifyEnergyChanged();
     }
 
@@ -141,6 +141,6 @@ public class ResourceManager : MonoBehaviour
 
     private void NotifyEnergyChanged()
     {
-   OnEnergyChanged?.Invoke(currentEnergy, maxEnergy);
+        OnEnergyChanged?.Invoke(currentEnergy, maxEnergy);
     }
 }

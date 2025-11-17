@@ -14,7 +14,7 @@ public class Product : ScriptableObject
     [Header("Product Type")]
     [Tooltip("Is this product a building that needs to be placed?")]
     [SerializeField] private bool isBuilding = false;
-  
+
     [Tooltip("Type of building (only for buildings)")]
     [SerializeField] private BuildingType buildingType = BuildingType.None;
 
@@ -31,7 +31,7 @@ public class Product : ScriptableObject
     [Header("Energy Settings (Buildings Only)")]
     [Tooltip("Energy consumed when building is active")]
     [SerializeField] private int energyCost = 0;
-    
+
     [Tooltip("Energy provided by this building (e.g., power plants)")]
     [SerializeField] private int energyProduction = 0;
 

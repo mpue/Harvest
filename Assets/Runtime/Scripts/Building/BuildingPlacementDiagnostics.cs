@@ -13,7 +13,7 @@ public class BuildingPlacementDiagnostics : MonoBehaviour
 
     [Header("References to Check")]
     [SerializeField] private BuildingPlacement buildingPlacement;
- [SerializeField] private BuildingPlacementUI buildingPlacementUI;
+    [SerializeField] private BuildingPlacementUI buildingPlacementUI;
     [SerializeField] private ProductionComponent productionComponent;
     [SerializeField] private ResourceManager resourceManager;
     [SerializeField] private GameObject placementPanel;
@@ -28,16 +28,16 @@ public class BuildingPlacementDiagnostics : MonoBehaviour
     private bool lastIsPlacing = false;
 
     void Start()
-{
+    {
         if (autoFind)
-  {
-    FindComponents();
-  }
+        {
+            FindComponents();
+        }
 
-    LogDiagnostics("=== Initial Diagnostics ===");
+        LogDiagnostics("=== Initial Diagnostics ===");
     }
 
-  void Update()
+    void Update()
     {
         if (Time.time - lastUpdateTime >= updateInterval)
         {
@@ -46,73 +46,73 @@ public class BuildingPlacementDiagnostics : MonoBehaviour
         }
 
         // Detect state changes
-      if (buildingPlacement != null)
+        if (buildingPlacement != null)
         {
-        bool currentIsPlacing = buildingPlacement.IsPlacing;
-  if (currentIsPlacing != lastIsPlacing)
-   {
-          LogDiagnostics($"? IsPlacing changed: {lastIsPlacing} ? {currentIsPlacing}");
- lastIsPlacing = currentIsPlacing;
+            bool currentIsPlacing = buildingPlacement.IsPlacing;
+            if (currentIsPlacing != lastIsPlacing)
+            {
+                LogDiagnostics($"? IsPlacing changed: {lastIsPlacing} ? {currentIsPlacing}");
+                lastIsPlacing = currentIsPlacing;
 
-         if (currentIsPlacing)
-         {
-       CheckPlacementUIState();
+                if (currentIsPlacing)
+                {
+                    CheckPlacementUIState();
+                }
+            }
         }
-     }
-    }
     }
 
     void FindComponents()
     {
-      buildingPlacement = FindObjectOfType<BuildingPlacement>();
-    buildingPlacementUI = FindObjectOfType<BuildingPlacementUI>();
+        buildingPlacement = FindObjectOfType<BuildingPlacement>();
+        buildingPlacementUI = FindObjectOfType<BuildingPlacementUI>();
         productionComponent = FindObjectOfType<ProductionComponent>();
-   resourceManager = FindObjectOfType<ResourceManager>();
+        resourceManager = FindObjectOfType<ResourceManager>();
 
-   // Try to find placement panel
-      if (buildingPlacementUI != null)
-      {
+        // Try to find placement panel
+        if (buildingPlacementUI != null)
+        {
             // Use reflection to get private field
-         var field = typeof(BuildingPlacementUI).GetField("placementPanel", 
-           System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-     if (field != null)
- {
-      placementPanel = field.GetValue(buildingPlacementUI) as GameObject;
-   }
+            var field = typeof(BuildingPlacementUI).GetField("placementPanel",
+              System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null)
+            {
+                placementPanel = field.GetValue(buildingPlacementUI) as GameObject;
+            }
         }
 
-    LogDiagnostics("=== Auto-Find Complete ===");
+        LogDiagnostics("=== Auto-Find Complete ===");
     }
 
-  void UpdateDiagnostics()
+    void UpdateDiagnostics()
     {
         diagnosticInfo = "=== Building Placement Diagnostics ===\n\n";
 
         // Check BuildingPlacement
-      diagnosticInfo += "?? BUILDING PLACEMENT:\n";
+        diagnosticInfo += "?? BUILDING PLACEMENT:\n";
         if (buildingPlacement != null)
-      {
+        {
             diagnosticInfo += $"  ? Found: {buildingPlacement.gameObject.name}\n";
-      diagnosticInfo += $"  IsPlacing: {buildingPlacement.IsPlacing}\n";
-      diagnosticInfo += $"  CanPlace: {buildingPlacement.CanPlace}\n";
-     if (buildingPlacement.CurrentProduct != null)
+            diagnosticInfo += $"  IsPlacing: {buildingPlacement.IsPlacing}\n";
+            diagnosticInfo += $"  CanPlace: {buildingPlacement.CanPlace}\n";
+            if (buildingPlacement.CurrentProduct != null)
             {
-           diagnosticInfo += $"  Product: {buildingPlacement.CurrentProduct.ProductName}\n";
-      }
- else
-  {
-        diagnosticInfo += $"  Product: None\n";
- }
+                diagnosticInfo += $"  Product: {buildingPlacement.CurrentProduct.ProductName}\n";
+            }
+            else
+            {
+                diagnosticInfo += $"  Product: None\n";
+            }
         }
         else
-   {
+        {
             diagnosticInfo += "  ? NOT FOUND!\n";
-   }
+        }
 
         diagnosticInfo += "\n?? BUILDING PLACEMENT UI:\n";
-    if (buildingPlacementUI != null)
-    {
-          diagnosticInfo += $"  ? Found: {buildingPlacementUI.gameObject.name}\n";
+        if (buildingPlacementUI != null)
+        {
+            diagnosticInfo += $"  ? Found: {buildingPlacementUI.gameObject.name}\n";
             diagnosticInfo += $"  Enabled: {buildingPlacementUI.enabled}\n";
             diagnosticInfo += $"  GameObject Active: {buildingPlacementUI.gameObject.activeInHierarchy}\n";
         }
@@ -122,109 +122,109 @@ public class BuildingPlacementDiagnostics : MonoBehaviour
         }
 
         diagnosticInfo += "\n?? PLACEMENT PANEL:\n";
-  if (placementPanel != null)
+        if (placementPanel != null)
         {
-          diagnosticInfo += $"  ? Found: {placementPanel.name}\n";
+            diagnosticInfo += $"  ? Found: {placementPanel.name}\n";
             diagnosticInfo += $"  Active: {placementPanel.activeSelf}\n";
             diagnosticInfo += $"  In Hierarchy: {placementPanel.activeInHierarchy}\n";
- diagnosticInfo += $"  Parent: {(placementPanel.transform.parent != null ? placementPanel.transform.parent.name : "None")}\n";
+            diagnosticInfo += $"  Parent: {(placementPanel.transform.parent != null ? placementPanel.transform.parent.name : "None")}\n";
         }
         else
-    {
+        {
             diagnosticInfo += "  ? NOT FOUND!\n";
         }
 
-diagnosticInfo += "\n?? PRODUCTION COMPONENT:\n";
+        diagnosticInfo += "\n?? PRODUCTION COMPONENT:\n";
         if (productionComponent != null)
-  {
-        diagnosticInfo += $"  ? Found: {productionComponent.gameObject.name}\n";
-            diagnosticInfo += $"  IsProducing: {productionComponent.IsProducing}\n";
-        diagnosticInfo += $"  Queue Count: {productionComponent.QueueCount}\n";
-   if (productionComponent.CurrentProduct != null)
-            {
-      diagnosticInfo += $"  Current Product: {productionComponent.CurrentProduct.ProductName}\n";
-                diagnosticInfo += $"  Progress: {(productionComponent.CurrentProductionProgress * 100f):F1}%\n";
-       }
-}
-   else
-   {
-            diagnosticInfo += "  ? NOT FOUND (optional)\n";
-        }
-
-    diagnosticInfo += "\n?? RESOURCE MANAGER:\n";
-        if (resourceManager != null)
         {
-            diagnosticInfo += $"  ? Found\n";
-        diagnosticInfo += $"  Energy: {resourceManager.CurrentEnergy}/{resourceManager.MaxEnergy}\n";
-    diagnosticInfo += $"  Available: {resourceManager.AvailableEnergy}\n";
+            diagnosticInfo += $"  ? Found: {productionComponent.gameObject.name}\n";
+            diagnosticInfo += $"  IsProducing: {productionComponent.IsProducing}\n";
+            diagnosticInfo += $"  Queue Count: {productionComponent.QueueCount}\n";
+            if (productionComponent.CurrentProduct != null)
+            {
+                diagnosticInfo += $"  Current Product: {productionComponent.CurrentProduct.ProductName}\n";
+                diagnosticInfo += $"  Progress: {(productionComponent.CurrentProductionProgress * 100f):F1}%\n";
+            }
         }
         else
         {
-  diagnosticInfo += "  ? NOT FOUND (optional)\n";
+            diagnosticInfo += "  ? NOT FOUND (optional)\n";
+        }
+
+        diagnosticInfo += "\n?? RESOURCE MANAGER:\n";
+        if (resourceManager != null)
+        {
+            diagnosticInfo += $"  ? Found\n";
+            diagnosticInfo += $"  Energy: {resourceManager.CurrentEnergy}/{resourceManager.MaxEnergy}\n";
+            diagnosticInfo += $"  Available: {resourceManager.AvailableEnergy}\n";
+        }
+        else
+        {
+            diagnosticInfo += "  ? NOT FOUND (optional)\n";
         }
 
         diagnosticInfo += "\n?? CANVAS:\n";
         Canvas canvas = FindObjectOfType<Canvas>();
         if (canvas != null)
-     {
-    diagnosticInfo += $"  ? Found: {canvas.gameObject.name}\n";
+        {
+            diagnosticInfo += $"  ? Found: {canvas.gameObject.name}\n";
             diagnosticInfo += $"  Render Mode: {canvas.renderMode}\n";
             diagnosticInfo += $"  Active: {canvas.gameObject.activeInHierarchy}\n";
- }
- else
+        }
+        else
         {
-        diagnosticInfo += "  ? NOT FOUND!\n";
+            diagnosticInfo += "  ? NOT FOUND!\n";
         }
     }
 
     void CheckPlacementUIState()
     {
-  string info = "\n? PLACEMENT STARTED - Checking UI State:\n";
-        
+        string info = "\n? PLACEMENT STARTED - Checking UI State:\n";
+
         if (buildingPlacementUI == null)
-     {
-        info += "  ? BuildingPlacementUI is NULL!\n";
+        {
+            info += "  ? BuildingPlacementUI is NULL!\n";
             info += "  ? Create BuildingPlacementUI component\n";
         }
         else
         {
-   info += $"  ? BuildingPlacementUI exists on: {buildingPlacementUI.gameObject.name}\n";
-      
-          if (!buildingPlacementUI.enabled)
-     {
-           info += "  ? BuildingPlacementUI is DISABLED!\n";
-           info += "  ? Enable the component\n";
+            info += $"  ? BuildingPlacementUI exists on: {buildingPlacementUI.gameObject.name}\n";
+
+            if (!buildingPlacementUI.enabled)
+            {
+                info += "  ? BuildingPlacementUI is DISABLED!\n";
+                info += "  ? Enable the component\n";
             }
-            
-         if (!buildingPlacementUI.gameObject.activeInHierarchy)
-        {
-        info += "  ? BuildingPlacementUI GameObject is INACTIVE!\n";
-           info += "  ? Activate the GameObject\n";
-    }
+
+            if (!buildingPlacementUI.gameObject.activeInHierarchy)
+            {
+                info += "  ? BuildingPlacementUI GameObject is INACTIVE!\n";
+                info += "  ? Activate the GameObject\n";
+            }
         }
 
         if (placementPanel == null)
         {
- info += "  ? PlacementPanel is NULL!\n";
+            info += "  ? PlacementPanel is NULL!\n";
             info += "  ? Assign placementPanel in BuildingPlacementUI\n";
         }
         else
- {
-info += $"  ? PlacementPanel exists: {placementPanel.name}\n";
-         info += $"  Active: {placementPanel.activeSelf}\n";
-        
-          if (!placementPanel.activeSelf)
-  {
-  info += "  ? Panel is inactive (will be activated by BuildingPlacementUI)\n";
-        }
+        {
+            info += $"  ? PlacementPanel exists: {placementPanel.name}\n";
+            info += $"  Active: {placementPanel.activeSelf}\n";
+
+            if (!placementPanel.activeSelf)
+            {
+                info += "  ? Panel is inactive (will be activated by BuildingPlacementUI)\n";
+            }
         }
 
-  LogDiagnostics(info);
+        LogDiagnostics(info);
     }
 
     void LogDiagnostics(string message)
     {
-      if (logToConsole)
+        if (logToConsole)
         {
             Debug.Log($"[Building Placement Diagnostics]\n{message}\n{diagnosticInfo}");
         }
@@ -235,27 +235,27 @@ info += $"  ? PlacementPanel exists: {placementPanel.name}\n";
         if (!showOnScreenDebug) return;
 
         GUIStyle style = new GUIStyle(GUI.skin.box);
- style.fontSize = 11;
-    style.alignment = TextAnchor.UpperLeft;
+        style.fontSize = 11;
+        style.alignment = TextAnchor.UpperLeft;
         style.normal.textColor = Color.white;
         style.wordWrap = false;
 
-     // Calculate box size based on content
+        // Calculate box size based on content
         float width = 450;
-   float height = 400;
+        float height = 400;
 
         GUI.Box(new Rect(10, 10, width, height), diagnosticInfo, style);
 
-   // Instructions
+        // Instructions
         GUIStyle instructionStyle = new GUIStyle(GUI.skin.box);
         instructionStyle.fontSize = 10;
         instructionStyle.alignment = TextAnchor.UpperLeft;
-      instructionStyle.normal.textColor = Color.yellow;
+        instructionStyle.normal.textColor = Color.yellow;
 
-string instructions = "Press R to Refresh | Press L to Log to Console";
+        string instructions = "Press R to Refresh | Press L to Log to Console";
         GUI.Box(new Rect(10, height + 20, width, 40), instructions, instructionStyle);
 
-  // Handle input
+        // Handle input
         if (Input.GetKeyDown(KeyCode.R))
         {
             FindComponents();
@@ -263,8 +263,8 @@ string instructions = "Press R to Refresh | Press L to Log to Console";
         }
 
         if (Input.GetKeyDown(KeyCode.L))
-  {
-   LogDiagnostics("=== Manual Log Request ===");
+        {
+            LogDiagnostics("=== Manual Log Request ===");
         }
     }
 
@@ -272,7 +272,7 @@ string instructions = "Press R to Refresh | Press L to Log to Console";
     public void ForceFindComponents()
     {
         FindComponents();
-     UpdateDiagnostics();
+        UpdateDiagnostics();
         LogDiagnostics("=== Force Find Complete ===");
     }
 
@@ -292,35 +292,35 @@ string instructions = "Press R to Refresh | Press L to Log to Console";
         if (buildingPlacement == null || buildingPlacementUI == null)
         {
             FindComponents();
-          fixes += "? Re-scanned for components\n";
-    }
-
-        // Enable BuildingPlacementUI if disabled
-   if (buildingPlacementUI != null && !buildingPlacementUI.enabled)
-        {
-            buildingPlacementUI.enabled = true;
-        fixes += "? Enabled BuildingPlacementUI component\n";
+            fixes += "? Re-scanned for components\n";
         }
 
-  // Activate GameObject if inactive
-if (buildingPlacementUI != null && !buildingPlacementUI.gameObject.activeInHierarchy)
+        // Enable BuildingPlacementUI if disabled
+        if (buildingPlacementUI != null && !buildingPlacementUI.enabled)
         {
-    buildingPlacementUI.gameObject.SetActive(true);
-    fixes += "? Activated BuildingPlacementUI GameObject\n";
+            buildingPlacementUI.enabled = true;
+            fixes += "? Enabled BuildingPlacementUI component\n";
+        }
+
+        // Activate GameObject if inactive
+        if (buildingPlacementUI != null && !buildingPlacementUI.gameObject.activeInHierarchy)
+        {
+            buildingPlacementUI.gameObject.SetActive(true);
+            fixes += "? Activated BuildingPlacementUI GameObject\n";
         }
 
         // Try to find and assign placement panel
-     if (placementPanel == null)
+        if (placementPanel == null)
         {
-    placementPanel = GameObject.Find("BuildingPlacementPanel");
+            placementPanel = GameObject.Find("BuildingPlacementPanel");
             if (placementPanel != null)
-    {
-    fixes += "? Found and assigned BuildingPlacementPanel\n";
-   }
-    else
-       {
-        fixes += "? Could not find BuildingPlacementPanel\n";
-          fixes += "   ? Use Tools > RTS > Setup Building Placement UI\n";
+            {
+                fixes += "? Found and assigned BuildingPlacementPanel\n";
+            }
+            else
+            {
+                fixes += "? Could not find BuildingPlacementPanel\n";
+                fixes += "   ? Use Tools > RTS > Setup Building Placement UI\n";
             }
         }
 

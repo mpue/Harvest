@@ -11,19 +11,19 @@ public class AudioManager : MonoBehaviour
     private static AudioManager instance;
     public static AudioManager Instance
     {
-  get
+        get
         {
-   if (instance == null)
+            if (instance == null)
             {
-     instance = FindObjectOfType<AudioManager>();
-        if (instance == null)
-           {
-          GameObject obj = new GameObject("AudioManager");
-   instance = obj.AddComponent<AudioManager>();
-    DontDestroyOnLoad(obj);
-        }
+                instance = FindObjectOfType<AudioManager>();
+                if (instance == null)
+                {
+                    GameObject obj = new GameObject("AudioManager");
+                    instance = obj.AddComponent<AudioManager>();
+                    DontDestroyOnLoad(obj);
+                }
             }
-       return instance;
+            return instance;
         }
     }
 
@@ -45,7 +45,7 @@ public class AudioManager : MonoBehaviour
 
     [Header("Volume Settings")]
     [SerializeField, Range(0f, 1f)] private float masterVolume = 1f;
- [SerializeField, Range(0f, 1f)] private float musicVolume = 1f;
+    [SerializeField, Range(0f, 1f)] private float musicVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float uiVolume = 1f;
 
@@ -54,9 +54,9 @@ public class AudioManager : MonoBehaviour
     {
         Master,
         Music,
-  SFX,
+        SFX,
         UI,
-   UnitSounds,
+        UnitSounds,
         WeaponSounds,
         Ambient
     }
@@ -66,19 +66,19 @@ public class AudioManager : MonoBehaviour
         if (instance != null && instance != this)
         {
             Destroy(gameObject);
-  return;
-  }
-
-        instance = this;
-     DontDestroyOnLoad(gameObject);
-
-        // Set default mixer group if not assigned
-      if (defaultMixerGroup == null && sfxGroup != null)
- {
-         defaultMixerGroup = sfxGroup;
+            return;
         }
 
-     ApplyVolumeSettings();
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        // Set default mixer group if not assigned
+        if (defaultMixerGroup == null && sfxGroup != null)
+        {
+            defaultMixerGroup = sfxGroup;
+        }
+
+        ApplyVolumeSettings();
     }
 
     /// <summary>
@@ -88,22 +88,22 @@ public class AudioManager : MonoBehaviour
     {
         switch (category)
         {
-          case AudioCategory.Master:
-     return masterGroup;
+            case AudioCategory.Master:
+                return masterGroup;
             case AudioCategory.Music:
                 return musicGroup;
-  case AudioCategory.SFX:
-     return sfxGroup;
+            case AudioCategory.SFX:
+                return sfxGroup;
             case AudioCategory.UI:
-       return uiGroup;
-     case AudioCategory.UnitSounds:
+                return uiGroup;
+            case AudioCategory.UnitSounds:
                 return unitSoundsGroup != null ? unitSoundsGroup : sfxGroup;
-    case AudioCategory.WeaponSounds:
-     return weaponSoundsGroup != null ? weaponSoundsGroup : sfxGroup;
-       case AudioCategory.Ambient:
-       return ambientGroup != null ? ambientGroup : sfxGroup;
-default:
-              return defaultMixerGroup;
+            case AudioCategory.WeaponSounds:
+                return weaponSoundsGroup != null ? weaponSoundsGroup : sfxGroup;
+            case AudioCategory.Ambient:
+                return ambientGroup != null ? ambientGroup : sfxGroup;
+            default:
+                return defaultMixerGroup;
         }
     }
 
@@ -116,7 +116,7 @@ default:
     }
 
     /// <summary>
-  /// Setup an AudioSource with mixer group
+    /// Setup an AudioSource with mixer group
     /// </summary>
     public void SetupAudioSource(AudioSource audioSource, AudioCategory category = AudioCategory.SFX)
     {
@@ -125,7 +125,7 @@ default:
         AudioMixerGroup mixerGroup = GetMixerGroup(category);
         if (mixerGroup != null)
         {
-     audioSource.outputAudioMixerGroup = mixerGroup;
+            audioSource.outputAudioMixerGroup = mixerGroup;
         }
     }
 
@@ -136,8 +136,8 @@ default:
     {
         if (target == null) return null;
 
-      AudioSource audioSource = target.AddComponent<AudioSource>();
-      audioSource.playOnAwake = playOnAwake;
+        AudioSource audioSource = target.AddComponent<AudioSource>();
+        audioSource.playOnAwake = playOnAwake;
         SetupAudioSource(audioSource, category);
 
         return audioSource;
@@ -151,13 +151,13 @@ default:
         AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
         int count = 0;
 
-  foreach (AudioSource audioSource in allAudioSources)
+        foreach (AudioSource audioSource in allAudioSources)
         {
-       if (audioSource.outputAudioMixerGroup == null)
-       {
-           SetupAudioSource(audioSource, category);
-            count++;
-      }
+            if (audioSource.outputAudioMixerGroup == null)
+            {
+                SetupAudioSource(audioSource, category);
+                count++;
+            }
         }
 
         Debug.Log($"AudioManager: Assigned mixer groups to {count} AudioSources");
@@ -169,18 +169,18 @@ default:
     public void AssignSpecificMixerGroupToAll(AudioMixerGroup mixerGroup)
     {
         if (mixerGroup == null)
- {
-        Debug.LogWarning("AudioManager: Cannot assign null mixer group");
- return;
-    }
+        {
+            Debug.LogWarning("AudioManager: Cannot assign null mixer group");
+            return;
+        }
 
- AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
+        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
         int count = 0;
 
         foreach (AudioSource audioSource in allAudioSources)
-      {
+        {
             audioSource.outputAudioMixerGroup = mixerGroup;
-  count++;
+            count++;
         }
 
         Debug.Log($"AudioManager: Assigned '{mixerGroup.name}' to {count} AudioSources");
@@ -191,15 +191,15 @@ default:
     /// </summary>
     public List<AudioSource> FindAudioSourcesWithoutMixerGroup()
     {
- List<AudioSource> sourcesWithoutGroup = new List<AudioSource>();
- AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
+        List<AudioSource> sourcesWithoutGroup = new List<AudioSource>();
+        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
 
-     foreach (AudioSource audioSource in allAudioSources)
-    {
- if (audioSource.outputAudioMixerGroup == null)
+        foreach (AudioSource audioSource in allAudioSources)
+        {
+            if (audioSource.outputAudioMixerGroup == null)
             {
                 sourcesWithoutGroup.Add(audioSource);
-         }
+            }
         }
 
         return sourcesWithoutGroup;
@@ -213,19 +213,19 @@ default:
         if (mainMixer == null) return;
 
         mainMixer.SetFloat("MasterVolume", Mathf.Log10(masterVolume) * 20);
-  mainMixer.SetFloat("MusicVolume", Mathf.Log10(musicVolume) * 20);
+        mainMixer.SetFloat("MusicVolume", Mathf.Log10(musicVolume) * 20);
         mainMixer.SetFloat("SFXVolume", Mathf.Log10(sfxVolume) * 20);
-   mainMixer.SetFloat("UIVolume", Mathf.Log10(uiVolume) * 20);
+        mainMixer.SetFloat("UIVolume", Mathf.Log10(uiVolume) * 20);
     }
 
     /// <summary>
     /// Set master volume
     /// </summary>
-  public void SetMasterVolume(float volume)
+    public void SetMasterVolume(float volume)
     {
- masterVolume = Mathf.Clamp01(volume);
+        masterVolume = Mathf.Clamp01(volume);
         if (mainMixer != null)
-      {
+        {
             mainMixer.SetFloat("MasterVolume", Mathf.Log10(masterVolume) * 20);
         }
     }
@@ -237,20 +237,20 @@ default:
     {
         musicVolume = Mathf.Clamp01(volume);
         if (mainMixer != null)
-   {
-        mainMixer.SetFloat("MusicVolume", Mathf.Log10(musicVolume) * 20);
+        {
+            mainMixer.SetFloat("MusicVolume", Mathf.Log10(musicVolume) * 20);
         }
     }
 
     /// <summary>
     /// Set SFX volume
     /// </summary>
-public void SetSFXVolume(float volume)
+    public void SetSFXVolume(float volume)
     {
         sfxVolume = Mathf.Clamp01(volume);
         if (mainMixer != null)
         {
-        mainMixer.SetFloat("SFXVolume", Mathf.Log10(sfxVolume) * 20);
+            mainMixer.SetFloat("SFXVolume", Mathf.Log10(sfxVolume) * 20);
         }
     }
 
@@ -260,21 +260,21 @@ public void SetSFXVolume(float volume)
     public void SetUIVolume(float volume)
     {
         uiVolume = Mathf.Clamp01(volume);
-  if (mainMixer != null)
-   {
-  mainMixer.SetFloat("UIVolume", Mathf.Log10(uiVolume) * 20);
+        if (mainMixer != null)
+        {
+            mainMixer.SetFloat("UIVolume", Mathf.Log10(uiVolume) * 20);
         }
     }
 
-/// <summary>
+    /// <summary>
     /// Play a one-shot sound with automatic mixer group assignment
     /// </summary>
     public void PlayOneShot(AudioClip clip, Vector3 position, AudioCategory category = AudioCategory.SFX, float volume = 1f)
     {
- if (clip == null) return;
+        if (clip == null) return;
 
-     GameObject tempObj = new GameObject("TempAudio");
- tempObj.transform.position = position;
+        GameObject tempObj = new GameObject("TempAudio");
+        tempObj.transform.position = position;
 
         AudioSource audioSource = CreateAudioSource(tempObj, category);
         audioSource.clip = clip;
@@ -284,19 +284,19 @@ public void SetSFXVolume(float volume)
         Destroy(tempObj, clip.length + 0.1f);
     }
 
- /// <summary>
+    /// <summary>
     /// Play a 2D one-shot sound with automatic mixer group assignment
     /// </summary>
     public void PlayOneShot2D(AudioClip clip, AudioCategory category = AudioCategory.UI, float volume = 1f)
     {
         if (clip == null) return;
 
-  GameObject tempObj = new GameObject("TempAudio2D");
-     AudioSource audioSource = CreateAudioSource(tempObj, category);
-    audioSource.spatialBlend = 0f; // 2D sound
+        GameObject tempObj = new GameObject("TempAudio2D");
+        AudioSource audioSource = CreateAudioSource(tempObj, category);
+        audioSource.spatialBlend = 0f; // 2D sound
         audioSource.clip = clip;
         audioSource.volume = volume;
-   audioSource.Play();
+        audioSource.Play();
 
         Destroy(tempObj, clip.length + 0.1f);
     }

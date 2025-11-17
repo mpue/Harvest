@@ -42,10 +42,10 @@ public class BaseUnit : MonoBehaviour
 
         // Get ProductionComponent if available
         productionComponent = GetComponent<ProductionComponent>();
-  
+
         // Get TeamComponent if available
         teamComponent = GetComponent<TeamComponent>();
-        
+
         // Get or add TeamVisualIndicator if unit has a team
         if (teamComponent != null)
         {
@@ -180,7 +180,7 @@ public class BaseUnit : MonoBehaviour
         Debug.Log($"{unitName} deselected");
 
         // Don't close production panel automatically
-      // Panel should only close via Close button or when selecting a different production unit
+        // Panel should only close via Close button or when selecting a different production unit
         // This is typical RTS behavior (StarCraft, Age of Empires, etc.)
     }
 

@@ -18,7 +18,7 @@ public class BuildingPlacementDebug : MonoBehaviour
     [Header("Debug Colors")]
     [SerializeField] private Color rayHitColor = Color.green;
     [SerializeField] private Color rayMissColor = Color.red;
-[SerializeField] private float hitPointSize = 0.5f;
+    [SerializeField] private float hitPointSize = 0.5f;
 
     private Vector3 lastHitPoint;
     private bool lastRaycastHit = false;
@@ -27,42 +27,42 @@ public class BuildingPlacementDebug : MonoBehaviour
     {
         if (buildingPlacement == null)
         {
-        buildingPlacement = GetComponent<BuildingPlacement>();
+            buildingPlacement = GetComponent<BuildingPlacement>();
         }
 
         if (targetCamera == null)
- {
+        {
             targetCamera = Camera.main;
- if (targetCamera == null)
-      {
-      targetCamera = FindObjectOfType<Camera>();
-         }
-   }
+            if (targetCamera == null)
+            {
+                targetCamera = FindObjectOfType<Camera>();
+            }
+        }
     }
 
     void Update()
-{
-      if (!showRaycastDebug || targetCamera == null) return;
+    {
+        if (!showRaycastDebug || targetCamera == null) return;
 
         // Perform raycast from mouse position
         Ray ray = targetCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-lastRaycastHit = Physics.Raycast(ray, out hit, debugRayLength, groundLayer);
-        
+        lastRaycastHit = Physics.Raycast(ray, out hit, debugRayLength, groundLayer);
+
         if (lastRaycastHit)
         {
             lastHitPoint = hit.point;
-  
+
             if (showGroundHitPoint)
             {
-            Debug.DrawLine(ray.origin, hit.point, rayHitColor);
- Debug.DrawLine(hit.point, hit.point + Vector3.up * 2f, Color.yellow);
-   }
+                Debug.DrawLine(ray.origin, hit.point, rayHitColor);
+                Debug.DrawLine(hit.point, hit.point + Vector3.up * 2f, Color.yellow);
+            }
         }
-     else
-   {
-Debug.DrawRay(ray.origin, ray.direction * debugRayLength, rayMissColor);
+        else
+        {
+            Debug.DrawRay(ray.origin, ray.direction * debugRayLength, rayMissColor);
         }
     }
 
@@ -71,17 +71,17 @@ Debug.DrawRay(ray.origin, ray.direction * debugRayLength, rayMissColor);
         if (!showRaycastDebug) return;
 
         GUIStyle style = new GUIStyle(GUI.skin.box);
-   style.fontSize = 12;
+        style.fontSize = 12;
         style.alignment = TextAnchor.UpperLeft;
 
         string debugInfo = "=== Building Placement Debug ===\n";
         debugInfo += $"Camera: {(targetCamera != null ? targetCamera.name : "NULL")}\n";
         debugInfo += $"Raycast Hit: {lastRaycastHit}\n";
-        
+
         if (lastRaycastHit)
         {
-          debugInfo += $"Hit Point: {lastHitPoint}\n";
-        debugInfo += $"Ground Layer: {groundLayer.value}\n";
+            debugInfo += $"Hit Point: {lastHitPoint}\n";
+            debugInfo += $"Ground Layer: {groundLayer.value}\n";
         }
         else
         {
@@ -96,53 +96,53 @@ Debug.DrawRay(ray.origin, ray.direction * debugRayLength, rayMissColor);
         {
             debugInfo += $"Is Placing: {buildingPlacement.IsPlacing}\n";
             if (buildingPlacement.CurrentProduct != null)
-{
-        debugInfo += $"Product: {buildingPlacement.CurrentProduct.ProductName}\n";
-       }
+            {
+                debugInfo += $"Product: {buildingPlacement.CurrentProduct.ProductName}\n";
+            }
         }
 
-   GUI.Box(new Rect(10, 10, 300, 200), debugInfo, style);
+        GUI.Box(new Rect(10, 10, 300, 200), debugInfo, style);
     }
 
     void OnDrawGizmos()
     {
         if (showGroundHitPoint && lastRaycastHit)
-  {
+        {
             Gizmos.color = rayHitColor;
-  Gizmos.DrawWireSphere(lastHitPoint, hitPointSize);
-   Gizmos.DrawLine(lastHitPoint, lastHitPoint + Vector3.up * 2f);
+            Gizmos.DrawWireSphere(lastHitPoint, hitPointSize);
+            Gizmos.DrawLine(lastHitPoint, lastHitPoint + Vector3.up * 2f);
         }
     }
 
     /// <summary>
-  /// Test building placement with a sample product
+    /// Test building placement with a sample product
     /// </summary>
     [ContextMenu("Test Placement (requires Product in scene)")]
     public void TestPlacement()
     {
         if (buildingPlacement == null)
         {
-     Debug.LogError("BuildingPlacement not found!");
+            Debug.LogError("BuildingPlacement not found!");
             return;
-    }
+        }
 
         // Try to find a product to test with
         Product testProduct = FindObjectOfType<Product>();
         if (testProduct == null)
-    {
+        {
             Debug.LogWarning("No Product found in scene. Create a Product asset first.");
-    return;
+            return;
         }
 
-     ResourceManager resourceManager = FindObjectOfType<ResourceManager>();
+        ResourceManager resourceManager = FindObjectOfType<ResourceManager>();
         if (resourceManager == null)
         {
-   Debug.LogWarning("No ResourceManager found. Creating temporary one.");
-         GameObject rmObj = new GameObject("TempResourceManager");
-  resourceManager = rmObj.AddComponent<ResourceManager>();
+            Debug.LogWarning("No ResourceManager found. Creating temporary one.");
+            GameObject rmObj = new GameObject("TempResourceManager");
+            resourceManager = rmObj.AddComponent<ResourceManager>();
         }
 
-      buildingPlacement.StartPlacement(testProduct, resourceManager);
+        buildingPlacement.StartPlacement(testProduct, resourceManager);
         Debug.Log("Started test placement. Move mouse to see raycast.");
     }
 
@@ -156,19 +156,19 @@ Debug.DrawRay(ray.origin, ray.direction * debugRayLength, rayMissColor);
         ground.name = "TestGround";
         ground.transform.position = Vector3.zero;
         ground.transform.localScale = new Vector3(10, 1, 10);
-  
+
         // Set to ground layer if it exists
         int groundLayerIndex = LayerMask.NameToLayer("Ground");
-if (groundLayerIndex != -1)
-     {
-            ground.layer = groundLayerIndex;
-     Debug.Log("Ground created on 'Ground' layer");
-        }
-  else
+        if (groundLayerIndex != -1)
         {
-  Debug.Log("Ground created on Default layer. Consider creating a 'Ground' layer.");
+            ground.layer = groundLayerIndex;
+            Debug.Log("Ground created on 'Ground' layer");
+        }
+        else
+        {
+            Debug.Log("Ground created on Default layer. Consider creating a 'Ground' layer.");
         }
 
- Debug.Log("Test ground created successfully!");
+        Debug.Log("Test ground created successfully!");
     }
 }

@@ -1961,7 +1961,7 @@ public class UnitEditorWindow : EditorWindow
         EditorGUIUtility.PingObject(audioManagerObj);
 
         EditorUtility.DisplayDialog("AudioManager Created",
- "AudioManager has been created. Please assign AudioMixer and MixerGroups in the Inspector.",
+         "AudioManager has been created. Please assign AudioMixer and MixerGroups in the Inspector.",
        "OK");
     }
 }

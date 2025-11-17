@@ -27,6 +27,15 @@ public class BuildingPlacement : MonoBehaviour
     [Header("UI Feedback")]
     [SerializeField] private bool showPlacementUI = true;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip placementStartSound;
+    [SerializeField] private AudioClip placementSuccessSound;
+    [SerializeField] private AudioClip placementCancelSound;
+    [SerializeField] private AudioClip placementInvalidSound;
+    [SerializeField] private AudioClip rotationSound;
+    [SerializeField, Range(0f, 1f)] private float soundVolume = 1f;
+    [SerializeField] private bool playRotationSound = false;
+
     private GameObject currentBuildingPreview;
     private Product currentProduct;
     private ResourceManager resourceManager;
@@ -36,6 +45,8 @@ public class BuildingPlacement : MonoBehaviour
     private Renderer[] previewRenderers;
     private Material[][] originalMaterials;
     private Material[] previewMaterials;
+    private float lastRotationSoundTime = 0f;
+    private float rotationSoundCooldown = 0.1f;
 
     public bool IsPlacing => isPlacing;
     public Product CurrentProduct => currentProduct;
@@ -82,6 +93,7 @@ public class BuildingPlacement : MonoBehaviour
                 else
                 {
                     Debug.LogWarning("Cannot place building here!");
+                    PlaySound(placementInvalidSound);
                 }
             }
 
@@ -156,6 +168,10 @@ public class BuildingPlacement : MonoBehaviour
         UpdatePreviewMaterial(false);
 
         isPlacing = true;
+
+        // Play start sound
+        PlaySound(placementStartSound);
+
         Debug.Log($"Started placing {product.ProductName}. Use mouse to position, Q/E to rotate, Left Click to place, Right Click to cancel.");
     }
 
@@ -201,20 +217,30 @@ public class BuildingPlacement : MonoBehaviour
     private void HandleRotation()
     {
         float rotationInput = 0f;
+        bool rotated = false;
 
         if (Input.GetKey(KeyCode.Q))
         {
             rotationInput = -rotationSpeed * Time.deltaTime;
+            rotated = true;
         }
         else if (Input.GetKey(KeyCode.E))
         {
             rotationInput = rotationSpeed * Time.deltaTime;
+            rotated = true;
         }
 
         if (rotationInput != 0f)
         {
             currentRotation += rotationInput;
             currentBuildingPreview.transform.rotation = Quaternion.Euler(0, currentRotation, 0);
+
+            // Play rotation sound (with cooldown to avoid spam)
+            if (playRotationSound && Time.time - lastRotationSoundTime > rotationSoundCooldown)
+            {
+                PlaySound(rotationSound, 0.3f); // Quieter rotation sound
+                lastRotationSoundTime = Time.time;
+            }
         }
     }
 
@@ -264,6 +290,7 @@ public class BuildingPlacement : MonoBehaviour
             if (resourceManager != null && !resourceManager.ConsumeEnergy(currentProduct.EnergyCost))
             {
                 Debug.LogWarning("Not enough energy to place building");
+                PlaySound(placementInvalidSound);
                 return;
             }
         }
@@ -283,6 +310,9 @@ public class BuildingPlacement : MonoBehaviour
         }
         buildingComp.Initialize(currentProduct, resourceManager);
 
+        // Play success sound
+        PlaySound(placementSuccessSound);
+
         Debug.Log($"? Placed {currentProduct.ProductName} at {building.transform.position}");
 
         // Cleanup and exit placement mode
@@ -299,6 +329,12 @@ public class BuildingPlacement : MonoBehaviour
             Destroy(currentBuildingPreview);
         }
 
+        // Play cancel sound only if we were actually placing
+        if (isPlacing)
+        {
+            PlaySound(placementCancelSound);
+        }
+
         currentBuildingPreview = null;
         currentProduct = null;
         resourceManager = null;
@@ -309,6 +345,26 @@ public class BuildingPlacement : MonoBehaviour
         previewMaterials = null;
 
         Debug.Log("Placement cancelled");
+    }
+
+    /// <summary>
+    /// Play a placement sound
+    /// </summary>
+    private void PlaySound(AudioClip clip, float volumeMultiplier = 1f)
+    {
+        if (clip == null) return;
+
+        float finalVolume = soundVolume * volumeMultiplier;
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayOneShot2D(clip, AudioManager.AudioCategory.UI, finalVolume);
+        }
+        else
+        {
+            // Fallback if no AudioManager exists
+            AudioSource.PlayClipAtPoint(clip, targetCamera.transform.position, finalVolume);
+        }
     }
 
     /// <summary>

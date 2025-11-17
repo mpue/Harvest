@@ -21,7 +21,7 @@ public class ProductionSlot : MonoBehaviour
     [SerializeField] private Image progressGlow;
     [SerializeField] private Image overlayDimmer;
     [SerializeField] private GameObject productionIndicator;
-    
+
     [Header("Progress Animation")]
     [SerializeField] private bool animateProgress = true;
     [SerializeField] private float glowPulseSpeed = 2f;
@@ -118,41 +118,41 @@ public class ProductionSlot : MonoBehaviour
     /// </summary>
     public void UpdateProgress(float progress)
     {
-currentProgress = Mathf.Clamp01(progress);
+        currentProgress = Mathf.Clamp01(progress);
         isProducing = currentProgress > 0f && currentProgress < 1f;
 
-      // Show/hide progress bar
+        // Show/hide progress bar
         if (progressBar != null)
         {
-     bool shouldShow = currentProgress > 0f;
-     progressBar.SetActive(shouldShow);
-            
- // Debug logging
+            bool shouldShow = currentProgress > 0f;
+            progressBar.SetActive(shouldShow);
+
+            // Debug logging
             if (shouldShow && !progressBar.activeSelf)
             {
-      Debug.LogWarning($"ProgressBar should be visible but activeSelf is false. Progress: {currentProgress}");
+                Debug.LogWarning($"ProgressBar should be visible but activeSelf is false. Progress: {currentProgress}");
             }
         }
-    else
-     {
-  if (currentProgress > 0f)
-  {
-      Debug.LogWarning("ProgressBar is null but progress > 0!");
- }
-  }
+        else
+        {
+            if (currentProgress > 0f)
+            {
+                Debug.LogWarning("ProgressBar is null but progress > 0!");
+            }
+        }
 
         // Update fill amount
         if (progressFill != null)
-{
-    progressFill.fillAmount = currentProgress;
-        
-    // Lerp color based on progress
+        {
+            progressFill.fillAmount = currentProgress;
+
+            // Lerp color based on progress
             progressFill.color = Color.Lerp(progressColorStart, progressColorEnd, currentProgress);
         }
         else
- {
+        {
             if (currentProgress > 0f)
-      {
+            {
                 Debug.LogWarning("ProgressFill is null but progress > 0!");
             }
         }
@@ -161,28 +161,28 @@ currentProgress = Mathf.Clamp01(progress);
         if (progressText != null)
         {
             if (currentProgress > 0f)
-      {
-        progressText.gameObject.SetActive(true);
-   progressText.text = $"{Mathf.RoundToInt(currentProgress * 100)}%";
-            
-            // Calculate remaining time
-         if (product != null && currentProgress < 1f)
-    {
-            float remainingTime = product.ProductionDuration * (1f - currentProgress);
-             progressText.text = $"{Mathf.RoundToInt(currentProgress * 100)}% ({Mathf.CeilToInt(remainingTime)}s)";
-       }
-       }
-      else
             {
-          progressText.gameObject.SetActive(false);
- }
+                progressText.gameObject.SetActive(true);
+                progressText.text = $"{Mathf.RoundToInt(currentProgress * 100)}%";
+
+                // Calculate remaining time
+                if (product != null && currentProgress < 1f)
+                {
+                    float remainingTime = product.ProductionDuration * (1f - currentProgress);
+                    progressText.text = $"{Mathf.RoundToInt(currentProgress * 100)}% ({Mathf.CeilToInt(remainingTime)}s)";
+                }
+            }
+            else
+            {
+                progressText.gameObject.SetActive(false);
+            }
         }
 
         // Show/hide overlay dimmer (makes image slightly darker during production)
- if (overlayDimmer != null)
+        if (overlayDimmer != null)
         {
-    overlayDimmer.gameObject.SetActive(currentProgress > 0f);
- Color dimColor = overlayDimmer.color;
+            overlayDimmer.gameObject.SetActive(currentProgress > 0f);
+            Color dimColor = overlayDimmer.color;
             dimColor.a = 0.3f * currentProgress;
             overlayDimmer.color = dimColor;
         }
@@ -193,11 +193,11 @@ currentProgress = Mathf.Clamp01(progress);
             productionIndicator.SetActive(isProducing);
         }
 
-    // Show/hide glow effect
+        // Show/hide glow effect
         if (progressGlow != null)
         {
             progressGlow.gameObject.SetActive(isProducing);
-   }
+        }
     }
 
     /// <summary>

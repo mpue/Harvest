@@ -11,17 +11,17 @@ public class BuildingPlacementUI : MonoBehaviour
     [Header("References")]
     [SerializeField] private BuildingPlacement buildingPlacement;
     [SerializeField] private GameObject placementPanel;
-  
+
     [Header("Text Elements (TextMeshPro)")]
     [SerializeField] private TextMeshProUGUI buildingNameText;
     [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private TextMeshProUGUI instructionsText;
-    
+
     [Header("Text Elements (Legacy UI - Optional)")]
     [SerializeField] private Text buildingNameTextLegacy;
     [SerializeField] private Text statusTextLegacy;
     [SerializeField] private Text instructionsTextLegacy;
-    
+
     [SerializeField] private Image statusIcon;
 
     [Header("Status Colors")]
@@ -57,7 +57,7 @@ public class BuildingPlacementUI : MonoBehaviour
 
         // Show/hide panel based on placement state
         bool isPlacing = buildingPlacement.IsPlacing;
-  
+
         if (placementPanel != null && placementPanel.activeSelf != isPlacing)
         {
             placementPanel.SetActive(isPlacing);
@@ -73,7 +73,7 @@ public class BuildingPlacementUI : MonoBehaviour
     private void UpdatePlacementUI()
     {
         Product product = buildingPlacement.CurrentProduct;
-        
+
         // Update building name
         if (product != null)
         {
@@ -85,7 +85,7 @@ public class BuildingPlacementUI : MonoBehaviour
 
         Color statusColor = canPlace ? validColor : invalidColor;
         string statusMessage = canPlace ? "Ready to Place" : "Cannot Place Here";
-        
+
         SetText(statusText, statusTextLegacy, statusMessage, statusColor);
 
         if (statusIcon != null)

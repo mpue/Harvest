@@ -6,7 +6,7 @@ using UnityEngine;
 public class ProductionUIManager : MonoBehaviour
 {
     private static ProductionUIManager instance;
- public static ProductionUIManager Instance => instance;
+    public static ProductionUIManager Instance => instance;
 
     [Header("References")]
     [SerializeField] private ProductionPanel productionPanel;
@@ -15,22 +15,22 @@ public class ProductionUIManager : MonoBehaviour
     {
         // Singleton pattern
         if (instance != null && instance != this)
-      {
-         Destroy(gameObject);
- return;
-      }
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         instance = this;
 
         // Find production panel if not assigned
         if (productionPanel == null)
         {
-   productionPanel = FindObjectOfType<ProductionPanel>();
+            productionPanel = FindObjectOfType<ProductionPanel>();
         }
 
         if (productionPanel == null)
         {
-     Debug.LogError("ProductionPanel not found! Please assign it in the ProductionUIManager or add one to the scene.");
+            Debug.LogError("ProductionPanel not found! Please assign it in the ProductionUIManager or add one to the scene.");
         }
     }
 
@@ -41,18 +41,18 @@ public class ProductionUIManager : MonoBehaviour
     {
         if (productionPanel != null)
         {
-  productionPanel.Show(baseUnit);
-    }
-  else
+            productionPanel.Show(baseUnit);
+        }
+        else
         {
-    Debug.LogWarning("Cannot show production panel: ProductionPanel reference is missing");
+            Debug.LogWarning("Cannot show production panel: ProductionPanel reference is missing");
         }
     }
 
-/// <summary>
+    /// <summary>
     /// Hide the production panel
     /// </summary>
-  public void HideProductionPanel()
+    public void HideProductionPanel()
     {
         if (productionPanel != null)
         {

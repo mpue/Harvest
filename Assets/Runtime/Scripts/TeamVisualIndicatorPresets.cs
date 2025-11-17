@@ -13,7 +13,7 @@ public class TeamVisualIndicatorPresets : MonoBehaviour
     {
         if (indicator == null) return;
 
-      indicator.SetIndicatorType(TeamVisualIndicator.IndicatorType.Combined);
+        indicator.SetIndicatorType(TeamVisualIndicator.IndicatorType.Combined);
         // Settings would be configured via reflection or made public
         Debug.Log("RTS Preset applied: Color Ring + Material Tint with rotation and pulse");
     }
@@ -23,10 +23,10 @@ public class TeamVisualIndicatorPresets : MonoBehaviour
     /// </summary>
     public static void ApplyMOBAPreset(TeamVisualIndicator indicator)
     {
- if (indicator == null) return;
+        if (indicator == null) return;
 
-     indicator.SetIndicatorType(TeamVisualIndicator.IndicatorType.ColorRing);
-     Debug.Log("MOBA Preset applied: Large static Color Ring");
+        indicator.SetIndicatorType(TeamVisualIndicator.IndicatorType.ColorRing);
+        Debug.Log("MOBA Preset applied: Large static Color Ring");
     }
 
     /// <summary>
@@ -34,10 +34,10 @@ public class TeamVisualIndicatorPresets : MonoBehaviour
     /// </summary>
     public static void ApplyActionPreset(TeamVisualIndicator indicator)
     {
- if (indicator == null) return;
+        if (indicator == null) return;
 
         indicator.SetIndicatorType(TeamVisualIndicator.IndicatorType.ShieldIcon);
-   Debug.Log("Action Preset applied: Billboard Shield Icon");
+        Debug.Log("Action Preset applied: Billboard Shield Icon");
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class TeamVisualIndicatorPresets : MonoBehaviour
         public static readonly Color Enemy = new Color(1f, 0.2f, 0.2f);       // Bright Red
         public static readonly Color Ally = new Color(0.2f, 1f, 0.2f);        // Bright Green
         public static readonly Color Neutral = new Color(0.7f, 0.7f, 0.7f);   // Gray
-        
+
         // Alternative color schemes
         public static readonly Color PlayerAlt = new Color(0f, 0.8f, 1f);     // Cyan
         public static readonly Color EnemyAlt = new Color(1f, 0.4f, 0f);    // Orange
@@ -72,19 +72,19 @@ public class TeamVisualIndicatorPresets : MonoBehaviour
     /// </summary>
     public static void SetupUnitWithTeam(GameObject unit, Team team, Color teamColor, TeamVisualIndicator.IndicatorType indicatorType)
     {
-  if (unit == null) return;
+        if (unit == null) return;
 
-// Add or get TeamComponent
+        // Add or get TeamComponent
         TeamComponent teamComp = unit.GetComponent<TeamComponent>();
-  if (teamComp == null)
+        if (teamComp == null)
         {
-   teamComp = unit.AddComponent<TeamComponent>();
+            teamComp = unit.AddComponent<TeamComponent>();
         }
         teamComp.SetTeam(team);
         teamComp.SetTeamColor(teamColor);
 
- // Add or get TeamVisualIndicator
-     TeamVisualIndicator indicator = unit.GetComponent<TeamVisualIndicator>();
+        // Add or get TeamVisualIndicator
+        TeamVisualIndicator indicator = unit.GetComponent<TeamVisualIndicator>();
         if (indicator == null)
         {
             indicator = unit.AddComponent<TeamVisualIndicator>();
@@ -92,11 +92,11 @@ public class TeamVisualIndicatorPresets : MonoBehaviour
         indicator.SetIndicatorType(indicatorType);
         indicator.UpdateTeamColor();
 
- Debug.Log($"Setup {unit.name} with Team: {team}, Color: {teamColor}, Indicator: {indicatorType}");
+        Debug.Log($"Setup {unit.name} with Team: {team}, Color: {teamColor}, Indicator: {indicatorType}");
     }
 
     /// <summary>
-/// Quick setup for player units (Blue Color Ring)
+    /// Quick setup for player units (Blue Color Ring)
     /// </summary>
     public static void SetupAsPlayerUnit(GameObject unit)
     {
@@ -114,7 +114,7 @@ public class TeamVisualIndicatorPresets : MonoBehaviour
     /// <summary>
     /// Quick setup for ally units (Green Color Ring)
     /// </summary>
-public static void SetupAsAllyUnit(GameObject unit)
+    public static void SetupAsAllyUnit(GameObject unit)
     {
         SetupUnitWithTeam(unit, Team.Ally, StandardColors.Ally, TeamVisualIndicator.IndicatorType.ColorRing);
     }
@@ -137,10 +137,10 @@ public static class TeamVisualIndicatorMenuItems
     [UnityEditor.MenuItem("GameObject/RTS/Setup As Player Unit", false, 10)]
     private static void SetupAsPlayerUnit()
     {
-  foreach (GameObject obj in UnityEditor.Selection.gameObjects)
+        foreach (GameObject obj in UnityEditor.Selection.gameObjects)
         {
             TeamVisualIndicatorPresets.SetupAsPlayerUnit(obj);
-      }
+        }
     }
 
     [UnityEditor.MenuItem("GameObject/RTS/Setup As Enemy Unit", false, 11)]
@@ -149,51 +149,51 @@ public static class TeamVisualIndicatorMenuItems
         foreach (GameObject obj in UnityEditor.Selection.gameObjects)
         {
             TeamVisualIndicatorPresets.SetupAsEnemyUnit(obj);
-   }
+        }
     }
 
     [UnityEditor.MenuItem("GameObject/RTS/Setup As Ally Unit", false, 12)]
     private static void SetupAsAllyUnit()
     {
         foreach (GameObject obj in UnityEditor.Selection.gameObjects)
-      {
-   TeamVisualIndicatorPresets.SetupAsAllyUnit(obj);
+        {
+            TeamVisualIndicatorPresets.SetupAsAllyUnit(obj);
         }
-}
+    }
 
     [UnityEditor.MenuItem("GameObject/RTS/Setup As Neutral Unit", false, 13)]
     private static void SetupAsNeutralUnit()
     {
-    foreach (GameObject obj in UnityEditor.Selection.gameObjects)
-   {
-   TeamVisualIndicatorPresets.SetupAsNeutralUnit(obj);
+        foreach (GameObject obj in UnityEditor.Selection.gameObjects)
+        {
+            TeamVisualIndicatorPresets.SetupAsNeutralUnit(obj);
         }
     }
 
-  [UnityEditor.MenuItem("GameObject/RTS/Apply RTS Preset", false, 20)]
+    [UnityEditor.MenuItem("GameObject/RTS/Apply RTS Preset", false, 20)]
     private static void ApplyRTSPreset()
     {
         foreach (GameObject obj in UnityEditor.Selection.gameObjects)
         {
-      TeamVisualIndicator indicator = obj.GetComponent<TeamVisualIndicator>();
+            TeamVisualIndicator indicator = obj.GetComponent<TeamVisualIndicator>();
             if (indicator != null)
-       {
-            TeamVisualIndicatorPresets.ApplyRTSPreset(indicator);
-     }
+            {
+                TeamVisualIndicatorPresets.ApplyRTSPreset(indicator);
+            }
         }
     }
 
     [UnityEditor.MenuItem("GameObject/RTS/Apply MOBA Preset", false, 21)]
- private static void ApplyMOBAPreset()
+    private static void ApplyMOBAPreset()
     {
         foreach (GameObject obj in UnityEditor.Selection.gameObjects)
-    {
-         TeamVisualIndicator indicator = obj.GetComponent<TeamVisualIndicator>();
-    if (indicator != null)
+        {
+            TeamVisualIndicator indicator = obj.GetComponent<TeamVisualIndicator>();
+            if (indicator != null)
             {
-       TeamVisualIndicatorPresets.ApplyMOBAPreset(indicator);
-   }
-  }
+                TeamVisualIndicatorPresets.ApplyMOBAPreset(indicator);
+            }
+        }
     }
 
     // Validation
@@ -203,7 +203,7 @@ public static class TeamVisualIndicatorMenuItems
     [UnityEditor.MenuItem("GameObject/RTS/Setup As Neutral Unit", true)]
     [UnityEditor.MenuItem("GameObject/RTS/Apply RTS Preset", true)]
     [UnityEditor.MenuItem("GameObject/RTS/Apply MOBA Preset", true)]
-  private static bool ValidateSelection()
+    private static bool ValidateSelection()
     {
         return UnityEditor.Selection.gameObjects.Length > 0;
     }

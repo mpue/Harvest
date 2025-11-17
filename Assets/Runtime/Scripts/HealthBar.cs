@@ -162,7 +162,7 @@ public class HealthBar : MonoBehaviour
         }
 
         // Simple: Set alpha directly
-         canvasGroup.alpha = shouldShow ? 1f : 0f;
+        canvasGroup.alpha = shouldShow ? 1f : 0f;
     }
 
     /// <summary>

@@ -290,7 +290,7 @@ public class WeaponController : MonoBehaviour
         if (weapons == null || weapons.Length == 0)
         {
             return 20f; // Default range if no weapons
-        }   
+        }
 
         foreach (Weapon weapon in weapons)
         {

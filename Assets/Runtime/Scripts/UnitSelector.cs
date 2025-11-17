@@ -328,7 +328,7 @@ public class UnitSelector : MonoBehaviour
             if (unit.IsWithinSelectionBounds(selectionBox, mainCamera))
             {
                 SelectUnit(unit, false); // Don't play sound for each unit
-                
+
                 // Track if we selected at least one non-building
                 if (!unit.IsBuilding)
                 {

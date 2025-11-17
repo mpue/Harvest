@@ -55,21 +55,21 @@ public class TeamVisualIndicator : MonoBehaviour
     {
         teamComponent = GetComponent<TeamComponent>();
         if (teamComponent == null)
- {
+        {
             Debug.LogWarning($"TeamVisualIndicator on {gameObject.name} requires a TeamComponent!");
             enabled = false;
             return;
         }
 
-     unitRenderers = GetComponentsInChildren<Renderer>();
+        unitRenderers = GetComponentsInChildren<Renderer>();
         propertyBlock = new MaterialPropertyBlock();
         mainCamera = Camera.main;
     }
 
-  void Start()
+    void Start()
     {
         if (showIndicator)
-      {
+        {
             CreateVisualIndicator();
         }
     }
@@ -78,7 +78,7 @@ public class TeamVisualIndicator : MonoBehaviour
     {
         if (indicatorObject != null && indicatorObject.activeSelf)
         {
-          UpdateIndicatorEffects();
+            UpdateIndicatorEffects();
         }
     }
 
@@ -88,23 +88,23 @@ public class TeamVisualIndicator : MonoBehaviour
     private void CreateVisualIndicator()
     {
         switch (indicatorType)
- {
-          case IndicatorType.ColorRing:
-          CreateColorRing();
-       break;
+        {
+            case IndicatorType.ColorRing:
+                CreateColorRing();
+                break;
             case IndicatorType.ShieldIcon:
-  CreateShieldIcon();
-   break;
-  case IndicatorType.MaterialTint:
-   ApplyMaterialTint();
-  break;
-        case IndicatorType.Outline:
+                CreateShieldIcon();
+                break;
+            case IndicatorType.MaterialTint:
+                ApplyMaterialTint();
+                break;
+            case IndicatorType.Outline:
                 ApplyOutlineEffect();
-  break;
-       case IndicatorType.Combined:
-       CreateColorRing();
- ApplyMaterialTint();
-  break;
+                break;
+            case IndicatorType.Combined:
+                CreateColorRing();
+                ApplyMaterialTint();
+                break;
         }
     }
 
@@ -116,47 +116,47 @@ public class TeamVisualIndicator : MonoBehaviour
         GameObject ring;
 
         // Use prefab if available, otherwise create a simple ring
-    if (colorRingPrefab != null)
-      {
-   ring = Instantiate(colorRingPrefab, transform);
-        }
-      else
+        if (colorRingPrefab != null)
         {
-        // Create a simple flat ring using a plane
-  ring = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            ring = Instantiate(colorRingPrefab, transform);
+        }
+        else
+        {
+            // Create a simple flat ring using a plane
+            ring = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ring.name = "TeamColorRing";
-         ring.transform.SetParent(transform);
+            ring.transform.SetParent(transform);
 
-     // Remove collider
-    Collider collider = ring.GetComponent<Collider>();
+            // Remove collider
+            Collider collider = ring.GetComponent<Collider>();
             if (collider != null)
             {
-        Destroy(collider);
+                Destroy(collider);
             }
         }
 
- // Position the ring
-  ring.transform.localPosition = new Vector3(0, 0.01f, 0);
+        // Position the ring
+        ring.transform.localPosition = new Vector3(0, 0.01f, 0);
         ring.transform.localScale = Vector3.one * indicatorScale * 0.3f;
         ring.transform.localRotation = Quaternion.Euler(0, 0, 0);
 
- // Create or get material
+        // Create or get material
         indicatorRenderer = ring.GetComponent<Renderer>();
-     if (indicatorRenderer != null)
+        if (indicatorRenderer != null)
         {
-       // Create a new unlit material with team color
+            // Create a new unlit material with team color
             Material ringMaterial = new Material(Shader.Find("Unlit/Color"));
-  ringMaterial.color = teamComponent.TeamColor;
+            ringMaterial.color = teamComponent.TeamColor;
 
-        // Make it emissive for better visibility
+            // Make it emissive for better visibility
             if (ringMaterial.HasProperty("_EmissionColor"))
-{
-              ringMaterial.EnableKeyword("_EMISSION");
-          ringMaterial.SetColor("_EmissionColor", teamComponent.TeamColor * 0.5f);
+            {
+                ringMaterial.EnableKeyword("_EMISSION");
+                ringMaterial.SetColor("_EmissionColor", teamComponent.TeamColor * 0.5f);
             }
 
-  indicatorRenderer.material = ringMaterial;
-       indicatorMaterial = ringMaterial;
+            indicatorRenderer.material = ringMaterial;
+            indicatorMaterial = ringMaterial;
         }
 
         indicatorObject = ring;
@@ -169,40 +169,40 @@ public class TeamVisualIndicator : MonoBehaviour
     {
         GameObject icon;
 
- if (shieldIconPrefab != null)
+        if (shieldIconPrefab != null)
         {
-    icon = Instantiate(shieldIconPrefab, transform);
+            icon = Instantiate(shieldIconPrefab, transform);
         }
         else
         {
             // Create a simple quad for the icon
             icon = GameObject.CreatePrimitive(PrimitiveType.Quad);
-          icon.name = "TeamShieldIcon";
-      icon.transform.SetParent(transform);
+            icon.name = "TeamShieldIcon";
+            icon.transform.SetParent(transform);
 
-         // Remove collider
-  Collider collider = icon.GetComponent<Collider>();
+            // Remove collider
+            Collider collider = icon.GetComponent<Collider>();
             if (collider != null)
-    {
-     Destroy(collider);
+            {
+                Destroy(collider);
             }
-   }
+        }
 
         // Position above unit
-      icon.transform.localPosition = new Vector3(0, indicatorHeightOffset, 0);
-      icon.transform.localScale = Vector3.one * indicatorScale * 0.5f;
+        icon.transform.localPosition = new Vector3(0, indicatorHeightOffset, 0);
+        icon.transform.localScale = Vector3.one * indicatorScale * 0.5f;
 
         // Create material with team color
         indicatorRenderer = icon.GetComponent<Renderer>();
         if (indicatorRenderer != null)
-   {
-    Material iconMaterial = new Material(Shader.Find("Unlit/Color"));
-     iconMaterial.color = teamComponent.TeamColor;
-     indicatorRenderer.material = iconMaterial;
+        {
+            Material iconMaterial = new Material(Shader.Find("Unlit/Color"));
+            iconMaterial.color = teamComponent.TeamColor;
+            indicatorRenderer.material = iconMaterial;
             indicatorMaterial = iconMaterial;
         }
 
-  indicatorObject = icon;
+        indicatorObject = icon;
     }
 
     /// <summary>
@@ -210,30 +210,30 @@ public class TeamVisualIndicator : MonoBehaviour
     /// </summary>
     private void ApplyMaterialTint()
     {
-    if (!tintMaterials || unitRenderers == null) return;
+        if (!tintMaterials || unitRenderers == null) return;
 
         Color tintColor = teamComponent.TeamColor * tintStrength;
 
-    foreach (Renderer renderer in unitRenderers)
+        foreach (Renderer renderer in unitRenderers)
         {
-     if (renderer == null) continue;
+            if (renderer == null) continue;
 
             // Try different common color property names
-    foreach (string propertyName in materialPropertyNames)
-       {
-           if (renderer.material.HasProperty(propertyName))
-       {
-       renderer.GetPropertyBlock(propertyBlock);
-     
-         // Get current color and blend with team color
-              Color currentColor = renderer.material.GetColor(propertyName);
-    Color newColor = Color.Lerp(currentColor, teamComponent.TeamColor, tintStrength);
- 
-     propertyBlock.SetColor(propertyName, newColor);
-           renderer.SetPropertyBlock(propertyBlock);
-            break;
-    }
-         }
+            foreach (string propertyName in materialPropertyNames)
+            {
+                if (renderer.material.HasProperty(propertyName))
+                {
+                    renderer.GetPropertyBlock(propertyBlock);
+
+                    // Get current color and blend with team color
+                    Color currentColor = renderer.material.GetColor(propertyName);
+                    Color newColor = Color.Lerp(currentColor, teamComponent.TeamColor, tintStrength);
+
+                    propertyBlock.SetColor(propertyName, newColor);
+                    renderer.SetPropertyBlock(propertyBlock);
+                    break;
+                }
+            }
         }
     }
 
@@ -242,23 +242,23 @@ public class TeamVisualIndicator : MonoBehaviour
     /// </summary>
     private void ApplyOutlineEffect()
     {
- if (!useOutline || unitRenderers == null) return;
+        if (!useOutline || unitRenderers == null) return;
 
         foreach (Renderer renderer in unitRenderers)
-     {
-   if (renderer == null) continue;
-
-        Material mat = renderer.material;
- 
-    // Try to set outline properties if the shader supports it
-            if (mat.HasProperty("_OutlineWidth"))
         {
-       mat.SetFloat("_OutlineWidth", outlineWidth);
+            if (renderer == null) continue;
+
+            Material mat = renderer.material;
+
+            // Try to set outline properties if the shader supports it
+            if (mat.HasProperty("_OutlineWidth"))
+            {
+                mat.SetFloat("_OutlineWidth", outlineWidth);
             }
-    
+
             if (mat.HasProperty("_OutlineColor"))
             {
- mat.SetColor("_OutlineColor", teamComponent.TeamColor);
+                mat.SetColor("_OutlineColor", teamComponent.TeamColor);
             }
         }
     }
@@ -268,28 +268,28 @@ public class TeamVisualIndicator : MonoBehaviour
     /// </summary>
     private void UpdateIndicatorEffects()
     {
-  if (indicatorObject == null) return;
+        if (indicatorObject == null) return;
 
         // Rotate color ring
         if (indicatorType == IndicatorType.ColorRing || indicatorType == IndicatorType.Combined)
- {
-        indicatorObject.transform.Rotate(Vector3.up, ringRotationSpeed * Time.deltaTime);
+        {
+            indicatorObject.transform.Rotate(Vector3.up, ringRotationSpeed * Time.deltaTime);
 
             // Pulse effect
-        if (pulseEffect)
-       {
-             pulseTimer += Time.deltaTime * pulseSpeed;
-    float scale = 1f + Mathf.Sin(pulseTimer) * pulseAmount;
-       indicatorObject.transform.localScale = Vector3.one * indicatorScale * 0.3f * scale;
+            if (pulseEffect)
+            {
+                pulseTimer += Time.deltaTime * pulseSpeed;
+                float scale = 1f + Mathf.Sin(pulseTimer) * pulseAmount;
+                indicatorObject.transform.localScale = Vector3.one * indicatorScale * 0.3f * scale;
             }
         }
 
         // Billboard effect for icons
         if ((indicatorType == IndicatorType.ShieldIcon) && billboardIcon && mainCamera != null)
         {
-        indicatorObject.transform.rotation = Quaternion.LookRotation(
-   indicatorObject.transform.position - mainCamera.transform.position
-            );
+            indicatorObject.transform.rotation = Quaternion.LookRotation(
+       indicatorObject.transform.position - mainCamera.transform.position
+                );
         }
     }
 
@@ -300,28 +300,28 @@ public class TeamVisualIndicator : MonoBehaviour
     {
         if (teamComponent == null) return;
 
-   // Update indicator color
- if (indicatorMaterial != null)
+        // Update indicator color
+        if (indicatorMaterial != null)
         {
-          indicatorMaterial.color = teamComponent.TeamColor;
-    
+            indicatorMaterial.color = teamComponent.TeamColor;
+
             if (indicatorMaterial.HasProperty("_EmissionColor"))
             {
-          indicatorMaterial.SetColor("_EmissionColor", teamComponent.TeamColor * 0.5f);
-       }
+                indicatorMaterial.SetColor("_EmissionColor", teamComponent.TeamColor * 0.5f);
+            }
         }
 
-    // Update material tint
-  if (tintMaterials)
- {
-        ApplyMaterialTint();
-  }
+        // Update material tint
+        if (tintMaterials)
+        {
+            ApplyMaterialTint();
+        }
 
         // Update outline
         if (useOutline)
         {
             ApplyOutlineEffect();
- }
+        }
     }
 
     /// <summary>
@@ -330,11 +330,11 @@ public class TeamVisualIndicator : MonoBehaviour
     public void SetIndicatorVisible(bool visible)
     {
         showIndicator = visible;
-        
+
         if (indicatorObject != null)
         {
-   indicatorObject.SetActive(visible);
-    }
+            indicatorObject.SetActive(visible);
+        }
     }
 
     /// <summary>
@@ -347,32 +347,32 @@ public class TeamVisualIndicator : MonoBehaviour
         // Clean up old indicator
         if (indicatorObject != null)
         {
-Destroy(indicatorObject);
-         indicatorObject = null;
-    }
+            Destroy(indicatorObject);
+            indicatorObject = null;
+        }
 
         indicatorType = newType;
 
- if (showIndicator)
+        if (showIndicator)
         {
             CreateVisualIndicator();
         }
     }
 
     void OnDestroy()
-  {
+    {
         // Clean up materials
         if (indicatorMaterial != null)
         {
-       Destroy(indicatorMaterial);
+            Destroy(indicatorMaterial);
         }
     }
 
     void OnDrawGizmosSelected()
     {
- // Draw indicator position preview
- Gizmos.color = teamComponent != null ? teamComponent.TeamColor : Color.white;
-      Gizmos.DrawWireSphere(transform.position + Vector3.up * indicatorHeightOffset, 0.3f * indicatorScale);
+        // Draw indicator position preview
+        Gizmos.color = teamComponent != null ? teamComponent.TeamColor : Color.white;
+        Gizmos.DrawWireSphere(transform.position + Vector3.up * indicatorHeightOffset, 0.3f * indicatorScale);
         Gizmos.DrawWireSphere(transform.position + Vector3.up * 0.01f, 0.3f * indicatorScale);
     }
 }

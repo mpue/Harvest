@@ -22,15 +22,15 @@ public class AudioMixerAssignmentWindow : EditorWindow
 
     [MenuItem("Tools/Audio Mixer Assignment")]
     public static void ShowWindow()
-{
+    {
         var window = GetWindow<AudioMixerAssignmentWindow>("Audio Mixer Assignment");
         window.minSize = new Vector2(450, 500);
         window.Show();
     }
 
     void OnEnable()
-  {
-  RefreshAudioSources();
+    {
+        RefreshAudioSources();
     }
 
     void OnFocus()
@@ -41,45 +41,45 @@ public class AudioMixerAssignmentWindow : EditorWindow
     void InitStyles()
     {
         if (headerStyle == null)
-     {
-  headerStyle = new GUIStyle(EditorStyles.boldLabel);
-        headerStyle.fontSize = 14;
+        {
+            headerStyle = new GUIStyle(EditorStyles.boldLabel);
+            headerStyle.fontSize = 14;
             headerStyle.normal.textColor = new Color(0.8f, 0.9f, 1f);
         }
 
         if (warningStyle == null)
-   {
+        {
             warningStyle = new GUIStyle(EditorStyles.helpBox);
-     warningStyle.normal.textColor = new Color(1f, 0.7f, 0f);
+            warningStyle.normal.textColor = new Color(1f, 0.7f, 0f);
         }
     }
 
     void OnGUI()
     {
- InitStyles();
+        InitStyles();
 
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
         GUILayout.Space(10);
         EditorGUILayout.LabelField("AUDIO MIXER ASSIGNMENT", headerStyle);
-     GUILayout.Space(10);
+        GUILayout.Space(10);
 
-    DrawSeparator();
+        DrawSeparator();
 
- // Quick Actions Section
+        // Quick Actions Section
         DrawQuickActionsSection();
 
         DrawSeparator();
 
-  // Assignment Section
+        // Assignment Section
         DrawAssignmentSection();
 
         DrawSeparator();
 
         // AudioSources Overview
-     DrawAudioSourcesOverview();
+        DrawAudioSourcesOverview();
 
-      EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndScrollView();
     }
 
     void DrawQuickActionsSection()
@@ -87,74 +87,74 @@ public class AudioMixerAssignmentWindow : EditorWindow
         EditorGUILayout.LabelField("Quick Actions", EditorStyles.boldLabel);
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-  // Refresh button
+        // Refresh button
         if (GUILayout.Button("Refresh AudioSources List", GUILayout.Height(30)))
-   {
-    RefreshAudioSources();
+        {
+            RefreshAudioSources();
         }
 
         GUILayout.Space(5);
 
         // Info display
- if (audioSourcesWithoutGroup != null && allAudioSources != null)
+        if (audioSourcesWithoutGroup != null && allAudioSources != null)
         {
             if (audioSourcesWithoutGroup.Count > 0)
-      {
-      EditorGUILayout.HelpBox(
-    $"Found {audioSourcesWithoutGroup.Count} AudioSource(s) without MixerGroup assignment.\n" +
-    $"Total AudioSources in scene: {allAudioSources.Count}",
-      MessageType.Warning);
-       }
+            {
+                EditorGUILayout.HelpBox(
+              $"Found {audioSourcesWithoutGroup.Count} AudioSource(s) without MixerGroup assignment.\n" +
+              $"Total AudioSources in scene: {allAudioSources.Count}",
+                MessageType.Warning);
+            }
             else
             {
-        EditorGUILayout.HelpBox(
-      $"All {allAudioSources.Count} AudioSource(s) have MixerGroup assignments.",
-         MessageType.Info);
+                EditorGUILayout.HelpBox(
+              $"All {allAudioSources.Count} AudioSource(s) have MixerGroup assignments.",
+                 MessageType.Info);
             }
         }
 
-  EditorGUILayout.EndVertical();
+        EditorGUILayout.EndVertical();
     }
 
     void DrawAssignmentSection()
     {
         EditorGUILayout.LabelField("Assign MixerGroups", EditorStyles.boldLabel);
-  EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
         // Method 1: Use AudioManager categories
         EditorGUILayout.LabelField("Method 1: Use AudioManager Categories", EditorStyles.miniBoldLabel);
-        
+
         if (AudioManager.Instance == null)
         {
-       EditorGUILayout.HelpBox(
-     "No AudioManager found in scene. Create one to use category-based assignment.",
-           MessageType.Warning);
-            
+            EditorGUILayout.HelpBox(
+          "No AudioManager found in scene. Create one to use category-based assignment.",
+                MessageType.Warning);
+
             if (GUILayout.Button("Create AudioManager", GUILayout.Height(25)))
-   {
-        CreateAudioManager();
-    }
+            {
+                CreateAudioManager();
+            }
         }
         else
-     {
-        selectedCategory = (AudioManager.AudioCategory)EditorGUILayout.EnumPopup("Category", selectedCategory);
+        {
+            selectedCategory = (AudioManager.AudioCategory)EditorGUILayout.EnumPopup("Category", selectedCategory);
 
- GUILayout.BeginHorizontal();
-      
+            GUILayout.BeginHorizontal();
+
             if (GUILayout.Button("Assign to Sources Without Group", GUILayout.Height(25)))
-      {
-      AssignCategoryToSourcesWithoutGroup();
-    }
-
-     if (GUILayout.Button("Assign to ALL Sources", GUILayout.Height(25)))
-    {
-     if (EditorUtility.DisplayDialog("Assign to All", 
-                    "This will assign the selected category to ALL AudioSources, overwriting existing assignments. Continue?", 
-     "Yes", "Cancel"))
-    {
-           AssignCategoryToAllSources();
+            {
+                AssignCategoryToSourcesWithoutGroup();
             }
-       }
+
+            if (GUILayout.Button("Assign to ALL Sources", GUILayout.Height(25)))
+            {
+                if (EditorUtility.DisplayDialog("Assign to All",
+                               "This will assign the selected category to ALL AudioSources, overwriting existing assignments. Continue?",
+                "Yes", "Cancel"))
+                {
+                    AssignCategoryToAllSources();
+                }
+            }
 
             GUILayout.EndHorizontal();
         }
@@ -162,112 +162,112 @@ public class AudioMixerAssignmentWindow : EditorWindow
         GUILayout.Space(10);
 
         // Method 2: Direct mixer group assignment
- EditorGUILayout.LabelField("Method 2: Direct MixerGroup Assignment", EditorStyles.miniBoldLabel);
+        EditorGUILayout.LabelField("Method 2: Direct MixerGroup Assignment", EditorStyles.miniBoldLabel);
         targetMixerGroup = (AudioMixerGroup)EditorGUILayout.ObjectField("MixerGroup", targetMixerGroup, typeof(AudioMixerGroup), false);
 
-    if (targetMixerGroup != null)
+        if (targetMixerGroup != null)
         {
             GUILayout.BeginHorizontal();
-            
+
             if (GUILayout.Button("Assign to Sources Without Group", GUILayout.Height(25)))
             {
-       AssignMixerGroupToSourcesWithoutGroup();
-  }
+                AssignMixerGroupToSourcesWithoutGroup();
+            }
 
-  if (GUILayout.Button("Assign to ALL Sources", GUILayout.Height(25)))
+            if (GUILayout.Button("Assign to ALL Sources", GUILayout.Height(25)))
             {
-  if (EditorUtility.DisplayDialog("Assign to All", 
-          $"This will assign '{targetMixerGroup.name}' to ALL AudioSources, overwriting existing assignments. Continue?", 
-          "Yes", "Cancel"))
-           {
-         AssignMixerGroupToAllSources();
-     }
-      }
+                if (EditorUtility.DisplayDialog("Assign to All",
+                        $"This will assign '{targetMixerGroup.name}' to ALL AudioSources, overwriting existing assignments. Continue?",
+                        "Yes", "Cancel"))
+                {
+                    AssignMixerGroupToAllSources();
+                }
+            }
 
-          GUILayout.EndHorizontal();
+            GUILayout.EndHorizontal();
         }
         else
         {
             EditorGUILayout.HelpBox("Select a MixerGroup to enable assignment.", MessageType.Info);
-    }
+        }
 
         EditorGUILayout.EndVertical();
     }
 
     void DrawAudioSourcesOverview()
     {
-   EditorGUILayout.LabelField("AudioSources Overview", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("AudioSources Overview", EditorStyles.boldLabel);
 
         // Sources without group
-        showSourcesWithoutGroup = EditorGUILayout.Foldout(showSourcesWithoutGroup, 
+        showSourcesWithoutGroup = EditorGUILayout.Foldout(showSourcesWithoutGroup,
  $"AudioSources Without MixerGroup ({(audioSourcesWithoutGroup != null ? audioSourcesWithoutGroup.Count : 0)})", true);
-        
+
         if (showSourcesWithoutGroup && audioSourcesWithoutGroup != null && audioSourcesWithoutGroup.Count > 0)
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-     
+
             foreach (AudioSource source in audioSourcesWithoutGroup)
-          {
-     if (source == null) continue;
-
-         EditorGUILayout.BeginHorizontal();
-  
-       EditorGUILayout.ObjectField(source.gameObject, typeof(GameObject), true);
-         
-       if (GUILayout.Button("Select", GUILayout.Width(60)))
-    {
-   Selection.activeGameObject = source.gameObject;
-    EditorGUIUtility.PingObject(source.gameObject);
-    }
-
-    if (targetMixerGroup != null)
-    {
-         if (GUILayout.Button("Assign", GUILayout.Width(60)))
-    {
-    Undo.RecordObject(source, "Assign MixerGroup");
-            source.outputAudioMixerGroup = targetMixerGroup;
-         EditorUtility.SetDirty(source);
-  RefreshAudioSources();
-   }
-       }
-
-         EditorGUILayout.EndHorizontal();
-            }
-
-         EditorGUILayout.EndVertical();
-        }
-
-    GUILayout.Space(5);
-
-        // All sources
-     showAllSources = EditorGUILayout.Foldout(showAllSources, 
-   $"All AudioSources ({(allAudioSources != null ? allAudioSources.Count : 0)})", true);
-    
-   if (showAllSources && allAudioSources != null && allAudioSources.Count > 0)
-        {
-  EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-  
-          foreach (AudioSource source in allAudioSources)
-       {
+            {
                 if (source == null) continue;
 
-EditorGUILayout.BeginHorizontal();
-   
-     EditorGUILayout.ObjectField(source.gameObject, typeof(GameObject), true);
-    
-   string groupName = source.outputAudioMixerGroup != null ? source.outputAudioMixerGroup.name : "None";
-                EditorGUILayout.LabelField(groupName, GUILayout.Width(100));
-         
-      if (GUILayout.Button("Select", GUILayout.Width(60)))
-                {
-Selection.activeGameObject = source.gameObject;
-     EditorGUIUtility.PingObject(source.gameObject);
-             }
+                EditorGUILayout.BeginHorizontal();
 
-      EditorGUILayout.EndHorizontal();
+                EditorGUILayout.ObjectField(source.gameObject, typeof(GameObject), true);
+
+                if (GUILayout.Button("Select", GUILayout.Width(60)))
+                {
+                    Selection.activeGameObject = source.gameObject;
+                    EditorGUIUtility.PingObject(source.gameObject);
+                }
+
+                if (targetMixerGroup != null)
+                {
+                    if (GUILayout.Button("Assign", GUILayout.Width(60)))
+                    {
+                        Undo.RecordObject(source, "Assign MixerGroup");
+                        source.outputAudioMixerGroup = targetMixerGroup;
+                        EditorUtility.SetDirty(source);
+                        RefreshAudioSources();
+                    }
+                }
+
+                EditorGUILayout.EndHorizontal();
             }
 
-    EditorGUILayout.EndVertical();
+            EditorGUILayout.EndVertical();
+        }
+
+        GUILayout.Space(5);
+
+        // All sources
+        showAllSources = EditorGUILayout.Foldout(showAllSources,
+      $"All AudioSources ({(allAudioSources != null ? allAudioSources.Count : 0)})", true);
+
+        if (showAllSources && allAudioSources != null && allAudioSources.Count > 0)
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            foreach (AudioSource source in allAudioSources)
+            {
+                if (source == null) continue;
+
+                EditorGUILayout.BeginHorizontal();
+
+                EditorGUILayout.ObjectField(source.gameObject, typeof(GameObject), true);
+
+                string groupName = source.outputAudioMixerGroup != null ? source.outputAudioMixerGroup.name : "None";
+                EditorGUILayout.LabelField(groupName, GUILayout.Width(100));
+
+                if (GUILayout.Button("Select", GUILayout.Width(60)))
+                {
+                    Selection.activeGameObject = source.gameObject;
+                    EditorGUIUtility.PingObject(source.gameObject);
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            EditorGUILayout.EndVertical();
         }
     }
 
@@ -281,14 +281,14 @@ Selection.activeGameObject = source.gameObject;
     void RefreshAudioSources()
     {
         allAudioSources = new List<AudioSource>(FindObjectsOfType<AudioSource>());
-     audioSourcesWithoutGroup = new List<AudioSource>();
+        audioSourcesWithoutGroup = new List<AudioSource>();
 
         foreach (AudioSource source in allAudioSources)
         {
-   if (source != null && source.outputAudioMixerGroup == null)
-      {
-audioSourcesWithoutGroup.Add(source);
-  }
+            if (source != null && source.outputAudioMixerGroup == null)
+            {
+                audioSourcesWithoutGroup.Add(source);
+            }
         }
 
         needsRefresh = false;
@@ -297,49 +297,49 @@ audioSourcesWithoutGroup.Add(source);
 
     void CreateAudioManager()
     {
-   GameObject audioManagerObj = new GameObject("AudioManager");
+        GameObject audioManagerObj = new GameObject("AudioManager");
         audioManagerObj.AddComponent<AudioManager>();
         Selection.activeGameObject = audioManagerObj;
-     EditorGUIUtility.PingObject(audioManagerObj);
-        
-        EditorUtility.DisplayDialog("AudioManager Created", 
-       "AudioManager has been created. Please assign AudioMixer and MixerGroups in the Inspector.", 
+        EditorGUIUtility.PingObject(audioManagerObj);
+
+        EditorUtility.DisplayDialog("AudioManager Created",
+       "AudioManager has been created. Please assign AudioMixer and MixerGroups in the Inspector.",
             "OK");
     }
 
-  void AssignCategoryToSourcesWithoutGroup()
+    void AssignCategoryToSourcesWithoutGroup()
     {
-      if (AudioManager.Instance == null)
+        if (AudioManager.Instance == null)
         {
-      EditorUtility.DisplayDialog("Error", "No AudioManager found in scene.", "OK");
-       return;
+            EditorUtility.DisplayDialog("Error", "No AudioManager found in scene.", "OK");
+            return;
         }
 
         AudioMixerGroup mixerGroup = AudioManager.Instance.GetMixerGroup(selectedCategory);
-        
+
         if (mixerGroup == null)
         {
-    EditorUtility.DisplayDialog("Error", 
- $"No MixerGroup assigned for category '{selectedCategory}' in AudioManager.", 
-          "OK");
+            EditorUtility.DisplayDialog("Error",
+         $"No MixerGroup assigned for category '{selectedCategory}' in AudioManager.",
+                  "OK");
             return;
-   }
+        }
 
         int count = 0;
         foreach (AudioSource source in audioSourcesWithoutGroup)
         {
             if (source != null)
             {
-      Undo.RecordObject(source, "Assign MixerGroup");
- source.outputAudioMixerGroup = mixerGroup;
-     EditorUtility.SetDirty(source);
- count++;
-    }
+                Undo.RecordObject(source, "Assign MixerGroup");
+                source.outputAudioMixerGroup = mixerGroup;
+                EditorUtility.SetDirty(source);
+                count++;
+            }
         }
 
         RefreshAudioSources();
-        EditorUtility.DisplayDialog("Assignment Complete", 
-            $"Assigned '{mixerGroup.name}' to {count} AudioSource(s).", 
+        EditorUtility.DisplayDialog("Assignment Complete",
+            $"Assigned '{mixerGroup.name}' to {count} AudioSource(s).",
             "OK");
     }
 
@@ -352,19 +352,19 @@ audioSourcesWithoutGroup.Add(source);
 
         int count = 0;
         foreach (AudioSource source in allAudioSources)
-   {
-   if (source != null)
-     {
-          Undo.RecordObject(source, "Assign MixerGroup");
-  source.outputAudioMixerGroup = mixerGroup;
+        {
+            if (source != null)
+            {
+                Undo.RecordObject(source, "Assign MixerGroup");
+                source.outputAudioMixerGroup = mixerGroup;
                 EditorUtility.SetDirty(source);
-   count++;
- }
- }
+                count++;
+            }
+        }
 
-    RefreshAudioSources();
-        EditorUtility.DisplayDialog("Assignment Complete", 
-            $"Assigned '{mixerGroup.name}' to {count} AudioSource(s).", 
+        RefreshAudioSources();
+        EditorUtility.DisplayDialog("Assignment Complete",
+            $"Assigned '{mixerGroup.name}' to {count} AudioSource(s).",
      "OK");
     }
 
@@ -373,20 +373,20 @@ audioSourcesWithoutGroup.Add(source);
         if (targetMixerGroup == null) return;
 
         int count = 0;
-     foreach (AudioSource source in audioSourcesWithoutGroup)
+        foreach (AudioSource source in audioSourcesWithoutGroup)
         {
- if (source != null)
+            if (source != null)
             {
-          Undo.RecordObject(source, "Assign MixerGroup");
-       source.outputAudioMixerGroup = targetMixerGroup;
-EditorUtility.SetDirty(source);
-     count++;
-  }
+                Undo.RecordObject(source, "Assign MixerGroup");
+                source.outputAudioMixerGroup = targetMixerGroup;
+                EditorUtility.SetDirty(source);
+                count++;
+            }
         }
 
         RefreshAudioSources();
-        EditorUtility.DisplayDialog("Assignment Complete", 
-            $"Assigned '{targetMixerGroup.name}' to {count} AudioSource(s).", 
+        EditorUtility.DisplayDialog("Assignment Complete",
+            $"Assigned '{targetMixerGroup.name}' to {count} AudioSource(s).",
         "OK");
     }
 
@@ -398,17 +398,17 @@ EditorUtility.SetDirty(source);
         foreach (AudioSource source in allAudioSources)
         {
             if (source != null)
-        {
-          Undo.RecordObject(source, "Assign MixerGroup");
-    source.outputAudioMixerGroup = targetMixerGroup;
+            {
+                Undo.RecordObject(source, "Assign MixerGroup");
+                source.outputAudioMixerGroup = targetMixerGroup;
                 EditorUtility.SetDirty(source);
                 count++;
             }
         }
 
         RefreshAudioSources();
-        EditorUtility.DisplayDialog("Assignment Complete", 
-        $"Assigned '{targetMixerGroup.name}' to {count} AudioSource(s).", 
+        EditorUtility.DisplayDialog("Assignment Complete",
+        $"Assigned '{targetMixerGroup.name}' to {count} AudioSource(s).",
  "OK");
     }
 }
