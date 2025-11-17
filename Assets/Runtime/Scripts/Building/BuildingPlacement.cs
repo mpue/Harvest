@@ -79,6 +79,20 @@ public class BuildingPlacement : MonoBehaviour
         {
             invalidPlacementMaterial = CreateTransparentMaterial(invalidColor);
         }
+
+        // Setup grid
+        if (autoCreateGrid && placementGrid == null)
+        {
+            GameObject gridObj = new GameObject("PlacementGrid");
+            gridObj.transform.SetParent(transform);
+            placementGrid = gridObj.AddComponent<PlacementGrid>();
+        }
+
+        if (placementGrid != null)
+        {
+            placementGrid.SetGridSize(gridSize);
+            placementGrid.Hide(); // Start hidden
+        }
     }
 
     void Update()
@@ -174,6 +188,12 @@ public class BuildingPlacement : MonoBehaviour
 
         isPlacing = true;
 
+        // Show grid
+        if (showGrid && placementGrid != null)
+        {
+            placementGrid.Show();
+        }
+
         // Play start sound
         PlaySound(placementStartSound);
 
@@ -203,6 +223,12 @@ public class BuildingPlacement : MonoBehaviour
             }
 
             currentBuildingPreview.transform.position = position;
+
+            // Update grid position
+            if (showGrid && placementGrid != null)
+            {
+                placementGrid.SetPosition(position);
+            }
 
             // Check if placement is valid
             canPlace = IsValidPlacement(position);
@@ -332,6 +358,12 @@ public class BuildingPlacement : MonoBehaviour
         if (currentBuildingPreview != null)
         {
             Destroy(currentBuildingPreview);
+        }
+
+        // Hide grid
+        if (placementGrid != null)
+        {
+            placementGrid.Hide();
         }
 
         // Play cancel sound only if we were actually placing

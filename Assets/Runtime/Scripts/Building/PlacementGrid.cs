@@ -5,11 +5,11 @@ using UnityEngine;
 /// </summary>
 public class PlacementGrid : MonoBehaviour
 {
-[Header("Grid Settings")]
-    [SerializeField] private float gridSize = 1f;
+    [Header("Grid Settings")]
+    [SerializeField] private float gridSize = 2.5f;
     [SerializeField] private int gridWidth = 50;
     [SerializeField] private int gridHeight = 50;
- [SerializeField] private float gridYOffset = 0.1f;
+    [SerializeField] private float gridYOffset = 0.1f;
 
     [Header("Visual Settings")]
     [SerializeField] private Color gridColor = new Color(1f, 1f, 1f, 0.3f);
@@ -23,7 +23,7 @@ public class PlacementGrid : MonoBehaviour
 
     [Header("Fade Settings")]
     [SerializeField] private bool fadeWithDistance = true;
-[SerializeField] private float fadeStartDistance = 20f;
+    [SerializeField] private float fadeStartDistance = 20f;
     [SerializeField] private float fadeEndDistance = 40f;
 
     [Header("Performance")]
@@ -34,28 +34,28 @@ public class PlacementGrid : MonoBehaviour
     private MeshRenderer gridRenderer;
     private LineRenderer[] lineRenderers;
     private Camera mainCamera;
-  private bool isVisible = false;
+    private bool isVisible = false;
     private int frameCounter = 0;
 
     void Awake()
-  {
+    {
         mainCamera = Camera.main;
         if (mainCamera == null)
- {
-mainCamera = FindObjectOfType<Camera>();
-   }
+        {
+            mainCamera = FindObjectOfType<Camera>();
+        }
 
-     CreateGrid();
-Hide(); // Start hidden
+        CreateGrid();
+        Hide(); // Start hidden
     }
 
     void Update()
     {
-     if (!isVisible) return;
+        if (!isVisible) return;
 
         frameCounter++;
         if (updateInterval > 0 && frameCounter % updateInterval != 0)
-  return;
+            return;
 
         UpdateGridPosition();
         UpdateGridVisibility();
@@ -63,13 +63,13 @@ Hide(); // Start hidden
 
     /// <summary>
     /// Show the grid
-  /// </summary>
+    /// </summary>
     public void Show()
     {
         if (gridObject != null)
         {
-    gridObject.SetActive(true);
-  isVisible = true;
+            gridObject.SetActive(true);
+            isVisible = true;
         }
     }
 
@@ -79,22 +79,22 @@ Hide(); // Start hidden
     public void Hide()
     {
         if (gridObject != null)
-  {
+        {
             gridObject.SetActive(false);
-    isVisible = false;
+            isVisible = false;
         }
     }
 
     /// <summary>
-  /// Set grid center position
+    /// Set grid center position
     /// </summary>
     public void SetPosition(Vector3 position)
     {
-    if (gridObject != null)
+        if (gridObject != null)
         {
-    position.y = GetTerrainHeight(position) + gridYOffset;
-     gridObject.transform.position = position;
-     }
+            position.y = GetTerrainHeight(position) + gridYOffset;
+            gridObject.transform.position = position;
+        }
     }
 
     /// <summary>
@@ -106,12 +106,12 @@ Hide(); // Start hidden
         gridObject.transform.SetParent(transform);
 
         if (useMeshGrid)
-   {
-         CreateMeshGrid();
-    }
+        {
+            CreateMeshGrid();
+        }
         else
         {
-        CreateLineGrid();
+            CreateLineGrid();
         }
     }
 
@@ -123,64 +123,64 @@ Hide(); // Start hidden
         MeshFilter meshFilter = gridObject.AddComponent<MeshFilter>();
         gridRenderer = gridObject.AddComponent<MeshRenderer>();
 
-   Mesh mesh = GenerateGridMesh();
-   meshFilter.mesh = mesh;
+        Mesh mesh = GenerateGridMesh();
+        meshFilter.mesh = mesh;
 
-    // Setup material
+        // Setup material
         if (gridMaterial == null)
- {
+        {
             gridMaterial = CreateGridMaterial();
         }
         gridRenderer.material = gridMaterial;
         gridRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         gridRenderer.receiveShadows = false;
-  }
+    }
 
     /// <summary>
     /// Generate grid mesh
     /// </summary>
-private Mesh GenerateGridMesh()
+    private Mesh GenerateGridMesh()
     {
         Mesh mesh = new Mesh();
-mesh.name = "PlacementGridMesh";
+        mesh.name = "PlacementGridMesh";
 
         int verticalLines = gridWidth + 1;
-      int horizontalLines = gridHeight + 1;
+        int horizontalLines = gridHeight + 1;
         int totalLines = verticalLines + horizontalLines;
 
-   // 4 vertices per line (quad)
-Vector3[] vertices = new Vector3[totalLines * 4];
-  Vector2[] uvs = new Vector2[vertices.Length];
+        // 4 vertices per line (quad)
+        Vector3[] vertices = new Vector3[totalLines * 4];
+        Vector2[] uvs = new Vector2[vertices.Length];
         int[] triangles = new int[totalLines * 6];
 
-     int vertexIndex = 0;
+        int vertexIndex = 0;
         int triangleIndex = 0;
 
-      float halfWidth = gridWidth * gridSize * 0.5f;
+        float halfWidth = gridWidth * gridSize * 0.5f;
         float halfHeight = gridHeight * gridSize * 0.5f;
 
         // Vertical lines
         for (int i = 0; i <= gridWidth; i++)
         {
             float x = -halfWidth + i * gridSize;
-      CreateLineQuad(ref vertices, ref uvs, ref triangles, ref vertexIndex, ref triangleIndex,
-   new Vector3(x, 0, -halfHeight),
-                new Vector3(x, 0, halfHeight),
-                lineWidth);
-}
-
-        // Horizontal lines
-   for (int i = 0; i <= gridHeight; i++)
-        {
-            float z = -halfHeight + i * gridSize;
-   CreateLineQuad(ref vertices, ref uvs, ref triangles, ref vertexIndex, ref triangleIndex,
-  new Vector3(-halfWidth, 0, z),
-            new Vector3(halfWidth, 0, z),
-     lineWidth);
+            CreateLineQuad(ref vertices, ref uvs, ref triangles, ref vertexIndex, ref triangleIndex,
+         new Vector3(x, 0, -halfHeight),
+                      new Vector3(x, 0, halfHeight),
+                      lineWidth);
         }
 
-mesh.vertices = vertices;
-     mesh.uv = uvs;
+        // Horizontal lines
+        for (int i = 0; i <= gridHeight; i++)
+        {
+            float z = -halfHeight + i * gridSize;
+            CreateLineQuad(ref vertices, ref uvs, ref triangles, ref vertexIndex, ref triangleIndex,
+           new Vector3(-halfWidth, 0, z),
+                     new Vector3(halfWidth, 0, z),
+              lineWidth);
+        }
+
+        mesh.vertices = vertices;
+        mesh.uv = uvs;
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
@@ -190,10 +190,10 @@ mesh.vertices = vertices;
 
     /// <summary>
     /// Create a quad for a line
- /// </summary>
+    /// </summary>
     private void CreateLineQuad(ref Vector3[] vertices, ref Vector2[] uvs, ref int[] triangles,
         ref int vertexIndex, ref int triangleIndex, Vector3 start, Vector3 end, float width)
- {
+    {
         Vector3 direction = (end - start).normalized;
         Vector3 perpendicular = Vector3.Cross(direction, Vector3.up) * width * 0.5f;
 
@@ -204,17 +204,17 @@ mesh.vertices = vertices;
 
         uvs[vertexIndex] = new Vector2(0, 0);
         uvs[vertexIndex + 1] = new Vector2(1, 0);
-  uvs[vertexIndex + 2] = new Vector2(1, 1);
-  uvs[vertexIndex + 3] = new Vector2(0, 1);
+        uvs[vertexIndex + 2] = new Vector2(1, 1);
+        uvs[vertexIndex + 3] = new Vector2(0, 1);
 
         triangles[triangleIndex] = vertexIndex;
         triangles[triangleIndex + 1] = vertexIndex + 1;
         triangles[triangleIndex + 2] = vertexIndex + 2;
         triangles[triangleIndex + 3] = vertexIndex;
-      triangles[triangleIndex + 4] = vertexIndex + 2;
+        triangles[triangleIndex + 4] = vertexIndex + 2;
         triangles[triangleIndex + 5] = vertexIndex + 3;
 
-      vertexIndex += 4;
+        vertexIndex += 4;
         triangleIndex += 6;
     }
 
@@ -223,59 +223,59 @@ mesh.vertices = vertices;
     /// </summary>
     private void CreateLineGrid()
     {
-      int verticalLines = gridWidth + 1;
+        int verticalLines = gridWidth + 1;
         int horizontalLines = gridHeight + 1;
         lineRenderers = new LineRenderer[verticalLines + horizontalLines];
 
-   float halfWidth = gridWidth * gridSize * 0.5f;
-      float halfHeight = gridHeight * gridSize * 0.5f;
+        float halfWidth = gridWidth * gridSize * 0.5f;
+        float halfHeight = gridHeight * gridSize * 0.5f;
 
         int lineIndex = 0;
 
         // Vertical lines
         for (int i = 0; i <= gridWidth; i++)
         {
-     GameObject lineObj = new GameObject($"GridLine_V{i}");
-  lineObj.transform.SetParent(gridObject.transform);
+            GameObject lineObj = new GameObject($"GridLine_V{i}");
+            lineObj.transform.SetParent(gridObject.transform);
 
-     LineRenderer line = lineObj.AddComponent<LineRenderer>();
+            LineRenderer line = lineObj.AddComponent<LineRenderer>();
             ConfigureLineRenderer(line);
 
-       float x = -halfWidth + i * gridSize;
+            float x = -halfWidth + i * gridSize;
             line.SetPosition(0, new Vector3(x, 0, -halfHeight));
             line.SetPosition(1, new Vector3(x, 0, halfHeight));
 
-lineRenderers[lineIndex++] = line;
+            lineRenderers[lineIndex++] = line;
         }
 
-      // Horizontal lines
-     for (int i = 0; i <= gridHeight; i++)
-     {
-       GameObject lineObj = new GameObject($"GridLine_H{i}");
+        // Horizontal lines
+        for (int i = 0; i <= gridHeight; i++)
+        {
+            GameObject lineObj = new GameObject($"GridLine_H{i}");
             lineObj.transform.SetParent(gridObject.transform);
 
-          LineRenderer line = lineObj.AddComponent<LineRenderer>();
-      ConfigureLineRenderer(line);
+            LineRenderer line = lineObj.AddComponent<LineRenderer>();
+            ConfigureLineRenderer(line);
 
-   float z = -halfHeight + i * gridSize;
-  line.SetPosition(0, new Vector3(-halfWidth, 0, z));
- line.SetPosition(1, new Vector3(halfWidth, 0, z));
+            float z = -halfHeight + i * gridSize;
+            line.SetPosition(0, new Vector3(-halfWidth, 0, z));
+            line.SetPosition(1, new Vector3(halfWidth, 0, z));
 
-        lineRenderers[lineIndex++] = line;
+            lineRenderers[lineIndex++] = line;
         }
     }
 
     /// <summary>
- /// Configure a LineRenderer
+    /// Configure a LineRenderer
     /// </summary>
     private void ConfigureLineRenderer(LineRenderer line)
     {
         line.startWidth = lineWidth;
         line.endWidth = lineWidth;
-    line.material = gridMaterial != null ? gridMaterial : new Material(Shader.Find("Sprites/Default"));
-     line.startColor = gridColor;
+        line.material = gridMaterial != null ? gridMaterial : new Material(Shader.Find("Sprites/Default"));
+        line.startColor = gridColor;
         line.endColor = gridColor;
-     line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         line.receiveShadows = false;
         line.positionCount = 2;
     }
@@ -285,27 +285,64 @@ lineRenderers[lineIndex++] = line;
     /// </summary>
     private Material CreateGridMaterial()
     {
-        Material mat;
-
-        if (useShader)
-     {
-    // Try to use Unlit/Color shader
-            Shader shader = Shader.Find("Unlit/Color");
-    if (shader == null)
-            {
-       shader = Shader.Find("Sprites/Default");
-            }
- mat = new Material(shader);
+   Material mat = null;
+      
+        // Try custom shader first
+   Shader customShader = Shader.Find("Custom/PlacementGrid");
+      if (customShader != null)
+{
+   mat = new Material(customShader);
+ mat.name = "GridMaterial_Custom";
+   mat.SetColor("_Color", gridColor);
+    mat.SetFloat("_LineWidth", lineWidth);
+ Debug.Log("Using custom PlacementGrid shader");
+  return mat;
+      }
+        
+// Fallback to particle shader
+   Shader shader = Shader.Find("Legacy Shaders/Particles/Alpha Blended");
+        if (shader == null)
+    {
+   shader = Shader.Find("Sprites/Default");
         }
-        else
-        {
-     mat = new Material(Shader.Find("Sprites/Default"));
-    }
+     if (shader == null)
+   {
+     shader = Shader.Find("Standard");
+        }
 
-        mat.color = gridColor;
-  mat.SetFloat("_Mode", 2); // Transparent mode if available
-        mat.renderQueue = 3000; // Transparent queue
-
+        mat = new Material(shader);
+   mat.name = "GridMaterial_Fallback";
+        
+  // Set color with transparency
+     mat.color = gridColor;
+  
+        // Enable transparency
+        if (mat.HasProperty("_Mode"))
+     {
+       mat.SetInt("_Mode", 2); // Fade mode
+        }
+     if (mat.HasProperty("_SrcBlend"))
+  {
+ mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+   }
+        if (mat.HasProperty("_DstBlend"))
+    {
+     mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+  }
+        if (mat.HasProperty("_ZWrite"))
+   {
+   mat.SetInt("_ZWrite", 0);
+ }
+        
+        // Set render queue to transparent
+        mat.renderQueue = 3000;
+        
+        // Enable keywords for transparency
+        mat.EnableKeyword("_ALPHABLEND_ON");
+   mat.DisableKeyword("_ALPHATEST_ON");
+  mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+ 
+   Debug.Log($"Using fallback shader: {shader.name}");
         return mat;
     }
 
@@ -317,9 +354,9 @@ lineRenderers[lineIndex++] = line;
         if (mainCamera == null || gridObject == null) return;
 
         // Grid stays at set position, just update Y based on terrain
-     Vector3 currentPos = gridObject.transform.position;
-   currentPos.y = GetTerrainHeight(currentPos) + gridYOffset;
-  gridObject.transform.position = currentPos;
+        Vector3 currentPos = gridObject.transform.position;
+        currentPos.y = GetTerrainHeight(currentPos) + gridYOffset;
+        gridObject.transform.position = currentPos;
     }
 
     /// <summary>
@@ -327,38 +364,38 @@ lineRenderers[lineIndex++] = line;
     /// </summary>
     private void UpdateGridVisibility()
     {
-      if (!fadeWithDistance || mainCamera == null || gridObject == null) return;
+        if (!fadeWithDistance || mainCamera == null || gridObject == null) return;
 
-     float distance = Vector3.Distance(mainCamera.transform.position, gridObject.transform.position);
+        float distance = Vector3.Distance(mainCamera.transform.position, gridObject.transform.position);
         float alpha = 1f;
 
         if (distance > fadeStartDistance)
         {
             float fadeRange = fadeEndDistance - fadeStartDistance;
             float fadeAmount = (distance - fadeStartDistance) / fadeRange;
-  alpha = Mathf.Clamp01(1f - fadeAmount);
-      }
-
-        // Update material alpha
-if (gridRenderer != null && gridRenderer.material != null)
-        {
-            Color color = gridColor;
-    color.a *= alpha;
-     gridRenderer.material.color = color;
+            alpha = Mathf.Clamp01(1f - fadeAmount);
         }
 
-   // Update LineRenderers alpha
- if (lineRenderers != null)
- {
+        // Update material alpha
+        if (gridRenderer != null && gridRenderer.material != null)
+        {
+            Color color = gridColor;
+            color.a *= alpha;
+            gridRenderer.material.color = color;
+        }
+
+        // Update LineRenderers alpha
+        if (lineRenderers != null)
+        {
             foreach (var line in lineRenderers)
-   {
-    if (line != null)
-     {
-       Color color = gridColor;
-        color.a *= alpha;
-            line.startColor = color;
-         line.endColor = color;
-    }
+            {
+                if (line != null)
+                {
+                    Color color = gridColor;
+                    color.a *= alpha;
+                    line.startColor = color;
+                    line.endColor = color;
+                }
             }
         }
     }
@@ -370,8 +407,8 @@ if (gridRenderer != null && gridRenderer.material != null)
     {
         RaycastHit hit;
         if (Physics.Raycast(position + Vector3.up * 100f, Vector3.down, out hit, 200f))
-   {
-          return hit.point.y;
+        {
+            return hit.point.y;
         }
         return 0f;
     }
@@ -381,7 +418,7 @@ if (gridRenderer != null && gridRenderer.material != null)
     /// </summary>
     public void SetGridSize(float size)
     {
-  gridSize = size;
+        gridSize = size;
         RecreateGrid();
     }
 
@@ -391,8 +428,8 @@ if (gridRenderer != null && gridRenderer.material != null)
     public void SetGridDimensions(int width, int height)
     {
         gridWidth = width;
- gridHeight = height;
-     RecreateGrid();
+        gridHeight = height;
+        RecreateGrid();
     }
 
     /// <summary>
@@ -400,38 +437,38 @@ if (gridRenderer != null && gridRenderer.material != null)
     /// </summary>
     private void RecreateGrid()
     {
-      if (gridObject != null)
+        if (gridObject != null)
         {
             Destroy(gridObject);
         }
         CreateGrid();
         if (!isVisible)
         {
-     Hide();
-      }
+            Hide();
+        }
     }
 
     /// <summary>
     /// Set grid color
     /// </summary>
-  public void SetGridColor(Color color)
+    public void SetGridColor(Color color)
     {
         gridColor = color;
 
-      if (gridRenderer != null && gridRenderer.material != null)
-    {
-   gridRenderer.material.color = color;
+        if (gridRenderer != null && gridRenderer.material != null)
+        {
+            gridRenderer.material.color = color;
         }
 
         if (lineRenderers != null)
         {
             foreach (var line in lineRenderers)
-          {
-           if (line != null)
-       {
-line.startColor = color;
-        line.endColor = color;
-     }
+            {
+                if (line != null)
+                {
+                    line.startColor = color;
+                    line.endColor = color;
+                }
             }
         }
     }
@@ -440,8 +477,8 @@ line.startColor = color;
     {
         if (gridObject != null)
         {
-     Destroy(gridObject);
-     }
+            Destroy(gridObject);
+        }
     }
 
     void OnDrawGizmosSelected()

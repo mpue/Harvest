@@ -608,6 +608,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 427a1350bb182dd40917f6beda6222c9, type: 2}
   - {fileID: 11400000, guid: 6107d60f92efc6541933d18f0976f4e4, type: 2}
   - {fileID: 11400000, guid: c5615344c1dc7ad4ba93dc904d7eb5a6, type: 2}
+  - {fileID: 11400000, guid: 77c274a5708405b42a0eb1a5e1b446a8, type: 2}
   spawnPoint: {fileID: 0}
   maxQueueSize: 5
   rallyPoint: {fileID: 0}

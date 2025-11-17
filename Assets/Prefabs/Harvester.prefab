@@ -157,6 +157,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 100000, guid: 3be936652d64f3e4796ab4cc7b45ab99, type: 3}
       insertIndex: -1
       addedObject: {fileID: 761301445301576678}
+    - targetCorrespondingSourceObject: {fileID: 100000, guid: 3be936652d64f3e4796ab4cc7b45ab99, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 207058656592952190}
   m_SourcePrefab: {fileID: 100100000, guid: 3be936652d64f3e4796ab4cc7b45ab99, type: 3}
 --- !u!1 &7687701594627422497 stripped
 GameObject:
@@ -330,6 +333,29 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 11.051754, y: 5.538309, z: 15.726818}
   m_Center: {x: 0, y: 2.7672853, z: 0}
+--- !u!114 &207058656592952190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7687701594627422497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0685cfa6ec0198f4e85bcd734be735ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HarvesterUnit
+  carryCapacity: 50
+  currentCarried: 0
+  carriedResourceType: 0
+  harvestRange: 2
+  teamComponent: {fileID: 82558006875308317}
+  resourceManager: {fileID: 8270602283684754828, guid: a27f16b0ea6cede46a2a3bac14c61d1d, type: 3}
+  carryVisual: {fileID: 0}
+  carryPoint: {fileID: 0}
+  currentState: 0
+  targetCollectable: {fileID: 0}
+  targetCollector: {fileID: 0}
 --- !u!4 &7687701594627843329 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 3be936652d64f3e4796ab4cc7b45ab99, type: 3}
