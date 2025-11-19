@@ -17,7 +17,7 @@ MonoBehaviour:
   description: 
   isBuilding: 1
   buildingType: 5
-  prefab: {fileID: 3203585898251638612, guid: 5311fcd4ebfd0544c89caa6f61717e2c, type: 3}
+  prefab: {fileID: 4307141163187332692, guid: fbd1e4bfff1d1674db22ca879124fd2d, type: 3}
   productionDuration: 10
   foodCost: 0
   woodCost: 0

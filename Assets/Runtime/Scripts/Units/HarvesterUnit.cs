@@ -36,6 +36,7 @@ public class HarvesterUnit : MonoBehaviour
     public int CarryCapacity => carryCapacity;
     public bool IsFull => currentCarried >= carryCapacity;
     public bool IsEmpty => currentCarried == 0;
+    public bool HasResources => currentCarried > 0; // NEW: Check if has resources
     public HarvesterState CurrentState => currentState;
     public Collectable TargetCollectable => targetCollectable;
 
@@ -227,20 +228,69 @@ public class HarvesterUnit : MonoBehaviour
             return;
         }
 
-        // Check if reached collector
-        float distance = Vector3.Distance(transform.position, targetCollector.transform.position);
-        if (distance <= targetCollector.UnloadRange)
+        // NEW: Check for DeployZone
+        DeployZone deployZone = targetCollector.GetComponent<DeployZone>();
+        
+        float checkDistance;
+        Vector3 targetPosition;
+        
+        if (deployZone != null)
         {
-            // Start unloading
-            currentState = HarvesterState.Unloading;
-            harvestTimer = 0f;
+            // Use DeployZone system
+            checkDistance = deployZone.DeployRadius;
+            targetPosition = deployZone.DeployPoint;
+        }
+        else
+        {
+            // Fallback: Use old system
+            checkDistance = targetCollector.UnloadRange;
+            targetPosition = targetCollector.transform.position;
+        }
 
-            if (controllable != null)
+        // Check if reached collector/deploy zone
+        float distance = Vector3.Distance(transform.position, targetPosition);
+        
+        if (distance <= checkDistance)
+        {
+            if (deployZone != null && deployZone.CanDeploy(this))
             {
-                controllable.Stop();
+                // NEW: Use DeployZone system
+                currentState = HarvesterState.Unloading;
+                
+                if (controllable != null)
+                {
+                    controllable.Stop();
+                }
+                    
+                // Start deploy through DeployZone
+                deployZone.StartDeploy(this);
+                
+                Debug.Log($"{gameObject.name}: Started deploying at DeployZone");
             }
+            else if (deployZone == null)
+            {
+                // OLD: Fallback to legacy unload system
+                currentState = HarvesterState.Unloading;
+                harvestTimer = 0f;
 
-            Debug.Log($"{gameObject.name}: Started unloading");
+                if (controllable != null)
+                {
+                    controllable.Stop();
+                }
+
+                Debug.Log($"{gameObject.name}: Started unloading (legacy)");
+            }
+            else
+            {
+                // DeployZone exists but can't deploy (full, wrong team, etc.)
+                Debug.LogWarning($"{gameObject.name}: Cannot deploy at DeployZone - waiting...");
+                
+                // Wait a bit and try again
+                if (controllable != null)
+                {
+                    controllable.Stop();
+                }
+            }
         }
     }
 
@@ -255,44 +305,56 @@ public class HarvesterUnit : MonoBehaviour
             return;
         }
 
-        // Unload over time
-        harvestTimer += Time.deltaTime;
-
-        if (harvestTimer >= targetCollector.UnloadTime)
+        // NEW: Check if using DeployZone
+        DeployZone deployZone = targetCollector.GetComponent<DeployZone>();
+        
+        if (deployZone != null)
         {
-            Debug.Log($"{gameObject.name}: Unloading {currentCarried} {carriedResourceType} to {targetCollector.gameObject.name}");
-            Debug.Log($"  ? ResourceManager: {(resourceManager != null ? resourceManager.gameObject.name : "NULL")}");
-
-            // Unload resources
-            targetCollector.DepositResources(carriedResourceType, currentCarried, resourceManager);
-
-            Debug.Log($"{gameObject.name}: Unload complete. Inventory cleared.");
-
-            currentCarried = 0;
-            UpdateCarryVisual();
-
-            harvestTimer = 0f;
-
-            // Return to harvest if we still have a target
-            if (targetCollectable != null && !targetCollectable.IsDepleted)
+            // DeployZone handles everything!
+            // Just wait until resources are cleared (DeployZone does this)
+            if (IsEmpty)
             {
-                currentState = HarvesterState.MovingToResource;
-                if (controllable != null)
+                // Unloading complete!
+                Debug.Log($"{gameObject.name}: Deploy complete via DeployZone");
+                
+                // Return to gathering
+                currentState = HarvesterState.Idle;
+                targetCollector = null;
+                
+                // Auto-return to last collectable if it still exists
+                if (targetCollectable != null && !targetCollectable.IsDepleted)
                 {
-                    controllable.MoveTo(targetCollectable.transform.position);
+                    GatherFrom(targetCollectable);
                 }
             }
-            else
+            // Else: Still deploying, DeployZone coroutine is running
+        }
+        else
+        {
+            // OLD: Legacy unload system using ResourceCollector.DepositResources
+            harvestTimer += Time.deltaTime;
+
+            if (harvestTimer >= targetCollector.UnloadTime)
             {
-                // Find new resource or idle
-                Collectable nearest = FindNearestCollectable();
-                if (nearest != null)
+                // Deposit resources using ResourceCollector method
+                if (resourceManager != null && currentCarried > 0)
                 {
-                    GatherFrom(nearest);
+                    targetCollector.DepositResources(carriedResourceType, currentCarried, resourceManager);
                 }
-                else
+                
+                currentCarried = 0;
+                UpdateCarryVisual();
+
+                Debug.Log($"{gameObject.name}: Unloaded resources (legacy)");
+
+                // Return to gathering
+                currentState = HarvesterState.Idle;
+                targetCollector = null;
+
+                // Return to last collectable if it still exists
+                if (targetCollectable != null && !targetCollectable.IsDepleted)
                 {
-                    currentState = HarvesterState.Idle;
+                    GatherFrom(targetCollectable);
                 }
             }
         }
@@ -433,6 +495,26 @@ public class HarvesterUnit : MonoBehaviour
         UnityEditor.Handles.Label(transform.position + Vector3.up * 3f,
                   $"State: {currentState}\nCarrying: {currentCarried}/{carryCapacity}");
 #endif
+    }
+
+    /// <summary>
+    /// Get amount of resources currently carried
+  /// </summary>
+    public int GetCarriedAmount() => currentCarried;
+
+    /// <summary>
+    /// Get type of resource currently carried
+    /// </summary>
+    public ResourceType GetCarriedResourceType() => carriedResourceType;
+
+    /// <summary>
+    /// Clear carried resources (after deploying)
+    /// </summary>
+    public void ClearResources()
+    {
+        currentCarried = 0;
+        UpdateCarryVisual();
+        Debug.Log($"{gameObject.name}: Resources cleared");
     }
 }
 

@@ -60,13 +60,36 @@ public class BuildingPlacement : MonoBehaviour
 
     void Awake()
     {
-        // Find camera if not set
+        // Find camera if not set - IMPROVED for builds!
         if (targetCamera == null)
         {
             targetCamera = Camera.main;
+
             if (targetCamera == null)
             {
+                // Fallback: Find by tag
+                GameObject camObj = GameObject.FindGameObjectWithTag("MainCamera");
+                if (camObj != null)
+                {
+                    targetCamera = camObj.GetComponent<Camera>();
+                    Debug.Log("BuildingPlacement: Found camera by tag");
+                }
+            }
+
+            if (targetCamera == null)
+            {
+                // Last resort: Find any camera
                 targetCamera = FindObjectOfType<Camera>();
+                Debug.Log("BuildingPlacement: Found camera using FindObjectOfType");
+            }
+
+            if (targetCamera == null)
+            {
+                Debug.LogError("BuildingPlacement: NO CAMERA FOUND! Building placement will not work!");
+            }
+            else
+            {
+                Debug.Log($"BuildingPlacement: Using camera '{targetCamera.gameObject.name}'");
             }
         }
 
@@ -94,34 +117,52 @@ public class BuildingPlacement : MonoBehaviour
             placementGrid.SetGridSize(gridSize);
             placementGrid.Hide(); // Start hidden
         }
+
+        Debug.Log("BuildingPlacement: Initialized successfully");
     }
 
     void Update()
     {
-        if (isPlacing && currentBuildingPreview != null)
+        // Add safety check
+        if (!isPlacing || currentBuildingPreview == null)
         {
-            UpdateBuildingPreview();
-            HandleRotation();
+            return;
+        }
 
-            // Place on left click
-            if (Input.GetMouseButtonDown(0))
+        // Camera safety check
+        if (targetCamera == null)
+        {
+            Debug.LogWarning("BuildingPlacement: Camera is null during placement! Trying to find camera...");
+            targetCamera = Camera.main ?? FindObjectOfType<Camera>();
+            if (targetCamera == null)
             {
-                if (canPlace)
-                {
-                    PlaceBuilding();
-                }
-                else
-                {
-                    Debug.LogWarning("Cannot place building here!");
-                    PlaySound(placementInvalidSound);
-                }
-            }
-
-            // Cancel on right click or ESC
-            if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
-            {
+                Debug.LogError("BuildingPlacement: Still no camera found! Cancelling placement.");
                 CancelPlacement();
+                return;
             }
+        }
+
+        UpdateBuildingPreview();
+        HandleRotation();
+
+        // Place on left click
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (canPlace)
+            {
+                PlaceBuilding();
+            }
+            else
+            {
+                Debug.LogWarning("Cannot place building here!");
+                PlaySound(placementInvalidSound);
+            }
+        }
+
+        // Cancel on right click or ESC
+        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
+        {
+            CancelPlacement();
         }
     }
 
@@ -410,40 +451,45 @@ if (currentBuildingPreview != null && building.gameObject == currentBuildingPrev
     /// </summary>
     private void UpdateBuildingPreview()
     {
-        if (targetCamera == null) return;
+        // Safety check
+        if (targetCamera == null)
+     {
+     Debug.LogError("BuildingPlacement.UpdateBuildingPreview: Camera is null!");
+   return;
+  }
 
         Ray ray = targetCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
-        {
+ {
             Vector3 position = hit.point;
-            position.y += placementHeight;
+      position.y += placementHeight;
 
-            // Snap to grid if enabled
-            if (snapToGrid)
-            {
-                position.x = Mathf.Round(position.x / gridSize) * gridSize;
-                position.z = Mathf.Round(position.z / gridSize) * gridSize;
-            }
+    // Snap to grid if enabled
+   if (snapToGrid)
+   {
+     position.x = Mathf.Round(position.x / gridSize) * gridSize;
+    position.z = Mathf.Round(position.z / gridSize) * gridSize;
+  }
 
-            currentBuildingPreview.transform.position = position;
+   currentBuildingPreview.transform.position = position;
 
-            // Update grid position
-            if (showGrid && placementGrid != null)
-            {
-                placementGrid.SetPosition(position);
-            }
+   // Update grid position
+     if (showGrid && placementGrid != null)
+       {
+    placementGrid.SetPosition(position);
+    }
 
-            // Check if placement is valid
-            canPlace = IsValidPlacement(position);
-            UpdatePreviewMaterial(canPlace);
-        }
+    // Check if placement is valid
+      canPlace = IsValidPlacement(position);
+   UpdatePreviewMaterial(canPlace);
+ }
         else
-        {
-            // No ground hit - show as invalid
+    {
+  // No ground hit - show as invalid
             canPlace = false;
-            UpdatePreviewMaterial(false);
+  UpdatePreviewMaterial(false);
         }
     }
 
@@ -499,7 +545,8 @@ if (currentBuildingPreview != null && building.gameObject == currentBuildingPrev
         }
 
         // Check energy requirements (except for energy blocks)
-        if (currentProduct.BuildingType != BuildingType.EnergyBlock)
+        // IMPORTANT: Check if currentProduct is not null first!
+        if (currentProduct != null && currentProduct.BuildingType != BuildingType.EnergyBlock)
         {
             if (resourceManager != null && !resourceManager.HasAvailableEnergy(currentProduct.EnergyCost))
             {

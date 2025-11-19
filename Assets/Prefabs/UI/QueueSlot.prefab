@@ -903,5 +903,5 @@ MonoBehaviour:
   productionIndicator: {fileID: 8027876509455758308}
   animateProgress: 0
   glowPulseSpeed: 2
-  progressColorStart: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  progressColorEnd: {r: 0, g: 1, b: 0, a: 1}
+  progressColorStart: {r: 0.015686274, g: 0.25857872, b: 1, a: 1}
+  progressColorEnd: {r: 0, g: 0.1273839, b: 0.4056604, a: 1}

@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// UI Panel for displaying and managing unit production
@@ -14,6 +15,11 @@ public class ProductionPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private Transform productSlotsContainer;
     [SerializeField] private GameObject productSlotPrefab;
+
+    [Header("Grid Layout Settings")]
+    [SerializeField] private int maxProductsPerRow = 3;
+    [SerializeField] private float productSlotSpacing = 10f;
+    [SerializeField] private Vector2 productSlotSize = new Vector2(150f, 180f);
 
     [Header("Queue Display")]
     [SerializeField] private Transform queueContainer;
@@ -77,6 +83,9 @@ public class ProductionPanel : MonoBehaviour
             }
         }
 
+        // Setup Grid Layout for product slots container
+        SetupProductGridLayout();
+
         // Hook up button events
         if (closeButton != null)
         {
@@ -95,6 +104,32 @@ public class ProductionPanel : MonoBehaviour
 
         // Hide panel at start
         Hide();
+    }
+
+    /// <summary>
+    /// Setup Grid Layout Group for product slots container
+    /// </summary>
+    private void SetupProductGridLayout()
+    {
+        if (productSlotsContainer == null) return;
+
+        // Add or get GridLayoutGroup component
+        GridLayoutGroup gridLayout = productSlotsContainer.GetComponent<GridLayoutGroup>();
+        if (gridLayout == null)
+        {
+            gridLayout = productSlotsContainer.gameObject.AddComponent<GridLayoutGroup>();
+        }
+
+        // Configure grid settings
+        gridLayout.cellSize = productSlotSize;
+        gridLayout.spacing = new Vector2(productSlotSpacing, productSlotSpacing);
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = maxProductsPerRow; // Max 3 products per row!
+        gridLayout.childAlignment = TextAnchor.UpperLeft;
+        gridLayout.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        gridLayout.startAxis = GridLayoutGroup.Axis.Horizontal;
+
+        Debug.Log($"ProductionPanel: GridLayout configured with {maxProductsPerRow} products per row, slot size: {productSlotSize}, spacing: {productSlotSpacing}");
     }
 
     void Update()
@@ -154,15 +189,15 @@ public class ProductionPanel : MonoBehaviour
             currentProductionComponent.ResourceManager.OnResourcesChanged += UpdateResourceDisplay;
             currentProductionComponent.ResourceManager.OnEnergyChanged += UpdateEnergyDisplay;
             UpdateResourceDisplay(
-    currentProductionComponent.ResourceManager.Food,
-        currentProductionComponent.ResourceManager.Wood,
-      currentProductionComponent.ResourceManager.Stone,
-        currentProductionComponent.ResourceManager.Gold
+                currentProductionComponent.ResourceManager.Food,
+                currentProductionComponent.ResourceManager.Wood,
+                currentProductionComponent.ResourceManager.Stone,
+                currentProductionComponent.ResourceManager.Gold
             );
             UpdateEnergyDisplay(
                currentProductionComponent.ResourceManager.CurrentEnergy,
-                    currentProductionComponent.ResourceManager.MaxEnergy
-                  );
+               currentProductionComponent.ResourceManager.MaxEnergy
+            );
         }
 
         // Create product slots
@@ -326,6 +361,18 @@ public class ProductionPanel : MonoBehaviour
         if (currentProductionComponent == null || productSlotsContainer == null || productSlotPrefab == null)
         {
             return;
+        }
+
+        // Calculate the preferred size for the product slots container
+        float containerWidth = (productSlotSize.x + productSlotSpacing) * maxProductsPerRow;
+        float containerHeight = (productSlotSize.y + productSlotSpacing) * Mathf.Ceil((float)currentProductionComponent.AvailableProducts.Count / maxProductsPerRow);
+
+        // Apply the calculated size to the product slots container
+        RectTransform containerRect = productSlotsContainer.GetComponent<RectTransform>();
+        if (containerRect != null)
+        {
+            containerRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, containerWidth);
+            containerRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, containerHeight);
         }
 
         foreach (Product product in currentProductionComponent.AvailableProducts)
