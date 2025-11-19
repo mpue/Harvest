@@ -360,8 +360,15 @@ public class ProductionComponent : MonoBehaviour
             else
             {
                 // Player: Manual placement
-                Debug.Log($"Building {completedProduct.ProductName} ready for placement");
-                buildingPlacement.StartPlacement(completedProduct, resourceManager);
+                Debug.Log($"Building {completedProduct.ProductName} ready for placement - calling StartPlacement()");
+                Debug.Log($"  Product: {completedProduct.ProductName}");
+    Debug.Log($"  ResourceManager: {(resourceManager != null ? resourceManager.gameObject.name : "NULL")}");
+        Debug.Log($"  BuildingPlacement: {(buildingPlacement != null ? buildingPlacement.gameObject.name : "NULL")}");
+        
+    buildingPlacement.StartPlacement(completedProduct, resourceManager);
+    
+      Debug.Log($"  StartPlacement() returned");
+                
                 OnProductionCompleted?.Invoke(completedProduct, null);
             }
         }
@@ -391,7 +398,8 @@ public class ProductionComponent : MonoBehaviour
             OnProductionCompleted?.Invoke(completedProduct, spawnedUnit);
         }
 
-        // Clear current production
+        // Clear current production AFTER everything is done
+   // IMPORTANT: Don't clear completedProduct reference before this!
         currentProduction = null;
         currentProductionProgress = 0f;
 

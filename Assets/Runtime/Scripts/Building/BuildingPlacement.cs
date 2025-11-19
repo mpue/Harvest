@@ -126,46 +126,57 @@ public class BuildingPlacement : MonoBehaviour
         // Add safety check
         if (!isPlacing || currentBuildingPreview == null)
         {
-            return;
-        }
+return;
+      }
 
-        // Camera safety check
-        if (targetCamera == null)
+        // DEBUG: Check if currentProduct became null!
+   if (currentProduct == null)
         {
-            Debug.LogWarning("BuildingPlacement: Camera is null during placement! Trying to find camera...");
-            targetCamera = Camera.main ?? FindObjectOfType<Camera>();
-            if (targetCamera == null)
-            {
-                Debug.LogError("BuildingPlacement: Still no camera found! Cancelling placement.");
-                CancelPlacement();
-                return;
-            }
+     Debug.LogError($"CRITICAL: currentProduct is NULL during Update! isPlacing={isPlacing}, preview exists={currentBuildingPreview != null}");
+            // Force cancel to prevent further errors
+      CancelPlacement();
+   return;
         }
 
-        UpdateBuildingPreview();
-        HandleRotation();
+// Camera safety check
+  if (targetCamera == null)
+        {
+ Debug.LogWarning("BuildingPlacement: Camera is null during placement! Trying to find camera...");
+     targetCamera = Camera.main ?? FindObjectOfType<Camera>();
+         if (targetCamera == null)
+  {
+     Debug.LogError("BuildingPlacement: Still no camera found! Cancelling placement.");
+     CancelPlacement();
+        return;
+  }
+     }
 
-        // Place on left click
+   UpdateBuildingPreview();
+      HandleRotation();
+
+   // Place on left click
         if (Input.GetMouseButtonDown(0))
         {
-            if (canPlace)
-            {
-                PlaceBuilding();
-            }
-            else
-            {
-                Debug.LogWarning("Cannot place building here!");
-                PlaySound(placementInvalidSound);
-            }
-        }
+       Debug.Log($"LEFT CLICK: canPlace={canPlace}, currentProduct={(currentProduct != null ? currentProduct.ProductName : "NULL")}");
+   
+      if (canPlace)
+  {
+      PlaceBuilding();
+   }
+  else
+   {
+  Debug.LogWarning("Cannot place building here!");
+   PlaySound(placementInvalidSound);
+      }
+     }
 
         // Cancel on right click or ESC
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
-        {
-            CancelPlacement();
+     {
+   Debug.Log("Cancelling placement (user input)");
+       CancelPlacement();
         }
     }
-
     void OnGUI()
     {
         if (isPlacing && showPlacementUI && currentProduct != null)
@@ -182,6 +193,36 @@ public class BuildingPlacement : MonoBehaviour
 
             GUI.Box(new Rect(Screen.width / 2 - 200, 20, 400, 80), instructions, style);
         }
+
+        // DEBUG OVERLAY for Runtime builds (helps diagnose issues!)
+        #if !UNITY_EDITOR
+        if (Input.GetKey(KeyCode.F1)) // Press F1 to show debug info
+   {
+        GUIStyle debugStyle = new GUIStyle(GUI.skin.box);
+ debugStyle.fontSize = 12;
+debugStyle.normal.textColor = Color.yellow;
+     debugStyle.alignment = TextAnchor.UpperLeft;
+        
+     string debugInfo = "=== BUILDING PLACEMENT DEBUG (F1) ===\n";
+            debugInfo += $"Camera: {(targetCamera != null ? targetCamera.name : "NULL!")}\n";
+            debugInfo += $"IsPlacing: {isPlacing}\n";
+    debugInfo += $"Preview Active: {(currentBuildingPreview != null)}\n";
+         debugInfo += $"Can Place: {canPlace}\n";
+          debugInfo += $"Mouse Pos: {Input.mousePosition}\n";
+    debugInfo += $"Ground Layer: {groundLayer.value}\n";
+            debugInfo += $"Current Product: {(currentProduct != null ? currentProduct.ProductName : "NULL")}\n";
+  
+      if (Input.GetMouseButton(0)) debugInfo += ">>> LEFT CLICK DETECTED <<<\n";
+ if (Input.GetMouseButton(1)) debugInfo += ">>> RIGHT CLICK DETECTED <<<\n";
+            
+   GUI.Box(new Rect(10, 100, 350, 220), debugInfo, debugStyle);
+            
+            GUIStyle hintStyle = new GUIStyle(GUI.skin.label);
+        hintStyle.fontSize = 10;
+      hintStyle.normal.textColor = Color.gray;
+         GUI.Label(new Rect(10, 330, 300, 20), "Hold F1 to show debug info", hintStyle);
+        }
+        #endif
     }
 
     /// <summary>
@@ -189,43 +230,51 @@ public class BuildingPlacement : MonoBehaviour
     /// </summary>
     public void StartPlacement(Product product, ResourceManager manager)
     {
-        if (product == null || !product.IsBuilding || product.Prefab == null)
+        Debug.Log($"=== StartPlacement called === Product: {(product != null ? product.ProductName : "NULL")}, Manager: {(manager != null ? manager.gameObject.name : "NULL")}");
+   
+  if (product == null || !product.IsBuilding || product.Prefab == null)
         {
-            Debug.LogWarning("Cannot start placement: invalid product");
-            return;
+        Debug.LogError($"Cannot start placement: Product={product != null}, IsBuilding={product?.IsBuilding}, Prefab={product?.Prefab != null}");
+  return;
         }
 
         if (targetCamera == null)
         {
             Debug.LogError("No camera found for building placement!");
-            return;
-        }
+     return;
+  }
 
         // Cancel any existing placement
         if (isPlacing)
-        {
-            CancelPlacement();
+      {
+       Debug.Log("Cancelling existing placement before starting new one");
+   CancelPlacement();
         }
 
         currentProduct = product;
-        resourceManager = manager;
+     resourceManager = manager;
+        
+    Debug.Log($"? Set currentProduct to: {currentProduct.ProductName}");
+Debug.Log($"? Set resourceManager to: {resourceManager.gameObject.name}");
 
-        // Create preview
+  // Create preview
         currentBuildingPreview = Instantiate(product.Prefab);
-        currentRotation = 0f;
+      currentRotation = 0f;
         currentBuildingPreview.transform.rotation = Quaternion.Euler(0, currentRotation, 0);
 
+        Debug.Log($"? Created preview: {currentBuildingPreview.name}");
+
         // Disable all components on preview
-        DisableComponentsOnPreview(currentBuildingPreview);
+ DisableComponentsOnPreview(currentBuildingPreview);
 
         // Get all renderers for material swapping
         previewRenderers = currentBuildingPreview.GetComponentsInChildren<Renderer>();
-        StoreOriginalMaterials();
+     StoreOriginalMaterials();
 
         // Create preview materials
-        CreatePreviewMaterials();
+CreatePreviewMaterials();
 
-        // Apply initial material
+      // Apply initial material
         UpdatePreviewMaterial(false);
 
         isPlacing = true;
@@ -233,13 +282,13 @@ public class BuildingPlacement : MonoBehaviour
         // Show grid
         if (showGrid && placementGrid != null)
         {
-            placementGrid.Show();
+        placementGrid.Show();
         }
 
         // Play start sound
         PlaySound(placementStartSound);
 
-        Debug.Log($"Started placing {product.ProductName}. Use mouse to position, Q/E to rotate, Left Click to place, Right Click to cancel.");
+        Debug.Log($"? Started placing {product.ProductName}. isPlacing={isPlacing}, currentProduct={currentProduct != null}");
     }
 
     /// <summary>
@@ -459,37 +508,56 @@ if (currentBuildingPreview != null && building.gameObject == currentBuildingPrev
   }
 
         Ray ray = targetCamera.ScreenPointToRay(Input.mousePosition);
+        
+        // DEBUG: Visualize raycast in Scene View (only visible during Play in Editor)
+        #if UNITY_EDITOR
+        Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.red, 0.016f);
+      #endif
+ 
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
- {
-            Vector3 position = hit.point;
+        {
+            // DEBUG: Visualize hit point
+  #if UNITY_EDITOR
+       Debug.DrawLine(hit.point, hit.point + Vector3.up * 2f, Color.green, 0.016f);
+    #endif
+      
+   Vector3 position = hit.point;
       position.y += placementHeight;
 
     // Snap to grid if enabled
-   if (snapToGrid)
+      if (snapToGrid)
    {
-     position.x = Mathf.Round(position.x / gridSize) * gridSize;
-    position.z = Mathf.Round(position.z / gridSize) * gridSize;
+         position.x = Mathf.Round(position.x / gridSize) * gridSize;
+   position.z = Mathf.Round(position.z / gridSize) * gridSize;
   }
 
    currentBuildingPreview.transform.position = position;
 
    // Update grid position
      if (showGrid && placementGrid != null)
-       {
+   {
     placementGrid.SetPosition(position);
     }
 
     // Check if placement is valid
       canPlace = IsValidPlacement(position);
    UpdatePreviewMaterial(canPlace);
- }
-        else
-    {
-  // No ground hit - show as invalid
+   }
+    else
+        {
+   // No ground hit - show as invalid
             canPlace = false;
-  UpdatePreviewMaterial(false);
+   UpdatePreviewMaterial(false);
+      
+      // DEBUG: Log raycast misses in builds
+#if !UNITY_EDITOR
+      if (Time.frameCount % 60 == 0) // Log every 60 frames to avoid spam
+  {
+          Debug.LogWarning($"BuildingPlacement: Raycast missing ground! Ray origin: {ray.origin}, direction: {ray.direction}, groundLayer: {groundLayer.value}");
+         }
+   #endif
         }
     }
 
@@ -607,33 +675,41 @@ if (currentBuildingPreview != null && building.gameObject == currentBuildingPrev
     /// </summary>
     public void CancelPlacement()
     {
-        if (currentBuildingPreview != null)
-        {
-            Destroy(currentBuildingPreview);
-        }
+   Debug.Log($"=== CancelPlacement called === isPlacing={isPlacing}, preview={(currentBuildingPreview != null)}, product={(currentProduct != null ? currentProduct.ProductName : "NULL")}");
+ 
+  if (currentBuildingPreview != null)
+  {
+   Destroy(currentBuildingPreview);
+      Debug.Log("  ? Destroyed preview");
+ }
 
-        // Hide grid
+    // Hide grid
         if (placementGrid != null)
         {
-            placementGrid.Hide();
-        }
+   placementGrid.Hide();
+       Debug.Log("  ? Hid grid");
+   }
 
         // Play cancel sound only if we were actually placing
-        if (isPlacing)
+    if (isPlacing)
         {
-            PlaySound(placementCancelSound);
-        }
+   PlaySound(placementCancelSound);
+     }
 
-        currentBuildingPreview = null;
-        currentProduct = null;
+  // IMPORTANT: Clear these in correct order to avoid null refs
+   GameObject oldPreview = currentBuildingPreview;
+   Product oldProduct = currentProduct;
+        
+  currentBuildingPreview = null;
+     currentProduct = null;
         resourceManager = null;
         isPlacing = false;
-        canPlace = false;
+      canPlace = false;
         originalMaterials = null;
-        previewRenderers = null;
-        previewMaterials = null;
+previewRenderers = null;
+   previewMaterials = null;
 
-        Debug.Log("Placement cancelled");
+        Debug.Log($"? Placement cancelled. Was placing: {oldProduct?.ProductName ?? "nothing"}");
     }
 
     /// <summary>
