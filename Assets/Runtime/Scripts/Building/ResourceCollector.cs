@@ -52,31 +52,43 @@ public class ResourceCollector : MonoBehaviour
             return;
         }
 
-        // Add to resource manager
-        if (resourceManager != null)
+        // Check if resourceManager is valid
+        if (resourceManager == null)
         {
-            switch (resourceType)
-            {
-                case ResourceType.Gold:
-                    resourceManager.AddResources(0, 0, 0, amount);
-                    totalCollectedGold += amount;
-                    break;
-                case ResourceType.Food:
-                    resourceManager.AddResources(amount, 0, 0, 0);
-                    totalCollectedFood += amount;
-                    break;
-                case ResourceType.Wood:
-                    resourceManager.AddResources(0, amount, 0, 0);
-                    totalCollectedWood += amount;
-                    break;
-                case ResourceType.Stone:
-                    resourceManager.AddResources(0, 0, amount, 0);
-                    totalCollectedStone += amount;
-                    break;
-            }
-
-            Debug.Log($"{gameObject.name}: Deposited {amount} {resourceType}. Total {resourceType}: {GetTotalCollected(resourceType)}");
+            Debug.LogError($"{gameObject.name}: ResourceManager is NULL! Cannot deposit resources!");
+            return;
         }
+
+        Debug.Log($"{gameObject.name}: Depositing {amount} {resourceType} to ResourceManager '{resourceManager.gameObject.name}'");
+
+        // Add to resource manager
+        switch (resourceType)
+        {
+            case ResourceType.Gold:
+                int goldBefore = resourceManager.Gold;
+                resourceManager.AddResources(0, 0, 0, amount);
+                int goldAfter = resourceManager.Gold;
+                totalCollectedGold += amount;
+                Debug.Log($"  ? Gold: {goldBefore} + {amount} = {goldAfter} ?");
+                break;
+            case ResourceType.Food:
+                resourceManager.AddResources(amount, 0, 0, 0);
+                totalCollectedFood += amount;
+                Debug.Log($"  ? Food: +{amount} ?");
+                break;
+            case ResourceType.Wood:
+                resourceManager.AddResources(0, amount, 0, 0);
+                totalCollectedWood += amount;
+                Debug.Log($"  ? Wood: +{amount} ?");
+                break;
+            case ResourceType.Stone:
+                resourceManager.AddResources(0, 0, amount, 0);
+                totalCollectedStone += amount;
+                Debug.Log($"  ? Stone: +{amount} ?");
+                break;
+        }
+
+        Debug.Log($"{gameObject.name}: Total {resourceType} collected: {GetTotalCollected(resourceType)}");
 
         // Visual feedback
         PlayUnloadEffect();

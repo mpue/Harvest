@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e76a2f1aa40c02043842f8513426f73c, type: 3}
   m_Name: Energy Block
   m_EditorClassIdentifier: Assembly-CSharp::Product
-  productName: Energy Block
+  productName: EnergyBlock
   previewImage: {fileID: 21300000, guid: 9a8fac2dd265860489303ba67d329aa9, type: 3}
   description: The main energy source
   isBuilding: 1

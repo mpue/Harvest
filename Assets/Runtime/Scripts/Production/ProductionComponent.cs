@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
 
@@ -61,10 +61,42 @@ public class ProductionComponent : MonoBehaviour
     {
         buildingComponent = GetComponent<BuildingComponent>();
 
-        // Auto-find resource manager if not set
+        // Auto-find resource manager if not set - WITH TEAM CHECK!
         if (resourceManager == null)
         {
-            resourceManager = FindObjectOfType<ResourceManager>();
+            TeamComponent myTeam = GetComponent<TeamComponent>();
+
+            if (myTeam != null)
+            {
+                // Find ALL resource managers
+                ResourceManager[] allManagers = FindObjectsOfType<ResourceManager>();
+
+                // Try to find one with matching team name in GameObject name
+                foreach (var manager in allManagers)
+                {
+                    // Check if manager GameObject name matches team
+                    // e.g., "ResourceManagerAI" for Team.Enemy
+                    if (myTeam.CurrentTeam != Team.Player && manager.gameObject.name.Contains("AI"))
+                    {
+                        resourceManager = manager;
+                        Debug.Log($"Found AI ResourceManager: {manager.gameObject.name}");
+                        break;
+                    }
+                    else if (myTeam.CurrentTeam == Team.Player && !manager.gameObject.name.Contains("AI"))
+                    {
+                        resourceManager = manager;
+                        Debug.Log($"Found Player ResourceManager: {manager.gameObject.name}");
+                        break;
+                    }
+                }
+            }
+
+            // Fallback: Use first found (old behavior)
+            if (resourceManager == null)
+            {
+                resourceManager = FindObjectOfType<ResourceManager>();
+                Debug.LogWarning($"Using fallback ResourceManager: {(resourceManager != null ? resourceManager.gameObject.name : "NONE")}");
+            }
         }
 
         // Auto-find building placement if not set
@@ -149,9 +181,12 @@ public class ProductionComponent : MonoBehaviour
         // Check resources
         if (resourceManager != null)
         {
-            if (!resourceManager.CanAfford(product.FoodCost, product.WoodCost, product.StoneCost, product.GoldCost))
+            // Debug: Log current resources
+            Debug.Log($"Checking resources for {product.ProductName}: Need Gold={product.GoldCost}, Have Gold={resourceManager.Gold}");
+
+            if (!resourceManager.CanAfford(product.GoldCost))
             {
-                Debug.LogWarning($"Cannot afford {product.ProductName}");
+                Debug.LogWarning($"Cannot afford {product.ProductName}: Need Gold={product.GoldCost} but have Gold={resourceManager.Gold}");
                 return false;
             }
 
@@ -166,7 +201,7 @@ public class ProductionComponent : MonoBehaviour
             }
 
             // Spend resources
-            if (!resourceManager.SpendResources(product.FoodCost, product.WoodCost, product.StoneCost, product.GoldCost))
+            if (!resourceManager.SpendResources(product.GoldCost))
             {
                 Debug.LogWarning($"Failed to spend resources for {product.ProductName}");
                 return false;
@@ -190,11 +225,11 @@ public class ProductionComponent : MonoBehaviour
         {
             Debug.Log($"Cancelled production of {currentProduction.product.ProductName}");
 
-            // Refund resources
+            // Refund resources (gold only)
             if (resourceManager != null)
             {
                 Product p = currentProduction.product;
-                resourceManager.AddResources(p.FoodCost, p.WoodCost, p.StoneCost, p.GoldCost);
+                resourceManager.AddResources(0, 0, 0, p.GoldCost);
             }
 
             OnProductionCancelled?.Invoke(currentProduction.product);
@@ -213,11 +248,11 @@ public class ProductionComponent : MonoBehaviour
         {
             var item = productionQueue.Dequeue();
 
-            // Refund resources for queued items
+            // Refund resources for queued items (gold only)
             if (resourceManager != null)
             {
                 Product p = item.product;
-                resourceManager.AddResources(p.FoodCost, p.WoodCost, p.StoneCost, p.GoldCost);
+                resourceManager.AddResources(0, 0, 0, p.GoldCost);
             }
 
             OnProductionCancelled?.Invoke(item.product);
@@ -278,15 +313,56 @@ public class ProductionComponent : MonoBehaviour
         // Handle building placement
         if (completedProduct.IsBuilding)
         {
-            if (buildingPlacement != null)
+            // Check if BuildingPlacement system exists
+            if (buildingPlacement == null)
             {
-                Debug.Log($"Building {completedProduct.ProductName} ready for placement");
-                buildingPlacement.StartPlacement(completedProduct, resourceManager);
-                OnProductionCompleted?.Invoke(completedProduct, null);
+                Debug.LogError($"Cannot place building {completedProduct.ProductName} - No BuildingPlacement system found in scene!");
+                currentProduction = null;
+                currentProductionProgress = 0f;
+                return;
+            }
+
+            // Check if this is an AI building (by checking team)
+            TeamComponent team = GetComponent<TeamComponent>();
+            bool isAI = team != null && team.CurrentTeam != Team.Player;
+
+            if (isAI)
+            {
+                // AI: Place automatically near headquarters
+                Debug.Log($"AI Building {completedProduct.ProductName} - placing automatically");
+
+                // Get our team to pass to placement
+                TeamComponent producerTeam = GetComponent<TeamComponent>();
+                Team buildingTeam = producerTeam != null ? producerTeam.CurrentTeam : Team.Enemy;
+
+                bool success = buildingPlacement.PlaceBuildingAutomatic(
+                   completedProduct,
+                       transform.position,
+                 resourceManager,
+                 buildingTeam, // Pass the team!
+                    50f); // INCREASED search radius from 30f to 50f!
+
+                if (success)
+                {
+                    Debug.Log($"✓ AI successfully placed {completedProduct.ProductName}");
+                    OnProductionCompleted?.Invoke(completedProduct, null);
+                }
+                else
+                {
+                    Debug.LogWarning($"AI failed to place {completedProduct.ProductName} - no valid position found");
+                    // Refund resources since placement failed (gold only)
+                    if (resourceManager != null)
+                    {
+                        resourceManager.AddResources(0, 0, 0, completedProduct.GoldCost);
+                    }
+                }
             }
             else
             {
-                Debug.LogWarning("No BuildingPlacement component found!");
+                // Player: Manual placement
+                Debug.Log($"Building {completedProduct.ProductName} ready for placement");
+                buildingPlacement.StartPlacement(completedProduct, resourceManager);
+                OnProductionCompleted?.Invoke(completedProduct, null);
             }
         }
         // Handle normal unit spawning
@@ -297,22 +373,35 @@ public class ProductionComponent : MonoBehaviour
 
             Debug.Log($"Completed production of {completedProduct.ProductName}");
 
-            // Move unit to rally point if it's controllable
-            if (rallyPoint != null)
+            // Set team for spawned unit FIRST (before movement)
+            TeamComponent unitTeam = spawnedUnit.GetComponent<TeamComponent>();
+            TeamComponent producerTeam = GetComponent<TeamComponent>();
+            if (unitTeam != null && producerTeam != null)
             {
-                Controllable controllable = spawnedUnit.GetComponent<Controllable>();
-                if (controllable != null)
-                {
-                    controllable.MoveTo(rallyPoint.position);
-                }
+                unitTeam.SetTeam(producerTeam.CurrentTeam);
+            }
+
+            // Move unit to rally point if it's controllable
+            Controllable controllable = spawnedUnit.GetComponent<Controllable>();
+            if (controllable != null && rallyPoint != null)
+            {
+                controllable.MoveTo(rallyPoint.position);
             }
 
             OnProductionCompleted?.Invoke(completedProduct, spawnedUnit);
         }
 
+        // Clear current production
         currentProduction = null;
         currentProductionProgress = 0f;
-        OnQueueChanged?.Invoke();
+
+        // Start next in queue
+        if (productionQueue.Count > 0)
+        {
+            currentProduction = productionQueue.Dequeue();
+            OnProductionStarted?.Invoke(currentProduction.product);
+            OnQueueChanged?.Invoke();
+        }
     }
 
     /// <summary>

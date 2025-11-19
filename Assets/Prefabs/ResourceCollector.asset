@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e76a2f1aa40c02043842f8513426f73c, type: 3}
   m_Name: ResourceCollector
   m_EditorClassIdentifier: Assembly-CSharp::Product
-  productName: Resource Collectot
+  productName: ResourceCollector
   previewImage: {fileID: 21300000, guid: 9f30e7a34fe7ebf448f880cadf1fb775, type: 3}
   description: 
   isBuilding: 1

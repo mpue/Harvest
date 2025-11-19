@@ -260,15 +260,18 @@ public class HarvesterUnit : MonoBehaviour
 
         if (harvestTimer >= targetCollector.UnloadTime)
         {
+            Debug.Log($"{gameObject.name}: Unloading {currentCarried} {carriedResourceType} to {targetCollector.gameObject.name}");
+            Debug.Log($"  ? ResourceManager: {(resourceManager != null ? resourceManager.gameObject.name : "NULL")}");
+
             // Unload resources
             targetCollector.DepositResources(carriedResourceType, currentCarried, resourceManager);
+
+            Debug.Log($"{gameObject.name}: Unload complete. Inventory cleared.");
 
             currentCarried = 0;
             UpdateCarryVisual();
 
             harvestTimer = 0f;
-
-            Debug.Log($"{gameObject.name}: Unloaded resources");
 
             // Return to harvest if we still have a target
             if (targetCollectable != null && !targetCollectable.IsDepleted)
@@ -412,24 +415,24 @@ public class HarvesterUnit : MonoBehaviour
           currentState == HarvesterState.Unloading ? Color.green :
            Color.cyan;
 
-     Gizmos.DrawWireSphere(transform.position + Vector3.up * 2, 0.5f);
+        Gizmos.DrawWireSphere(transform.position + Vector3.up * 2, 0.5f);
 
-   // Draw harvest range
-    if (currentState == HarvesterState.Harvesting && targetCollectable != null)
-   {
+        // Draw harvest range
+        if (currentState == HarvesterState.Harvesting && targetCollectable != null)
+        {
             Gizmos.color = Color.yellow;
-    Gizmos.DrawWireSphere(transform.position, harvestRange);
+            Gizmos.DrawWireSphere(transform.position, harvestRange);
             Gizmos.DrawLine(transform.position, targetCollectable.transform.position);
         }
     }
 
     void OnDrawGizmosSelected()
     {
-  // Draw info
-        #if UNITY_EDITOR
-  UnityEditor.Handles.Label(transform.position + Vector3.up * 3f,
-            $"State: {currentState}\nCarrying: {currentCarried}/{carryCapacity}");
-        #endif
+        // Draw info
+#if UNITY_EDITOR
+        UnityEditor.Handles.Label(transform.position + Vector3.up * 3f,
+                  $"State: {currentState}\nCarrying: {currentCarried}/{carryCapacity}");
+#endif
     }
 }
 

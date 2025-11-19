@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e76a2f1aa40c02043842f8513426f73c, type: 3}
   m_Name: DefenceTower
   m_EditorClassIdentifier: Assembly-CSharp::Product
-  productName: Defence Tower
+  productName: DefenceTower
   previewImage: {fileID: 21300000, guid: 8b33e553091df8b43bb34eba098785d7, type: 3}
   description: 
   isBuilding: 1

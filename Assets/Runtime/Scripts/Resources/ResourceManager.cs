@@ -34,6 +34,10 @@ public class ResourceManager : MonoBehaviour
     {
         // Initialize with starting energy
         maxEnergy = startingEnergy;
+
+        // DEBUG: Log initial resources
+        Debug.Log($"ResourceManager '{gameObject.name}' initialized with: Gold={gold}, MaxEnergy={maxEnergy}");
+
         NotifyResourcesChanged();
         NotifyEnergyChanged();
     }
@@ -41,12 +45,12 @@ public class ResourceManager : MonoBehaviour
     /// <summary>
     /// Check if player can afford costs
     /// </summary>
-    public bool CanAfford(int foodCost, int woodCost, int stoneCost, int goldCost)
+    public bool CanAfford(int goldCost)
     {
-        return food >= foodCost &&
-     wood >= woodCost &&
-          stone >= stoneCost &&
-               gold >= goldCost;
+        // DEBUG: Log the check
+        Debug.Log($"ResourceManager '{gameObject.name}' CanAfford check: Current Gold={gold}, Need Gold={goldCost}, Result={gold >= goldCost}");
+
+        return gold >= goldCost; // FIXED: Actually check gold!
     }
 
     /// <summary>
@@ -60,17 +64,21 @@ public class ResourceManager : MonoBehaviour
     /// <summary>
     /// Spend resources
     /// </summary>
-    public bool SpendResources(int foodCost, int woodCost, int stoneCost, int goldCost)
+    public bool SpendResources(int goldCost)
     {
-        if (!CanAfford(foodCost, woodCost, stoneCost, goldCost))
+        if (!CanAfford(goldCost))
         {
+            Debug.LogWarning($"ResourceManager '{gameObject.name}' SpendResources FAILED: Cannot afford {goldCost} gold (have {gold})");
             return false;
         }
 
-        food -= foodCost;
-        wood -= woodCost;
-        stone -= stoneCost;
+        // Log BEFORE spending
+        Debug.Log($"ResourceManager '{gameObject.name}' BEFORE Spend: Gold={gold}");
+
         gold -= goldCost;
+
+        // Log AFTER spending
+        Debug.Log($"ResourceManager '{gameObject.name}' AFTER Spend: Gold={gold} (Spent: {goldCost})");
 
         NotifyResourcesChanged();
         return true;
