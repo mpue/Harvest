@@ -21,6 +21,7 @@ public class ProductionComponent : MonoBehaviour
 
     [Header("Building Placement")]
     [SerializeField] private BuildingPlacement buildingPlacement;
+    [SerializeField] private BuildingPlacementAI aiBuildingPlacement;
 
     // Production queue
     private Queue<ProductionQueueItem> productionQueue = new Queue<ProductionQueueItem>();
@@ -103,6 +104,12 @@ public class ProductionComponent : MonoBehaviour
         if (buildingPlacement == null)
         {
             buildingPlacement = FindObjectOfType<BuildingPlacement>();
+        }
+
+        // Auto-find AI building placement if not set
+        if (aiBuildingPlacement == null)
+        {
+            aiBuildingPlacement = FindObjectOfType<BuildingPlacementAI>();
         }
 
         // Create default spawn point if none is set
@@ -314,7 +321,7 @@ public class ProductionComponent : MonoBehaviour
         if (completedProduct.IsBuilding)
         {
             // Check if BuildingPlacement system exists
-            if (buildingPlacement == null)
+            if (buildingPlacement == null && aiBuildingPlacement == null)
             {
                 Debug.LogError($"Cannot place building {completedProduct.ProductName} - No BuildingPlacement system found in scene!");
                 currentProduction = null;
@@ -335,12 +342,27 @@ public class ProductionComponent : MonoBehaviour
                 TeamComponent producerTeam = GetComponent<TeamComponent>();
                 Team buildingTeam = producerTeam != null ? producerTeam.CurrentTeam : Team.Enemy;
 
-                bool success = buildingPlacement.PlaceBuildingAutomatic(
-                   completedProduct,
-                       transform.position,
-                 resourceManager,
-                 buildingTeam, // Pass the team!
-                    50f); // INCREASED search radius from 30f to 50f!
+                bool success = false;
+
+                if (aiBuildingPlacement != null)
+                {
+                    success = aiBuildingPlacement.PlaceBuildingAutomatic(
+                       completedProduct,
+                           transform.position,
+                     resourceManager,
+                     buildingTeam, // Pass the team!
+                        50f);
+                }
+                else if (buildingPlacement != null)
+                {
+                    // Fallback to generic placement if AI-specific not present
+                    success = buildingPlacement.PlaceBuildingAutomatic(
+                       completedProduct,
+                           transform.position,
+                     resourceManager,
+                     buildingTeam,
+                        50f);
+                }
 
                 if (success)
                 {

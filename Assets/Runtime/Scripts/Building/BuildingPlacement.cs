@@ -126,55 +126,55 @@ public class BuildingPlacement : MonoBehaviour
         // Add safety check
         if (!isPlacing || currentBuildingPreview == null)
         {
-return;
-      }
-
-        // DEBUG: Check if currentProduct became null!
-   if (currentProduct == null)
-        {
-     Debug.LogError($"CRITICAL: currentProduct is NULL during Update! isPlacing={isPlacing}, preview exists={currentBuildingPreview != null}");
-            // Force cancel to prevent further errors
-      CancelPlacement();
-   return;
+            return;
         }
 
-// Camera safety check
-  if (targetCamera == null)
+        // DEBUG: Check if currentProduct became null!
+        if (currentProduct == null)
         {
- Debug.LogWarning("BuildingPlacement: Camera is null during placement! Trying to find camera...");
-     targetCamera = Camera.main ?? FindObjectOfType<Camera>();
-         if (targetCamera == null)
-  {
-     Debug.LogError("BuildingPlacement: Still no camera found! Cancelling placement.");
-     CancelPlacement();
-        return;
-  }
-     }
+            Debug.LogError($"CRITICAL: currentProduct is NULL during Update! isPlacing={isPlacing}, preview exists={currentBuildingPreview != null}");
+            // Force cancel to prevent further errors
+            CancelPlacement();
+            return;
+        }
 
-   UpdateBuildingPreview();
-      HandleRotation();
+        // Camera safety check
+        if (targetCamera == null)
+        {
+            Debug.LogWarning("BuildingPlacement: Camera is null during placement! Trying to find camera...");
+            targetCamera = Camera.main ?? FindObjectOfType<Camera>();
+            if (targetCamera == null)
+            {
+                Debug.LogError("BuildingPlacement: Still no camera found! Cancelling placement.");
+                CancelPlacement();
+                return;
+            }
+        }
 
-   // Place on left click
+        UpdateBuildingPreview();
+        HandleRotation();
+
+        // Place on left click
         if (Input.GetMouseButtonDown(0))
         {
-       Debug.Log($"LEFT CLICK: canPlace={canPlace}, currentProduct={(currentProduct != null ? currentProduct.ProductName : "NULL")}");
-   
-      if (canPlace)
-  {
-      PlaceBuilding();
-   }
-  else
-   {
-  Debug.LogWarning("Cannot place building here!");
-   PlaySound(placementInvalidSound);
-      }
-     }
+            Debug.Log($"LEFT CLICK: canPlace={canPlace}, currentProduct={(currentProduct != null ? currentProduct.ProductName : "NULL")}");
+
+            if (canPlace)
+            {
+                PlaceBuilding();
+            }
+            else
+            {
+                Debug.LogWarning("Cannot place building here!");
+                PlaySound(placementInvalidSound);
+            }
+        }
 
         // Cancel on right click or ESC
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
-     {
-   Debug.Log("Cancelling placement (user input)");
-       CancelPlacement();
+        {
+            Debug.Log("Cancelling placement (user input)");
+            CancelPlacement();
         }
     }
     void OnGUI()
@@ -195,7 +195,7 @@ return;
         }
 
         // DEBUG OVERLAY for Runtime builds (helps diagnose issues!)
-        #if !UNITY_EDITOR
+#if !UNITY_EDITOR
         if (Input.GetKey(KeyCode.F1)) // Press F1 to show debug info
    {
         GUIStyle debugStyle = new GUIStyle(GUI.skin.box);
@@ -222,7 +222,7 @@ debugStyle.normal.textColor = Color.yellow;
       hintStyle.normal.textColor = Color.gray;
          GUI.Label(new Rect(10, 330, 300, 20), "Hold F1 to show debug info", hintStyle);
         }
-        #endif
+#endif
     }
 
     /// <summary>
@@ -231,50 +231,50 @@ debugStyle.normal.textColor = Color.yellow;
     public void StartPlacement(Product product, ResourceManager manager)
     {
         Debug.Log($"=== StartPlacement called === Product: {(product != null ? product.ProductName : "NULL")}, Manager: {(manager != null ? manager.gameObject.name : "NULL")}");
-   
-  if (product == null || !product.IsBuilding || product.Prefab == null)
+
+        if (product == null || !product.IsBuilding || product.Prefab == null)
         {
-        Debug.LogError($"Cannot start placement: Product={product != null}, IsBuilding={product?.IsBuilding}, Prefab={product?.Prefab != null}");
-  return;
+            Debug.LogError($"Cannot start placement: Product={product != null}, IsBuilding={product?.IsBuilding}, Prefab={product?.Prefab != null}");
+            return;
         }
 
         if (targetCamera == null)
         {
             Debug.LogError("No camera found for building placement!");
-     return;
-  }
+            return;
+        }
 
         // Cancel any existing placement
         if (isPlacing)
-      {
-       Debug.Log("Cancelling existing placement before starting new one");
-   CancelPlacement();
+        {
+            Debug.Log("Cancelling existing placement before starting new one");
+            CancelPlacement();
         }
 
         currentProduct = product;
-     resourceManager = manager;
-        
-    Debug.Log($"? Set currentProduct to: {currentProduct.ProductName}");
-Debug.Log($"? Set resourceManager to: {resourceManager.gameObject.name}");
+        resourceManager = manager;
 
-  // Create preview
+        Debug.Log($"? Set currentProduct to: {currentProduct.ProductName}");
+        Debug.Log($"? Set resourceManager to: {resourceManager.gameObject.name}");
+
+        // Create preview
         currentBuildingPreview = Instantiate(product.Prefab);
-      currentRotation = 0f;
+        currentRotation = 0f;
         currentBuildingPreview.transform.rotation = Quaternion.Euler(0, currentRotation, 0);
 
         Debug.Log($"? Created preview: {currentBuildingPreview.name}");
 
         // Disable all components on preview
- DisableComponentsOnPreview(currentBuildingPreview);
+        DisableComponentsOnPreview(currentBuildingPreview);
 
         // Get all renderers for material swapping
         previewRenderers = currentBuildingPreview.GetComponentsInChildren<Renderer>();
-     StoreOriginalMaterials();
+        StoreOriginalMaterials();
 
         // Create preview materials
-CreatePreviewMaterials();
+        CreatePreviewMaterials();
 
-      // Apply initial material
+        // Apply initial material
         UpdatePreviewMaterial(false);
 
         isPlacing = true;
@@ -282,7 +282,7 @@ CreatePreviewMaterials();
         // Show grid
         if (showGrid && placementGrid != null)
         {
-        placementGrid.Show();
+            placementGrid.Show();
         }
 
         // Play start sound
@@ -402,8 +402,8 @@ CreatePreviewMaterials();
                 // Use VERY LARGE radius for AI placement (4x base radius!)
                 if (IsValidPlacementWithRadius(testPosition, collisionCheckRadius * 4.0f))
                 {
-Debug.Log($"Found valid position at {testPosition} after {attempts + 1} attempts (distance from center: {Vector3.Distance(center, testPosition):F1}m)");
-         return testPosition;
+                    Debug.Log($"Found valid position at {testPosition} after {attempts + 1} attempts (distance from center: {Vector3.Distance(center, testPosition):F1}m)");
+                    return testPosition;
                 }
                 else
                 {
@@ -434,32 +434,32 @@ Debug.Log($"Found valid position at {testPosition} after {attempts + 1} attempts
     {
         // === METHOD 1: Check ALL Buildings directly (ignore layers!) ===
         BuildingComponent[] allBuildings = FindObjectsOfType<BuildingComponent>();
-    foreach (var building in allBuildings)
+        foreach (var building in allBuildings)
         {
-    // Skip if it's the preview
-if (currentBuildingPreview != null && building.gameObject == currentBuildingPreview)
+            // Skip if it's the preview
+            if (currentBuildingPreview != null && building.gameObject == currentBuildingPreview)
                 continue;
 
-          float distance = Vector3.Distance(position, building.transform.position);
+            float distance = Vector3.Distance(position, building.transform.position);
             if (distance < radius)
             {
-       Debug.Log($"Position {position} invalid: Too close to building {building.gameObject.name} (distance {distance:F1}m < {radius}m)");
-      return false;
-   }
+                Debug.Log($"Position {position} invalid: Too close to building {building.gameObject.name} (distance {distance:F1}m < {radius}m)");
+                return false;
+            }
         }
 
         // === METHOD 2: Check minimum distance from HQ (VERY IMPORTANT!) ===
         foreach (var building in allBuildings)
- {
-       if (building.IsHeadquarter)
+        {
+            if (building.IsHeadquarter)
             {
-     float distanceToHQ = Vector3.Distance(position, building.transform.position);
-  if (distanceToHQ < minDistanceFromHQ)
-           {
-   Debug.Log($"Position {position} invalid: Too close to HQ {building.gameObject.name} (distance {distanceToHQ:F1}m < {minDistanceFromHQ}m)");
- return false;
-     }
-      }
+                float distanceToHQ = Vector3.Distance(position, building.transform.position);
+                if (distanceToHQ < minDistanceFromHQ)
+                {
+                    Debug.Log($"Position {position} invalid: Too close to HQ {building.gameObject.name} (distance {distanceToHQ:F1}m < {minDistanceFromHQ}m)");
+                    return false;
+                }
+            }
         }
 
         // === METHOD 3: Check Physics OverlapSphere (if layers configured) ===
@@ -469,28 +469,28 @@ if (currentBuildingPreview != null && building.gameObject == currentBuildingPrev
 
             foreach (var collider in colliders)
             {
-       if (currentBuildingPreview == null ||
-                (collider.gameObject != currentBuildingPreview &&
-     !collider.transform.IsChildOf(currentBuildingPreview.transform)))
-            {
-      if (!collider.isTrigger)
-            {
-         Debug.Log($"Position {position} invalid: Physics collision with {collider.gameObject.name}");
-             return false;
-          }
-     }
+                if (currentBuildingPreview == null ||
+                         (collider.gameObject != currentBuildingPreview &&
+              !collider.transform.IsChildOf(currentBuildingPreview.transform)))
+                {
+                    if (!collider.isTrigger)
+                    {
+                        Debug.Log($"Position {position} invalid: Physics collision with {collider.gameObject.name}");
+                        return false;
+                    }
+                }
             }
- }
+        }
 
         // === METHOD 4: Check energy requirements ===
         if (currentProduct != null && currentProduct.BuildingType != BuildingType.EnergyBlock)
         {
-       if (resourceManager != null && !resourceManager.HasAvailableEnergy(currentProduct.EnergyCost))
-          {
-      Debug.Log($"Position {position} invalid: Not enough energy");
-             return false;
-  }
-     }
+            if (resourceManager != null && !resourceManager.HasAvailableEnergy(currentProduct.EnergyCost))
+            {
+                Debug.Log($"Position {position} invalid: Not enough energy");
+                return false;
+            }
+        }
 
         return true;
     }
@@ -502,62 +502,62 @@ if (currentBuildingPreview != null && building.gameObject == currentBuildingPrev
     {
         // Safety check
         if (targetCamera == null)
-     {
-     Debug.LogError("BuildingPlacement.UpdateBuildingPreview: Camera is null!");
-   return;
-  }
+        {
+            Debug.LogError("BuildingPlacement.UpdateBuildingPreview: Camera is null!");
+            return;
+        }
 
         Ray ray = targetCamera.ScreenPointToRay(Input.mousePosition);
-        
+
         // DEBUG: Visualize raycast in Scene View (only visible during Play in Editor)
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.red, 0.016f);
-      #endif
- 
+#endif
+
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, 1000f, groundLayer))
         {
             // DEBUG: Visualize hit point
-  #if UNITY_EDITOR
-       Debug.DrawLine(hit.point, hit.point + Vector3.up * 2f, Color.green, 0.016f);
-    #endif
-      
-   Vector3 position = hit.point;
-      position.y += placementHeight;
+#if UNITY_EDITOR
+            Debug.DrawLine(hit.point, hit.point + Vector3.up * 2f, Color.green, 0.016f);
+#endif
 
-    // Snap to grid if enabled
-      if (snapToGrid)
-   {
-         position.x = Mathf.Round(position.x / gridSize) * gridSize;
-   position.z = Mathf.Round(position.z / gridSize) * gridSize;
-  }
+            Vector3 position = hit.point;
+            position.y += placementHeight;
 
-   currentBuildingPreview.transform.position = position;
+            // Snap to grid if enabled
+            if (snapToGrid)
+            {
+                position.x = Mathf.Round(position.x / gridSize) * gridSize;
+                position.z = Mathf.Round(position.z / gridSize) * gridSize;
+            }
 
-   // Update grid position
-     if (showGrid && placementGrid != null)
-   {
-    placementGrid.SetPosition(position);
-    }
+            currentBuildingPreview.transform.position = position;
 
-    // Check if placement is valid
-      canPlace = IsValidPlacement(position);
-   UpdatePreviewMaterial(canPlace);
-   }
-    else
+            // Update grid position
+            if (showGrid && placementGrid != null)
+            {
+                placementGrid.SetPosition(position);
+            }
+
+            // Check if placement is valid
+            canPlace = IsValidPlacement(position);
+            UpdatePreviewMaterial(canPlace);
+        }
+        else
         {
-   // No ground hit - show as invalid
+            // No ground hit - show as invalid
             canPlace = false;
-   UpdatePreviewMaterial(false);
-      
-      // DEBUG: Log raycast misses in builds
+            UpdatePreviewMaterial(false);
+
+            // DEBUG: Log raycast misses in builds
 #if !UNITY_EDITOR
       if (Time.frameCount % 60 == 0) // Log every 60 frames to avoid spam
   {
           Debug.LogWarning($"BuildingPlacement: Raycast missing ground! Ray origin: {ray.origin}, direction: {ray.direction}, groundLayer: {groundLayer.value}");
          }
-   #endif
+#endif
         }
     }
 
@@ -675,39 +675,39 @@ if (currentBuildingPreview != null && building.gameObject == currentBuildingPrev
     /// </summary>
     public void CancelPlacement()
     {
-   Debug.Log($"=== CancelPlacement called === isPlacing={isPlacing}, preview={(currentBuildingPreview != null)}, product={(currentProduct != null ? currentProduct.ProductName : "NULL")}");
- 
-  if (currentBuildingPreview != null)
-  {
-   Destroy(currentBuildingPreview);
-      Debug.Log("  ? Destroyed preview");
- }
+        Debug.Log($"=== CancelPlacement called === isPlacing={isPlacing}, preview={(currentBuildingPreview != null)}, product={(currentProduct != null ? currentProduct.ProductName : "NULL")}");
 
-    // Hide grid
+        if (currentBuildingPreview != null)
+        {
+            Destroy(currentBuildingPreview);
+            Debug.Log("  ? Destroyed preview");
+        }
+
+        // Hide grid
         if (placementGrid != null)
         {
-   placementGrid.Hide();
-       Debug.Log("  ? Hid grid");
-   }
+            placementGrid.Hide();
+            Debug.Log("  ? Hid grid");
+        }
 
         // Play cancel sound only if we were actually placing
-    if (isPlacing)
+        if (isPlacing)
         {
-   PlaySound(placementCancelSound);
-     }
+            PlaySound(placementCancelSound);
+        }
 
-  // IMPORTANT: Clear these in correct order to avoid null refs
-   GameObject oldPreview = currentBuildingPreview;
-   Product oldProduct = currentProduct;
-        
-  currentBuildingPreview = null;
-     currentProduct = null;
+        // IMPORTANT: Clear these in correct order to avoid null refs
+        GameObject oldPreview = currentBuildingPreview;
+        Product oldProduct = currentProduct;
+
+        currentBuildingPreview = null;
+        currentProduct = null;
         resourceManager = null;
         isPlacing = false;
-      canPlace = false;
+        canPlace = false;
         originalMaterials = null;
-previewRenderers = null;
-   previewMaterials = null;
+        previewRenderers = null;
+        previewMaterials = null;
 
         Debug.Log($"? Placement cancelled. Was placing: {oldProduct?.ProductName ?? "nothing"}");
     }

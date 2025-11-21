@@ -13,7 +13,7 @@ public class AIBuildingPlacer : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private GameObject aiHeadquarters;
-    [SerializeField] private BuildingPlacement buildingPlacement;
+    [SerializeField] private BuildingPlacementAI buildingPlacement;
 
     /// <summary>
     /// Place a building at a suitable location
@@ -39,10 +39,10 @@ public class AIBuildingPlacer : MonoBehaviour
             {
                 // Simulate placement
                 GameObject building = GameObject.Instantiate(
-        buildingProduct.Prefab,
-              placement,
-      Quaternion.identity
-           );
+                buildingProduct.Prefab,
+                placement,
+                Quaternion.identity
+                );
 
                 // Initialize building
                 BuildingComponent buildingComp = building.GetComponent<BuildingComponent>();
