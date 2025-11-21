@@ -58,6 +58,7 @@ public class HarvesterUnit : MonoBehaviour
         }
 
         UpdateCarryVisual();
+        AutoGather();
     }
 
     void Update()

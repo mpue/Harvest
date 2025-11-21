@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Reflection;
 
 /// <summary>
 /// Component that enables a BaseUnit to produce entities
@@ -109,7 +110,96 @@ public class ProductionComponent : MonoBehaviour
         // Auto-find AI building placement if not set
         if (aiBuildingPlacement == null)
         {
-            aiBuildingPlacement = FindObjectOfType<BuildingPlacementAI>();
+            // Try to find an AI placer that already matches our team (prevents sharing player placer)
+            TeamComponent myTeam = GetComponent<TeamComponent>();
+            BuildingPlacementAI[] allAIPlacers = FindObjectsOfType<BuildingPlacementAI>();
+
+            if (myTeam != null)
+            {
+                foreach (var placer in allAIPlacers)
+                {
+                    if (placer != null && placer.gameObject.name.Contains(myTeam.CurrentTeam.ToString()))
+                    {
+                        aiBuildingPlacement = placer;
+                        Debug.Log($"Assigned existing AI BuildingPlacement for team {myTeam.CurrentTeam}: {placer.gameObject.name}");
+                        break;
+                    }
+                }
+
+                // If still null and this producer belongs to an AI team, create a dedicated AI placer
+                if (aiBuildingPlacement == null && myTeam.CurrentTeam != Team.Player)
+                {
+                    // Create or find a container for AI systems
+                    GameObject aiRoot = GameObject.Find("AI_Systems");
+                    if (aiRoot == null)
+                    {
+                        aiRoot = new GameObject("AI_Systems");
+                    }
+
+                    GameObject aiPlacerObj = new GameObject($"BuildingPlacementAI_{myTeam.CurrentTeam}");
+                    aiPlacerObj.transform.SetParent(aiRoot.transform);
+                    aiBuildingPlacement = aiPlacerObj.AddComponent<BuildingPlacementAI>();
+
+                    Debug.Log($"Created new AI BuildingPlacement for team {myTeam.CurrentTeam}: {aiPlacerObj.name}");
+
+                    // Try to copy placement settings from existing BuildingPlacement or AI placer so layers / heights match
+                    Component source = null;
+                    if (buildingPlacement != null)
+                        source = buildingPlacement as Component;
+                    else
+                    {
+                        var anyPlayerPlacer = FindObjectOfType<BuildingPlacement>();
+                        if (anyPlayerPlacer != null)
+                            source = anyPlayerPlacer as Component;
+                        else if (allAIPlacers.Length > 0)
+                            source = allAIPlacers[0] as Component;
+                    }
+
+                    if (source != null)
+                    {
+                        try
+                        {
+                            // List of common private field names to copy
+                            string[] fieldsToCopy = new string[] {
+                                "groundLayer",
+                                "placementHeight",
+                                "gridSize",
+                                "snapToGrid",
+                                "collisionCheckRadius",
+                                "obstacleLayer",
+                                "minDistanceFromHQ"
+                            };
+
+                            Type srcType = source.GetType();
+                            Type dstType = aiBuildingPlacement.GetType();
+
+                            foreach (var fieldName in fieldsToCopy)
+                            {
+                                FieldInfo srcField = srcType.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+                                FieldInfo dstField = dstType.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+
+                                if (srcField != null && dstField != null)
+                                {
+                                    object val = srcField.GetValue(source);
+                                    dstField.SetValue(aiBuildingPlacement, val);
+                                    Debug.Log($"Copied '{fieldName}' from {source.GetType().Name} to BuildingPlacementAI: {val}");
+                                }
+                            }
+                        }
+                        catch (System.Exception ex)
+                        {
+                            Debug.LogWarning($"Failed to copy BuildingPlacement settings to AI placer: {ex.Message}");
+                        }
+                    }
+                }
+            }
+
+            // Fallback: if none found/created, use any existing one if present
+            if (aiBuildingPlacement == null && allAIPlacers.Length > 0)
+            {
+                aiBuildingPlacement = allAIPlacers[0];
+                Debug.LogWarning($"No team-specific BuildingPlacementAI found; assigned first available: {aiBuildingPlacement.gameObject.name}");
+            }
         }
 
         // Create default spawn point if none is set
@@ -351,7 +441,7 @@ public class ProductionComponent : MonoBehaviour
                            transform.position,
                      resourceManager,
                      buildingTeam, // Pass the team!
-                        50f);
+                        100f);
                 }
                 else if (buildingPlacement != null)
                 {
@@ -361,7 +451,7 @@ public class ProductionComponent : MonoBehaviour
                            transform.position,
                      resourceManager,
                      buildingTeam,
-                        50f);
+                        100f);
                 }
 
                 if (success)

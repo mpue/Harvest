@@ -24,9 +24,9 @@ public class AITaskManager
     {
         if (!tasks.Contains(task))
         {
-        tasks.Add(task);
+            tasks.Add(task);
             SortTasks();
-Debug.Log($"AI TaskManager: Added task '{task.TaskName}' with priority {task.Priority}");
+            Debug.Log($"AI TaskManager: Added task '{task.TaskName}' with priority {task.Priority}");
         }
     }
 
@@ -35,7 +35,7 @@ Debug.Log($"AI TaskManager: Added task '{task.TaskName}' with priority {task.Pri
     /// </summary>
     public void RemoveTask(AITask task)
     {
- tasks.Remove(task);
+        tasks.Remove(task);
     }
 
     /// <summary>
@@ -48,10 +48,10 @@ Debug.Log($"AI TaskManager: Added task '{task.TaskName}' with priority {task.Pri
 
     /// <summary>
     /// Sort tasks by priority (higher = more important)
-  /// </summary>
+    /// </summary>
     private void SortTasks()
     {
-  tasks = tasks.OrderByDescending(t => t.Priority).ToList();
+        tasks = tasks.OrderByDescending(t => t.Priority).ToList();
     }
 
     /// <summary>
@@ -59,27 +59,27 @@ Debug.Log($"AI TaskManager: Added task '{task.TaskName}' with priority {task.Pri
     /// </summary>
     public void Update()
     {
-      // Check tasks at intervals to reduce CPU load
+        // Check tasks at intervals to reduce CPU load
         if (Time.time - lastTaskCheckTime < taskCheckInterval)
         {
-         return;
+            return;
         }
 
         lastTaskCheckTime = Time.time;
 
         // Remove completed tasks
-      tasks.RemoveAll(t => t.IsComplete);
+        tasks.RemoveAll(t => t.IsComplete);
 
         // Sort by priority
         SortTasks();
 
-   // Try to execute highest priority task that can run
- foreach (var task in tasks)
-  {
+        // Try to execute highest priority task that can run
+        foreach (var task in tasks)
+        {
             if (task.CheckConditions())
-     {
-      task.Execute();
-     break; // Execute only one task per update
+            {
+                task.Execute();
+                break; // Execute only one task per update
             }
         }
     }
@@ -91,18 +91,18 @@ Debug.Log($"AI TaskManager: Added task '{task.TaskName}' with priority {task.Pri
     {
         if (tasks.Count == 0)
         {
-          return "No active tasks";
+            return "No active tasks";
         }
 
         string info = $"Active Tasks ({tasks.Count}):\n";
         foreach (var task in tasks)
         {
-         info += $"  {task.GetDebugInfo()}\n";
-     }
+            info += $"  {task.GetDebugInfo()}\n";
+        }
         return info;
     }
 
-  /// <summary>
+    /// <summary>
     /// Get count of active tasks
     /// </summary>
     public int ActiveTaskCount => tasks.Count(t => !t.IsComplete);
@@ -111,7 +111,7 @@ Debug.Log($"AI TaskManager: Added task '{task.TaskName}' with priority {task.Pri
     /// Get highest priority task
     /// </summary>
     public AITask GetNextTask()
- {
-      return tasks.FirstOrDefault(t => !t.IsComplete && t.CanExecute);
+    {
+        return tasks.FirstOrDefault(t => !t.IsComplete && t.CanExecute);
     }
 }

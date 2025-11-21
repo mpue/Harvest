@@ -206,6 +206,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ac8b39085303b5d4a8c8356a7d1b5613, type: 3}
       insertIndex: -1
       addedObject: {fileID: -6704709624814073634}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ac8b39085303b5d4a8c8356a7d1b5613, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8783764414723911047}
   m_SourcePrefab: {fileID: 100100000, guid: ac8b39085303b5d4a8c8356a7d1b5613, type: 3}
 --- !u!4 &3821311939535255519 stripped
 Transform:
@@ -330,6 +333,7 @@ MonoBehaviour:
   showRallyPointGizmo: 1
   resourceManager: {fileID: 0}
   buildingPlacement: {fileID: 0}
+  aiBuildingPlacement: {fileID: 0}
 --- !u!208 &-6704709624814073634
 NavMeshObstacle:
   m_ObjectHideFlags: 0
@@ -346,6 +350,22 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 6.6060004, z: 0}
   m_TimeToStationary: 0.5
+--- !u!114 &-8783764414723911047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486665339605970277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a4a0c1e4d806c5489ee1736ba9d3e9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingComponent
+  buildingProduct: {fileID: 11400000, guid: 427a1350bb182dd40917f6beda6222c9, type: 2}
+  resourceManager: {fileID: 0}
+  isConstructed: 1
+  isPowered: 1
 --- !u!1001 &9119705835969286710
 PrefabInstance:
   m_ObjectHideFlags: 0

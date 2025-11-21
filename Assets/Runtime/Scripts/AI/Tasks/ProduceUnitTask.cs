@@ -40,6 +40,7 @@ public class ProduceUnitTask : AITask
         {
             IsComplete = true;
             CanExecute = false;
+            Debug.Log($"ProduceUnitTask: {unitName} target reached ({currentCount}/{targetCount}) - marking complete");
             return false;
         }
 
@@ -47,6 +48,7 @@ public class ProduceUnitTask : AITask
         if (!controller.HasBuilding(producerBuildingName))
         {
             CanExecute = false;
+            Debug.LogWarning($"ProduceUnitTask: {unitName} cannot be produced - no {producerBuildingName} found");
             return false;
         }
 

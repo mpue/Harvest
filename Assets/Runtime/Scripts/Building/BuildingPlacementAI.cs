@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 /// <summary>
 /// Handles building placement preview and validation
@@ -30,71 +30,14 @@ public class BuildingPlacementAI : MonoBehaviour
 
     void Awake()
     {
-        // Find camera if not set - IMPROVED for builds!
-        if (targetCamera == null)
-        {
-            targetCamera = Camera.main;
-
-            if (targetCamera == null)
-            {
-                // Fallback: Find by tag
-                GameObject camObj = GameObject.FindGameObjectWithTag("MainCamera");
-                if (camObj != null)
-                {
-                    targetCamera = camObj.GetComponent<Camera>();
-                    Debug.Log("BuildingPlacement: Found camera by tag");
-                }
-            }
-
-            if (targetCamera == null)
-            {
-                // Last resort: Find any camera
-                targetCamera = FindObjectOfType<Camera>();
-                Debug.Log("BuildingPlacement: Found camera using FindObjectOfType");
-            }
-
-            if (targetCamera == null)
-            {
-                Debug.LogError("BuildingPlacement: NO CAMERA FOUND! Building placement will not work!");
-            }
-            else
-            {
-                Debug.Log($"BuildingPlacement: Using camera '{targetCamera.gameObject.name}'");
-            }
-        }
-
-
-        Debug.Log("BuildingPlacement: Initialized successfully");
+        // nothing special here for AI placer
+        Debug.Log("BuildingPlacementAI: Initialized");
     }
 
     void Update()
     {
-        // Add safety check
-        if (!isPlacing)
-        {
-            return;
-        }
-
-        // DEBUG: Check if currentProduct became null!
-        if (currentProduct == null)
-        {
-            // Force cancel to prevent further errors
-            CancelPlacement();
-            return;
-        }
-
-        // Camera safety check
-        if (targetCamera == null)
-        {
-            Debug.LogWarning("BuildingPlacement: Camera is null during placement! Trying to find camera...");
-            targetCamera = Camera.main ?? FindObjectOfType<Camera>();
-            if (targetCamera == null)
-            {
-                Debug.LogError("BuildingPlacement: Still no camera found! Cancelling placement.");
-                CancelPlacement();
-                return;
-            }
-        }
+        // AI placer doesn't handle user input
+        if (!isPlacing) return;
     }
 
     /// <summary>
@@ -117,6 +60,40 @@ public class BuildingPlacementAI : MonoBehaviour
         if (validPosition == Vector3.zero)
         {
             Debug.LogWarning($"Could not find valid placement position for {product.ProductName} near {centerPosition}");
+            // Clear temporary values
+            currentProduct = null;
+            resourceManager = null;
+            return false;
+        }
+
+        // Final safety check: ensure prefab won't overlap existing objects (prevents stacking on top)
+        float checkRadius = 3f; // Use a reasonable default
+
+        // Skip expensive prefab instantiation and use configured collision radius instead
+        checkRadius = Mathf.Max(3f, collisionCheckRadius * 0.5f);
+
+        // Perform overlap test ignoring triggers - check for BUILDINGS only
+        BuildingComponent[] nearbyBuildings = FindObjectsOfType<BuildingComponent>();
+        bool blocked = false;
+
+        foreach (var existingBuilding in nearbyBuildings)
+        {
+            if (existingBuilding == null) continue;
+
+            // Check distance to this building
+            float distToBuilding = Vector3.Distance(validPosition, existingBuilding.transform.position);
+
+            // Block if too close (use a minimum spacing)
+            if (distToBuilding < checkRadius)
+            {
+                Debug.Log($"Placement blocked: Too close to existing building '{existingBuilding.gameObject.name}' at {existingBuilding.transform.position} (distance {distToBuilding:F1}m < {checkRadius}m)");
+                blocked = true;
+                break;
+            }
+        }
+
+        if (blocked)
+        {
             // Clear temporary values
             currentProduct = null;
             resourceManager = null;
@@ -169,68 +146,63 @@ public class BuildingPlacementAI : MonoBehaviour
     private Vector3 FindValidPlacementPosition(Vector3 center, float searchRadius)
     {
         int attempts = 0;
-        int maxAttempts = 100; // Increased from 50 to 100 for better chance
+        int maxAttempts = 50; // Reduced from 100 to make it faster but still thorough
 
-        Debug.Log($"FindValidPlacementPosition: Starting search near {center}, radius {searchRadius}m, groundLayer={groundLayer.value}, collisionRadius={collisionCheckRadius * 3.0f}m, minDistanceFromHQ={minDistanceFromHQ}m");
+        Debug.Log($"FindValidPlacementPosition: Starting search near {center}, radius {searchRadius}m");
 
-        while (attempts < maxAttempts)
+        // STRATEGY: Place buildings in a SPIRAL pattern starting close to HQ, not randomly
+        float angleStep = 45f; // 8 directions
+        float radiusStep = 5f; // Move outward in 5m increments
+
+        for (float currentRadius = minDistanceFromHQ; currentRadius <= searchRadius && attempts < maxAttempts; currentRadius += radiusStep)
         {
-            // Try random positions in a circle around center
-            // Use OUTER ring (not inner) to keep buildings away from center
-            float minRadius = searchRadius * 0.4f; // Start at 40% of radius (not center!)
-            float maxRadius = searchRadius;
-
-            float randomRadius = Random.Range(minRadius, maxRadius);
-            float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-
-            Vector3 testPosition = center + new Vector3(
-                    Mathf.Cos(randomAngle) * randomRadius,
-             0,
-               Mathf.Sin(randomAngle) * randomRadius);
-
-            // Snap to grid if enabled
-            if (snapToGrid)
+            for (float angle = 0f; angle < 360f; angle += angleStep)
             {
-                testPosition.x = Mathf.Round(testPosition.x / gridSize) * gridSize;
-                testPosition.z = Mathf.Round(testPosition.z / gridSize) * gridSize;
-            }
+                attempts++;
+                if (attempts >= maxAttempts) break;
 
-            // Raycast down to find ground
-            Ray ray = new Ray(testPosition + Vector3.up * 100f, Vector3.down);
-            RaycastHit hit;
+                float angleRad = angle * Mathf.Deg2Rad;
 
-            if (Physics.Raycast(ray, out hit, 200f, groundLayer))
-            {
-                testPosition = hit.point;
-                testPosition.y += placementHeight;
+                Vector3 testPosition = center + new Vector3(
+                        Mathf.Cos(angleRad) * currentRadius,
+                 0,
+                   Mathf.Sin(angleRad) * currentRadius);
 
-                // Check if this position is valid
-                // Use VERY LARGE radius for AI placement (4x base radius!)
-                if (IsValidPlacementWithRadius(testPosition, collisionCheckRadius * 4.0f))
+                // Snap to grid if enabled
+                if (snapToGrid)
                 {
-                    Debug.Log($"Found valid position at {testPosition} after {attempts + 1} attempts (distance from center: {Vector3.Distance(center, testPosition):F1}m)");
-                    return testPosition;
+                    testPosition.x = Mathf.Round(testPosition.x / gridSize) * gridSize;
+                    testPosition.z = Mathf.Round(testPosition.z / gridSize) * gridSize;
+                }
+
+                // Raycast down to find ground - START FROM HIGH UP
+                Ray ray = new Ray(testPosition + Vector3.up * 200f, Vector3.down);
+                RaycastHit hit;
+
+                if (Physics.Raycast(ray, out hit, 400f, groundLayer))
+                {
+                    // Use EXACT ground position
+                    testPosition = hit.point;
+
+                    // Check if this position is valid with MODERATE radius
+                    if (IsValidPlacementWithRadius(testPosition, collisionCheckRadius * 2.0f))
+                    {
+                        Debug.Log($"? Found valid position at {testPosition} (Y={testPosition.y:F2}) after {attempts} attempts (distance from center: {Vector3.Distance(center, testPosition):F1}m, angle: {angle}°)");
+                        return testPosition;
+                    }
                 }
                 else
                 {
-                    if (attempts < 5 || attempts % 20 == 0) // Log first 5 and every 20th attempt
+                    // Log raycast failures for debugging
+                    if (attempts <= 5)
                     {
-                        Debug.Log($"Attempt {attempts + 1}: Position {testPosition} invalid (distance from center: {Vector3.Distance(center, testPosition):F1}m)");
+                        Debug.LogWarning($"Raycast MISS at attempt {attempts}: Position {testPosition}, GroundLayer mask: {groundLayer.value}");
                     }
                 }
             }
-            else
-            {
-                if (attempts < 5 || attempts % 20 == 0)
-                {
-                    Debug.Log($"Attempt {attempts + 1}: Raycast failed at {testPosition + Vector3.up * 100f} (no ground hit)");
-                }
-            }
-
-            attempts++;
         }
 
-        Debug.LogWarning($"Failed to find valid position after {maxAttempts} attempts!");
+        Debug.LogWarning($"Failed to find valid position after {attempts} attempts using spiral pattern!");
         return Vector3.zero; // No valid position found
     }
     /// <summary>
@@ -238,11 +210,17 @@ public class BuildingPlacementAI : MonoBehaviour
     /// </summary>
     private bool IsValidPlacementWithRadius(Vector3 position, float radius)
     {
+        if (position.y != 0)
+        {
+            Debug.Log($"Position {position} invalid: Below or above ground level");
+            return false;
+        }
+
         // === METHOD 1: Check ALL Buildings directly (ignore layers!) ===
         BuildingComponent[] allBuildings = FindObjectsOfType<BuildingComponent>();
         foreach (var building in allBuildings)
         {
-            
+
             float distance = Vector3.Distance(position, building.transform.position);
             if (distance < radius)
             {
@@ -292,47 +270,4 @@ public class BuildingPlacementAI : MonoBehaviour
 
         return true;
     }
-
-
-    /// <summary>
-    /// Check if current position is valid for placement
-    /// </summary>
-    private bool IsValidPlacement(Vector3 position)
-    {
-        // Check for collisions with other buildings/obstacles
-        Collider[] colliders = Physics.OverlapSphere(position, collisionCheckRadius, obstacleLayer);
-
-        // Check energy requirements (except for energy blocks)
-        // IMPORTANT: Check if currentProduct is not null first!
-        if (currentProduct != null && currentProduct.BuildingType != BuildingType.EnergyBlock)
-        {
-            if (resourceManager != null && !resourceManager.HasAvailableEnergy(currentProduct.EnergyCost))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-
-
-    /// <summary>
-    /// Cancel building placement
-    /// </summary>
-    public void CancelPlacement()
-    {
-
-        Product oldProduct = currentProduct;
-
-        currentProduct = null;
-        resourceManager = null;
-        isPlacing = false;
-        canPlace = false;
-
-        Debug.Log($"? Placement cancelled. Was placing: {oldProduct?.ProductName ?? "nothing"}");
-    }
-
-
-
 }

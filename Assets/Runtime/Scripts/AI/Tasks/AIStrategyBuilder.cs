@@ -50,7 +50,7 @@ public class AIStrategyBuilder
             unitName: "Harvester",
             producerBuildingName: "Factory",
             requiredGold: 100,
-            requiredEnergy: 5,
+            requiredEnergy: 0,
             priority: 80,
             targetCount: 3,
             getCurrentCount: () => controller.GetUnitCount("Harvester")
@@ -72,7 +72,7 @@ public class AIStrategyBuilder
             controller,
             unitName: "Harvester",
             producerBuildingName: "Factory",
-            requiredGold: 100,
+            requiredGold: 200,
             requiredEnergy: 5,
             priority: 60,
             targetCount: 5,
@@ -95,24 +95,24 @@ public class AIStrategyBuilder
             controller,
             unitName: "MK3",
             producerBuildingName: "Factory",
-            requiredGold: 250,
-            requiredEnergy: 10,
+            requiredGold: 50,
+            requiredEnergy: 0,
             priority: 40,
             targetCount: 3,
             getCurrentCount: () => controller.GetUnitCount("MK3")
         ));
 
         // PRIORITY 30: Produce Soldiers
-        taskManager.AddTask(new ProduceUnitTask(
-            controller,
-            unitName: "Soldier",
-            producerBuildingName: "Barracks",
-            requiredGold: 150,
-            requiredEnergy: 8,
-            priority: 30,
-            targetCount: 5,
-            getCurrentCount: () => controller.GetUnitCount("Soldier")
-        ));
+        //taskManager.AddTask(new ProduceUnitTask(
+        //    controller,
+        //    unitName: "Soldier",
+        //    producerBuildingName: "Barracks",
+        //    requiredGold: 150,
+        //    requiredEnergy: 8,
+        //    priority: 30,
+        //    targetCount: 5,
+        //    getCurrentCount: () => controller.GetUnitCount("Soldier")
+        //));
 
         Debug.Log($"AI: Early Game Strategy loaded with {taskManager.ActiveTaskCount} tasks");
     }

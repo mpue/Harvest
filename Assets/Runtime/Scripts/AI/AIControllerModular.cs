@@ -88,12 +88,49 @@ public class AIControllerModular : MonoBehaviour, IAIController
     {
         if (resourceManager == null)
         {
-            resourceManager = FindObjectOfType<ResourceManager>();
-            if (resourceManager == null)
+            // Try to find a ResourceManager that matches the AI team to avoid using the player's resources
+            ResourceManager[] allManagers = FindObjectsByType<ResourceManager>(FindObjectsSortMode.None);
+
+            if (allManagers == null || allManagers.Length == 0)
             {
                 Debug.LogError($"AI ({aiTeam}): No ResourceManager found!");
                 return false;
             }
+
+            ResourceManager found = null;
+
+            // Prefer a manager with team-identifying name (e.g., contains "AI" or the team name)
+            foreach (var mgr in allManagers)
+            {
+                if (mgr == null) continue;
+                string name = mgr.gameObject.name;
+                if (aiTeam != Team.Player && (name.Contains("AI") || name.Contains(aiTeam.ToString())))
+                {
+                    found = mgr;
+                    break;
+                }
+            }
+
+            // If not found, prefer a non-AI manager for player team
+            if (found == null)
+            {
+                foreach (var mgr in allManagers)
+                {
+                    if (mgr == null) continue;
+                    if (!mgr.gameObject.name.Contains("AI"))
+                    {
+                        found = mgr;
+                        break;
+                    }
+                }
+            }
+
+            // Fallback to first available
+            if (found == null)
+                found = allManagers[0];
+
+            resourceManager = found;
+            Debug.Log($"AI ({aiTeam}): Assigned ResourceManager '{resourceManager.gameObject.name}'");
         }
 
         if (!FindHeadquarters())
@@ -110,7 +147,8 @@ public class AIControllerModular : MonoBehaviour, IAIController
     /// </summary>
     private bool FindHeadquarters()
     {
-        BuildingComponent[] allBuildings = FindObjectsOfType<BuildingComponent>();
+        BuildingComponent[] allBuildings = FindObjectsByType<BuildingComponent>(FindObjectsSortMode.None);
+
         foreach (var building in allBuildings)
         {
             TeamComponent team = building.GetComponent<TeamComponent>();
@@ -160,7 +198,8 @@ public class AIControllerModular : MonoBehaviour, IAIController
         myUnits.Clear();
         myBuildings.Clear();
 
-        BaseUnit[] allUnits = FindObjectsOfType<BaseUnit>();
+        BaseUnit[] allUnits = FindObjectsByType<BaseUnit>(FindObjectsSortMode.None);
+
         foreach (var unit in allUnits)
         {
             TeamComponent team = unit.GetComponent<TeamComponent>();
@@ -170,7 +209,7 @@ public class AIControllerModular : MonoBehaviour, IAIController
             }
         }
 
-        BuildingComponent[] allBuildings = FindObjectsOfType<BuildingComponent>();
+        BuildingComponent[] allBuildings = FindObjectsByType<BuildingComponent>(FindObjectsSortMode.None);
         foreach (var building in allBuildings)
         {
             TeamComponent team = building.GetComponent<TeamComponent>();
@@ -321,20 +360,39 @@ public class AIControllerModular : MonoBehaviour, IAIController
     public bool BuildStructure(string buildingName)
     {
         if (buildingsInProgress.Contains(buildingName))
+        {
+            Debug.Log($"AI ({aiTeam}): Cannot build {buildingName} - already in progress");
             return false;
+        }
 
         if (!CanBuildNow())
+        {
+            Debug.Log($"AI ({aiTeam}): Cannot build {buildingName} - cooldown active");
             return false;
+        }
 
         if (hqProduction == null)
+        {
+            Debug.LogError($"AI ({aiTeam}): Cannot build {buildingName} - no HQ production!");
             return false;
+        }
 
         if (hqProduction.QueueCount >= hqProduction.MaxQueueSize)
+        {
+            Debug.Log($"AI ({aiTeam}): Cannot build {buildingName} - HQ queue full");
             return false;
+        }
 
         Product product = hqProduction.AvailableProducts.Find(p => p.IsBuilding && p.ProductName.Contains(buildingName));
         if (product == null)
+        {
+            Debug.LogError($"AI ({aiTeam}): Cannot build {buildingName} - product not found in HQ AvailableProducts!");
             return false;
+        }
+
+        // CHECK: Don't add to buildingsInProgress if we already have enough of this building!
+        int existingCount = GetBuildingCount(buildingName);
+        Debug.Log($"AI ({aiTeam}): Attempting to build {buildingName} (existing count: {existingCount})");
 
         buildingsInProgress.Add(buildingName);
         bool success = hqProduction.AddToQueue(product);
@@ -342,11 +400,24 @@ public class AIControllerModular : MonoBehaviour, IAIController
         if (success)
         {
             lastBuildTime = Time.time;
-            Debug.Log($"? AI ({aiTeam}): Building {buildingName}");
+            Debug.Log($"? AI ({aiTeam}): Queued {buildingName} for construction");
         }
         else
         {
             buildingsInProgress.Remove(buildingName);
+            Debug.LogWarning($"AI ({aiTeam}): Failed to queue {buildingName} - AddToQueue returned false");
+        }
+
+        // now check if the building has a building component and assign the team and the resource manager
+        var buildingComponent = product.Prefab.GetComponent<BuildingComponent>();
+        if (buildingComponent != null)
+        {
+            var teamComponent = buildingComponent.GetComponent<TeamComponent>();
+            if (teamComponent != null)
+            {
+                teamComponent.SetTeam(aiTeam);
+            }
+            buildingComponent.Initialize(product, resourceManager);
         }
 
         return success;
@@ -356,23 +427,41 @@ public class AIControllerModular : MonoBehaviour, IAIController
     {
         var building = myBuildings.FirstOrDefault(b => b.BuildingProduct != null && b.BuildingProduct.ProductName.Contains(buildingName));
         if (building == null)
+        {
+            Debug.LogWarning($"AI ({aiTeam}): Cannot produce {unitName} - no {buildingName} found!");
+            Debug.Log($"AI ({aiTeam}): Available buildings: {string.Join(", ", myBuildings.Select(b => b.BuildingProduct?.ProductName ?? "null"))}");
             return false;
+        }
 
         var production = building.GetComponent<ProductionComponent>();
         if (production == null)
+        {
+            Debug.LogError($"AI ({aiTeam}): Cannot produce {unitName} - {buildingName} has no ProductionComponent!");
             return false;
+        }
 
         if (production.QueueCount >= production.MaxQueueSize)
+        {
+            Debug.Log($"AI ({aiTeam}): Cannot produce {unitName} - {buildingName} queue full ({production.QueueCount}/{production.MaxQueueSize})");
             return false;
+        }
 
         Product product = production.AvailableProducts.Find(p => !p.IsBuilding && p.ProductName.Contains(unitName));
         if (product == null)
+        {
+            Debug.LogError($"AI ({aiTeam}): Cannot produce {unitName} - product not found in {buildingName} AvailableProducts!");
+            Debug.Log($"AI ({aiTeam}): Available products in {buildingName}: {string.Join(", ", production.AvailableProducts.Select(p => p.ProductName))}");
             return false;
+        }
 
         bool success = production.AddToQueue(product);
         if (success)
         {
-            Debug.Log($"? AI ({aiTeam}): Producing {unitName} from {buildingName}");
+            Debug.Log($"? AI ({aiTeam}): Queued {unitName} production in {buildingName}");
+        }
+        else
+        {
+            Debug.LogWarning($"AI ({aiTeam}): Failed to queue {unitName} - AddToQueue returned false");
         }
 
         return success;

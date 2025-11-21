@@ -39,6 +39,7 @@ public class BuildStructureTask : AITask
             {
                 IsComplete = true;
                 CanExecute = false;
+                Debug.Log($"BuildStructureTask: {structureName} already at maxCount ({existingCount}/{maxCount}) - marking complete");
                 return false;
             }
         }
@@ -47,6 +48,7 @@ public class BuildStructureTask : AITask
         if (controller.IsBuildingInProgress(structureName))
         {
             CanExecute = false;
+            Debug.Log($"BuildStructureTask: {structureName} already in production queue");
             return false;
         }
 
