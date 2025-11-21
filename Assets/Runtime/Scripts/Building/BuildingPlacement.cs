@@ -204,7 +204,7 @@ debugStyle.normal.textColor = Color.yellow;
      debugStyle.alignment = TextAnchor.UpperLeft;
         
      string debugInfo = "=== BUILDING PLACEMENT DEBUG (F1) ===\n";
-            debugInfo += $"Camera: {(targetCamera != null ? targetCamera.name : "NULL!")}\n";
+            debugInfo += $"Camera: {(targetCamera != null ? targetCamera.name : "NULL")}\n";
             debugInfo += $"IsPlacing: {isPlacing}\n";
     debugInfo += $"Preview Active: {(currentBuildingPreview != null)}\n";
          debugInfo += $"Can Place: {canPlace}\n";
@@ -320,35 +320,75 @@ debugStyle.normal.textColor = Color.yellow;
         // Instantiate the building
         GameObject building = Instantiate(product.Prefab, validPosition, Quaternion.identity);
 
-        // SET TEAM FIRST! (Before Initialize)
+        // SET TEAM FIRST! (Use reflection to set before Awake runs)
         TeamComponent teamComp = building.GetComponent<TeamComponent>();
         if (teamComp != null)
         {
+            // Use reflection to set team BEFORE Awake runs
+            var teamField = typeof(TeamComponent).GetField("team",
+ System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (teamField != null)
+            {
+                teamField.SetValue(teamComp, buildingTeam);
+            }
             teamComp.SetTeam(buildingTeam);
-            Debug.Log($"Set building team to {buildingTeam}");
+            Debug.Log($"? Set building team to {buildingTeam} (via reflection)");
         }
         else
         {
             Debug.LogWarning($"Building {product.ProductName} has no TeamComponent!");
         }
 
+        // Ensure correct ResourceManager based on team
+        ResourceManager correctManager = manager;
+        if (manager == null || manager.gameObject.name.Contains("AI") != (buildingTeam != Team.Player))
+        {
+            // Find correct manager for this team
+            ResourceManager[] allManagers = FindObjectsOfType<ResourceManager>();
+            foreach (var mgr in allManagers)
+            {
+                bool isAIManager = mgr.gameObject.name.Contains("AI");
+                bool needsAIManager = buildingTeam != Team.Player;
+                
+                if (isAIManager == needsAIManager)
+                {
+                    correctManager = mgr;
+                    Debug.Log($"? Corrected ResourceManager to: {correctManager.gameObject.name} for team {buildingTeam}");
+                    break;
+                }
+            }
+        }
+
+        // Pre-assign ResourceManager to ProductionComponent
+        ProductionComponent prodComp = building.GetComponent<ProductionComponent>();
+        if (prodComp != null && correctManager != null)
+        {
+            var field = typeof(ProductionComponent).GetField("resourceManager",
+ System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null)
+            {
+                field.SetValue(prodComp, correctManager);
+                Debug.Log($"? Pre-assigned ResourceManager to ProductionComponent");
+            }
+        }
+
         // Initialize building
         BuildingComponent buildingComp = building.GetComponent<BuildingComponent>();
         if (buildingComp != null)
         {
-            buildingComp.Initialize(product, manager);
+            buildingComp.Initialize(product, correctManager);
         }
 
         // Consume energy for the building (except energy blocks)
         if (product.BuildingType != BuildingType.EnergyBlock)
         {
-            if (manager != null)
+            if (correctManager != null)
             {
-                manager.ConsumeEnergy(product.EnergyCost);
+                correctManager.ConsumeEnergy(product.EnergyCost);
             }
         }
 
-        Debug.Log($"AI placed {product.ProductName} at {validPosition} for team {buildingTeam}");
+        Debug.Log($"Placed {product.ProductName} at {validPosition} for team {buildingTeam}");
 
         // Clear temporary values
         currentProduct = null;
@@ -652,6 +692,37 @@ debugStyle.normal.textColor = Color.yellow;
             currentBuildingPreview.transform.position,
             currentBuildingPreview.transform.rotation
         );
+
+        // SET TEAM FIRST! Player buildings need team too!
+        TeamComponent teamComp = building.GetComponent<TeamComponent>();
+        if (teamComp != null)
+        {
+            // Use reflection to set team BEFORE Awake runs
+            var teamField = typeof(TeamComponent).GetField("team",
+ System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (teamField != null)
+            {
+                teamField.SetValue(teamComp, Team.Player);
+            }
+            teamComp.SetTeam(Team.Player);
+            Debug.Log($"? Set player building team to Team.Player");
+        }
+
+        // Ensure correct ResourceManager is assigned (should be Player's)
+        if (resourceManager != null)
+        {
+            ProductionComponent prodComp = building.GetComponent<ProductionComponent>();
+            if (prodComp != null)
+            {
+                var field = typeof(ProductionComponent).GetField("resourceManager",
+ System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    field.SetValue(prodComp, resourceManager);
+                    Debug.Log($"? Pre-assigned Player ResourceManager to building ProductionComponent");
+                }
+            }
+        }
 
         // Add BuildingComponent if it doesn't exist
         BuildingComponent buildingComp = building.GetComponent<BuildingComponent>();
