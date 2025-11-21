@@ -48,12 +48,24 @@ public class RTSCamera : MonoBehaviour
     [Header("Control Mode")]
     [SerializeField] private CameraControlMode controlMode = CameraControlMode.Smart;
 
+    [Header("Focus Settings")]
+    [SerializeField] private KeyCode focusKey = KeyCode.F;
+    [SerializeField] private float focusSpeed = 5f;
+    [SerializeField] private float focusDistance = 15f; // Distance from target
+    [SerializeField] private float focusHeightOffset = 5f; // Height above target
+
     private bool isFreeLook = false;
     private Vector3 lastMousePosition;
     private Camera cam;
     private float rotationX = 0f;
     private float rotationY = 0f;
     private UnitSelector unitSelector;
+
+    // Focus/Follow state
+    private bool isFocusing = false;
+    private Transform focusTarget = null;
+    private Vector3 targetPosition = Vector3.zero;
+    private Quaternion targetRotation = Quaternion.identity;
 
     public enum CameraControlMode
     {
@@ -81,10 +93,115 @@ public class RTSCamera : MonoBehaviour
 
     void Update()
     {
+        HandleFocusInput();
         HandleFreeLook();
         HandleWASDMovement();
         HandlePan();
         ClampCameraHeight();
+        UpdateFocusMovement();
+    }
+
+    /// <summary>
+    /// Handle F key input to focus on selected unit/building
+    /// </summary>
+    private void HandleFocusInput()
+    {
+        if (Input.GetKeyDown(focusKey))
+        {
+            FocusOnSelection();
+        }
+
+        // Cancel focus on any manual movement input
+        if (isFocusing)
+        {
+            bool hasManualInput = Input.GetAxis("Horizontal") !=0 ||
+                Input.GetAxis("Vertical") !=0 ||
+                Input.GetKey(KeyCode.Q) ||
+                Input.GetKey(KeyCode.E) ||
+                Input.GetMouseButton(1) ||
+                Input.GetMouseButton(2);
+
+            if (hasManualInput)
+            {
+                CancelFocus();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Focus camera on currently selected unit(s) or building
+    /// </summary>
+    private void FocusOnSelection()
+    {
+        if (unitSelector == null || unitSelector.SelectedCount ==0)
+        {
+            Debug.Log("RTSCamera: No selection to focus on");
+            return;
+        }
+
+        // Get first selected unit/building
+        var selected = unitSelector.SelectedUnits;
+        if (selected == null || selected.Count ==0)
+            return;
+
+        Transform target = selected[0].transform;
+        
+        // Calculate target position (behind and above the target)
+        Vector3 directionToTarget = (target.position - transform.position).normalized;
+        directionToTarget.y =0;
+        directionToTarget.Normalize();
+
+        // Position camera behind target at specified distance and height
+        Vector3 desiredPosition = target.position - directionToTarget * focusDistance;
+        desiredPosition.y = target.position.y + focusHeightOffset;
+
+        // Calculate rotation to look at target
+        Vector3 lookDirection = target.position - desiredPosition;
+        Quaternion desiredRotation = Quaternion.LookRotation(lookDirection);
+
+        // Start smooth transition
+        targetPosition = desiredPosition;
+        targetRotation = desiredRotation;
+        focusTarget = target;
+        isFocusing = true;
+
+        Debug.Log($"RTSCamera: Focusing on {target.name}");
+    }
+
+    /// <summary>
+    /// Update smooth camera movement when focusing
+    /// </summary>
+    private void UpdateFocusMovement()
+    {
+        if (!isFocusing)
+            return;
+
+        // Smooth move to target position
+        transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * focusSpeed);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * focusSpeed);
+
+        // Update rotation values for free-look system
+        Vector3 euler = transform.eulerAngles;
+        rotationX = euler.x;
+        rotationY = euler.y;
+
+        // Check if close enough to target
+        if (Vector3.Distance(transform.position, targetPosition) <0.1f &&
+            Quaternion.Angle(transform.rotation, targetRotation) <1f)
+        {
+            // Arrived at target
+            isFocusing = false;
+            Debug.Log("RTSCamera: Focus complete");
+        }
+    }
+
+    /// <summary>
+    /// Cancel focus mode
+    /// </summary>
+    private void CancelFocus()
+    {
+        isFocusing = false;
+        focusTarget = null;
     }
 
     private void HandleFreeLook()
@@ -237,5 +354,43 @@ public class RTSCamera : MonoBehaviour
     public void SetControlMode(CameraControlMode mode)
     {
         controlMode = mode;
+    }
+
+    /// <summary>
+    /// Check if camera is currently focusing on a target
+    /// </summary>
+    public bool IsFocusing()
+    {
+        return isFocusing;
+    }
+
+    /// <summary>
+    /// Focus on a specific transform (can be called from code)
+    /// </summary>
+    public void FocusOnTarget(Transform target)
+    {
+        if (target == null)
+            return;
+
+        // Calculate target position (behind and above the target)
+        Vector3 directionToTarget = (target.position - transform.position).normalized;
+        directionToTarget.y =0;
+        directionToTarget.Normalize();
+
+        // Position camera behind target at specified distance and height
+        Vector3 desiredPosition = target.position - directionToTarget * focusDistance;
+        desiredPosition.y = target.position.y + focusHeightOffset;
+
+        // Calculate rotation to look at target
+        Vector3 lookDirection = target.position - desiredPosition;
+        Quaternion desiredRotation = Quaternion.LookRotation(lookDirection);
+
+        // Start smooth transition
+        targetPosition = desiredPosition;
+        targetRotation = desiredRotation;
+        focusTarget = target;
+        isFocusing = true;
+
+        Debug.Log($"RTSCamera: Focusing on {target.name}");
     }
 }
