@@ -25,7 +25,7 @@ public class ProductionUIManager : MonoBehaviour
         // Find production panel if not assigned
         if (productionPanel == null)
         {
-            productionPanel = FindObjectOfType<ProductionPanel>();
+            productionPanel = FindFirstObjectByType<ProductionPanel>();
         }
 
         if (productionPanel == null)

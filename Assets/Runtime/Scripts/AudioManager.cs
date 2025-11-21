@@ -15,7 +15,9 @@ public class AudioManager : MonoBehaviour
         {
             if (instance == null)
             {
-                instance = FindObjectOfType<AudioManager>();
+                // we only want one AudioManager in the scene
+                instance = FindFirstObjectByType<AudioManager>();
+
                 if (instance == null)
                 {
                     GameObject obj = new GameObject("AudioManager");
@@ -148,7 +150,7 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     public void AssignMixerGroupsToAllAudioSources(AudioCategory category = AudioCategory.SFX)
     {
-        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
+        AudioSource[] allAudioSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
         int count = 0;
 
         foreach (AudioSource audioSource in allAudioSources)
@@ -174,7 +176,7 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
+        AudioSource[] allAudioSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
         int count = 0;
 
         foreach (AudioSource audioSource in allAudioSources)
@@ -192,7 +194,7 @@ public class AudioManager : MonoBehaviour
     public List<AudioSource> FindAudioSourcesWithoutMixerGroup()
     {
         List<AudioSource> sourcesWithoutGroup = new List<AudioSource>();
-        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
+        AudioSource[] allAudioSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
 
         foreach (AudioSource audioSource in allAudioSources)
         {

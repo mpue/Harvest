@@ -197,7 +197,7 @@ namespace Harvest.Minimap
         /// </summary>
         public void AutoCreateIconsForUnits()
         {
-            TeamComponent[] allTeamComponents = FindObjectsOfType<TeamComponent>();
+            TeamComponent[] allTeamComponents = FindObjectsByType<TeamComponent>(FindObjectsSortMode.None);
 
             foreach (TeamComponent teamComp in allTeamComponents)
             {

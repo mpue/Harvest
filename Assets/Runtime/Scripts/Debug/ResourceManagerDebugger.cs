@@ -73,7 +73,7 @@ public class ResourceManagerDebugger : MonoBehaviour
             if (verboseLogging)
             {
                 // Check if ResourceBarUI is updating
-                ResourceBarUI resourceBarUI = FindObjectOfType<ResourceBarUI>();
+                ResourceBarUI resourceBarUI = FindFirstObjectByType<ResourceBarUI>();
                 if (resourceBarUI != null)
                 {
                     Debug.Log($"   ? ResourceBarUI found and should update now");
@@ -112,7 +112,7 @@ public class ResourceManagerDebugger : MonoBehaviour
 
         // Check for ResourceBarUI
         debugInfo += "Resource Bar UI:\n";
-        ResourceBarUI resourceBarUI = FindObjectOfType<ResourceBarUI>();
+        ResourceBarUI resourceBarUI = FindFirstObjectByType<ResourceBarUI>();
         if (resourceBarUI != null)
         {
             debugInfo += "  ? ResourceBarUI found\n\n";

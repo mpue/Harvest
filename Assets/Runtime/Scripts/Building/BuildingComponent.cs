@@ -81,8 +81,8 @@ public class BuildingComponent : MonoBehaviour
             return;
         }
 
-        // Prevent double application
-        if (!IsEnergyProducer && energyApplied)
+        // Prevent double application for ALL buildings (not just non-producers)
+        if (energyApplied)
         {
             Debug.LogWarning($"{buildingProduct.ProductName}: Energy already applied, skipping.");
             return;

@@ -143,7 +143,7 @@ public class BaseUnit : MonoBehaviour
             else
             {
                 // Fallback to direct panel search
-                ProductionPanel panel = FindObjectOfType<ProductionPanel>();
+                ProductionPanel panel = FindFirstObjectByType<ProductionPanel>();
                 if (panel != null)
                 {
                     panel.Show(this);
@@ -163,7 +163,7 @@ public class BaseUnit : MonoBehaviour
             }
             else
             {
-                ProductionPanel panel = FindObjectOfType<ProductionPanel>();
+                ProductionPanel panel = FindFirstObjectByType<ProductionPanel>();
                 if (panel != null)
                 {
                     panel.Hide();

@@ -404,7 +404,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f42147783607064b8e37af6f3f3e22b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeamComponent
-  team: 0
+  team: 1
   teamColor: {r: 0, g: 0, b: 1, a: 1}
 --- !u!114 &8421474453971687677
 MonoBehaviour:
@@ -449,8 +449,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a4a0c1e4d806c5489ee1736ba9d3e9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingComponent
-  buildingProduct: {fileID: 11400000, guid: 7291da4fa39768e408eea17209bd2e46, type: 2}
-  resourceManager: {fileID: 8270602283684754828, guid: a27f16b0ea6cede46a2a3bac14c61d1d, type: 3}
+  buildingProduct: {fileID: 11400000, guid: 237efc8381346d749a85da11ce68b5e8, type: 2}
+  resourceManager: {fileID: 0}
   isConstructed: 1
   isPowered: 1
 --- !u!208 &412416075789765966

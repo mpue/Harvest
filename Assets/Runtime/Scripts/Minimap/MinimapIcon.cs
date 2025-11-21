@@ -108,7 +108,7 @@ namespace Harvest.Minimap
                 return;
 
             // Find MinimapController
-            minimapController = FindObjectOfType<MinimapController>();
+            minimapController = FindFirstObjectByType<MinimapController>();
             if (minimapController == null)
             {
                 Debug.LogWarning("MinimapIcon: No MinimapController found in scene!", this);

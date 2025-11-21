@@ -47,6 +47,11 @@ public class ProductionComponent : MonoBehaviour
     public ResourceManager ResourceManager => resourceManager;
     public bool IsHeadquarter => buildingComponent != null && buildingComponent.IsHeadquarter;
 
+    public void SetResourceManager(ResourceManager manager)
+    {
+        resourceManager = manager;
+    }
+
     private class ProductionQueueItem
     {
         public Product product;
@@ -71,7 +76,7 @@ public class ProductionComponent : MonoBehaviour
             if (myTeam != null)
             {
                 // Find ALL resource managers
-                ResourceManager[] allManagers = FindObjectsOfType<ResourceManager>();
+                ResourceManager[] allManagers = FindObjectsByType<ResourceManager>(FindObjectsSortMode.None);
 
                 // Try to find one with matching team name in GameObject name
                 foreach (var manager in allManagers)
@@ -487,17 +492,39 @@ public class ProductionComponent : MonoBehaviour
         // Handle normal unit spawning
         else
         {
-            Vector3 spawnPosition = spawnPoint != null ? spawnPoint.position : transform.position + transform.forward * 3f;
+            Vector3 spawnPosition = spawnPoint != null ? spawnPoint.position : transform.position + transform.forward *3f;
             GameObject spawnedUnit = Instantiate(completedProduct.Prefab, spawnPosition, Quaternion.identity);
 
             Debug.Log($"Completed production of {completedProduct.ProductName}");
 
-            // Set team for spawned unit FIRST (before movement)
+            // Set team for spawned unit FIRST (before any other components initialize)
             TeamComponent unitTeam = spawnedUnit.GetComponent<TeamComponent>();
             TeamComponent producerTeam = GetComponent<TeamComponent>();
             if (unitTeam != null && producerTeam != null)
             {
+                // Force-set team IMMEDIATELY using reflection to set private field, then call SetTeam
+                var teamField = typeof(TeamComponent).GetField("team",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (teamField != null)
+                {
+                    teamField.SetValue(unitTeam, producerTeam.CurrentTeam);
+                }
                 unitTeam.SetTeam(producerTeam.CurrentTeam);
+                Debug.Log($"✓ Set unit {completedProduct.ProductName} team to {producerTeam.CurrentTeam}");
+            }
+
+            // Ensure unit gets correct ResourceManager (important for Harvesters!)
+            HarvesterUnit harvester = spawnedUnit.GetComponent<HarvesterUnit>();
+            if (harvester != null && resourceManager != null)
+            {
+                // Use reflection to set ResourceManager BEFORE Start() runs
+                var field = typeof(HarvesterUnit).GetField("resourceManager",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    field.SetValue(harvester, resourceManager);
+                    Debug.Log($"✓ Pre-assigned ResourceManager to Harvester");
+                }
             }
 
             // Move unit to rally point if it's controllable

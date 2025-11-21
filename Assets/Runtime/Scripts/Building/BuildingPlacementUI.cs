@@ -37,9 +37,19 @@ public class BuildingPlacementUI : MonoBehaviour
 
     void Awake()
     {
-        if (buildingPlacement == null)
+        // find all building placements
+
+        BuildingPlacement[] placements = FindObjectsByType<BuildingPlacement>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        foreach (BuildingPlacement placement in placements)
         {
-            buildingPlacement = FindObjectOfType<BuildingPlacement>();
+
+            if (!placement.name.Contains("AI"))
+            {
+                buildingPlacement = placement;
+                break;
+            }
+
         }
 
         // Determine which text system to use

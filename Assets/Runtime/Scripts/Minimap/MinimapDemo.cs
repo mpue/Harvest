@@ -31,7 +31,7 @@ public class MinimapDemo : MonoBehaviour
     {
         if (minimapController == null)
         {
-            minimapController = FindObjectOfType<MinimapController>();
+            minimapController = FindFirstObjectByType<MinimapController>();
         }
 
         if (minimapController == null)

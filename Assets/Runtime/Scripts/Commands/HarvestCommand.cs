@@ -14,11 +14,11 @@ public class HarvestCommand : MonoBehaviour
 
     void Awake()
     {
-  unitSelector = FindObjectOfType<UnitSelector>();
+  unitSelector = FindFirstObjectByType<UnitSelector>();
      mainCamera = Camera.main;
         if (mainCamera == null)
     {
-            mainCamera = FindObjectOfType<Camera>();
+            mainCamera = FindFirstObjectByType<Camera>();
         }
     }
 

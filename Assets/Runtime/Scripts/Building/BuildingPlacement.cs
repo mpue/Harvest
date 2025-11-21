@@ -79,7 +79,7 @@ public class BuildingPlacement : MonoBehaviour
             if (targetCamera == null)
             {
                 // Last resort: Find any camera
-                targetCamera = FindObjectOfType<Camera>();
+                targetCamera = FindFirstObjectByType<Camera>();
                 Debug.Log("BuildingPlacement: Found camera using FindObjectOfType");
             }
 
@@ -142,7 +142,7 @@ public class BuildingPlacement : MonoBehaviour
         if (targetCamera == null)
         {
             Debug.LogWarning("BuildingPlacement: Camera is null during placement! Trying to find camera...");
-            targetCamera = Camera.main ?? FindObjectOfType<Camera>();
+            targetCamera = Camera.main ?? FindFirstObjectByType<Camera>();
             if (targetCamera == null)
             {
                 Debug.LogError("BuildingPlacement: Still no camera found! Cancelling placement.");
@@ -433,7 +433,7 @@ debugStyle.normal.textColor = Color.yellow;
     private bool IsValidPlacementWithRadius(Vector3 position, float radius)
     {
         // === METHOD 1: Check ALL Buildings directly (ignore layers!) ===
-        BuildingComponent[] allBuildings = FindObjectsOfType<BuildingComponent>();
+        BuildingComponent[] allBuildings = FindObjectsByType<BuildingComponent>(FindObjectsSortMode.None);
         foreach (var building in allBuildings)
         {
             // Skip if it's the preview

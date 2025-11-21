@@ -313,7 +313,7 @@ public class UnitSelector : MonoBehaviour
         }
 
         // Find all BaseUnits in the scene
-        BaseUnit[] allUnits = FindObjectsOfType<BaseUnit>();
+        BaseUnit[] allUnits = FindObjectsByType<BaseUnit>(FindObjectsSortMode.None);
         bool hasSelectedNonBuilding = false;
 
         foreach (BaseUnit unit in allUnits)

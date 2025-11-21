@@ -51,11 +51,20 @@ public class AIBuildingPlacer : MonoBehaviour
                     buildingComp = building.AddComponent<BuildingComponent>();
                 }
 
-                ResourceManager resourceManager = FindObjectOfType<ResourceManager>();
-                buildingComp.Initialize(buildingProduct, resourceManager);
+                // find resource manager
 
-                Debug.Log($"AI: Placed {buildingProduct.ProductName} at {placement}");
-                return true;
+                ResourceManager[] managers = FindObjectsByType<ResourceManager>(FindObjectsSortMode.None);
+
+                foreach (var rm in managers)
+                {
+                    if (rm.name.Contains("AI"))
+                    {
+                        buildingComp.Initialize(buildingProduct, rm);
+                        Debug.Log($"AI: Placed {buildingProduct.ProductName} at {placement}");
+                        return true;
+                    }
+                }
+                
             }
         }
 
@@ -107,7 +116,7 @@ public class AIBuildingPlacer : MonoBehaviour
     private Vector3 FindResourceCollectorPosition(Vector3 center)
     {
         // Find nearest resource
-        Collectable[] collectables = FindObjectsOfType<Collectable>();
+        Collectable[] collectables = FindObjectsByType<Collectable>(FindObjectsSortMode.None);
         if (collectables.Length == 0)
         {
             return FindGeneralPosition(center);

@@ -71,7 +71,7 @@ public class RTSCamera : MonoBehaviour
         }
 
         // Find UnitSelector for Smart mode
-        unitSelector = FindObjectOfType<UnitSelector>();
+        unitSelector = FindFirstObjectByType<UnitSelector>();
 
         // Initialize rotation from current transform
         Vector3 currentRotation = transform.eulerAngles;

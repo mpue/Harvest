@@ -24,7 +24,7 @@ public class RTSSetupHelper : MonoBehaviour
     {
         // Automatisches Setup beim Start (nur im Editor)
 #if UNITY_EDITOR
-        if (createSelectionManager && FindObjectOfType<UnitSelector>() == null)
+        if (createSelectionManager && FindFirstObjectByType<UnitSelector>() == null)
         {
             CreateSelectionManager();
         }
@@ -45,7 +45,7 @@ public class RTSSetupHelper : MonoBehaviour
     public void CreateSelectionManager()
     {
         // Prüfe ob bereits vorhanden
-        if (FindObjectOfType<UnitSelector>() != null)
+        if (FindFirstObjectByType<UnitSelector>() != null)
         {
             Debug.LogWarning("UnitSelector already exists in scene!");
             return;
@@ -176,7 +176,7 @@ public class RTSSetupHelper : MonoBehaviour
         Debug.Log("=== Creating Minimap System ===");
 
         // 1. Create Canvas if needed
-        Canvas canvas = FindObjectOfType<Canvas>();
+        Canvas canvas = FindFirstObjectByType<Canvas>();
         if (canvas == null)
         {
             GameObject canvasObj = new GameObject("MinimapCanvas");
@@ -266,7 +266,7 @@ public class RTSSetupHelper : MonoBehaviour
     [ContextMenu("Add Minimap To Existing Units")]
     public void AddMinimapToExistingUnits()
     {
-        TeamComponent[] allTeams = FindObjectsOfType<TeamComponent>();
+        TeamComponent[] allTeams = FindObjectsByType<TeamComponent>(FindObjectsSortMode.None);
         int count = 0;
 
         foreach (TeamComponent team in allTeams)

@@ -270,7 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f42147783607064b8e37af6f3f3e22b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeamComponent
-  team: 0
+  team: 1
   teamColor: {r: 0, g: 0, b: 1, a: 1}
 --- !u!114 &6305900918348900245
 MonoBehaviour:

@@ -381,7 +381,7 @@ public class HarvesterUnit : MonoBehaviour
     /// </summary>
     private Collectable FindNearestCollectable()
     {
-        Collectable[] collectables = FindObjectsOfType<Collectable>();
+        Collectable[] collectables = FindObjectsByType<Collectable>(FindObjectsSortMode.None);
         Collectable nearest = null;
         float nearestDistance = float.MaxValue;
 

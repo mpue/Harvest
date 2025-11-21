@@ -35,7 +35,7 @@ public class BuildingPlacementDebug : MonoBehaviour
             targetCamera = Camera.main;
             if (targetCamera == null)
             {
-                targetCamera = FindObjectOfType<Camera>();
+                targetCamera = FindFirstObjectByType<Camera>();
             }
         }
     }
@@ -127,14 +127,14 @@ public class BuildingPlacementDebug : MonoBehaviour
         }
 
         // Try to find a product to test with
-        Product testProduct = FindObjectOfType<Product>();
+        Product testProduct = FindFirstObjectByType<Product>();
         if (testProduct == null)
         {
             Debug.LogWarning("No Product found in scene. Create a Product asset first.");
             return;
         }
 
-        ResourceManager resourceManager = FindObjectOfType<ResourceManager>();
+        ResourceManager resourceManager = FindFirstObjectByType<ResourceManager>();
         if (resourceManager == null)
         {
             Debug.LogWarning("No ResourceManager found. Creating temporary one.");

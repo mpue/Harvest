@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -73,7 +73,7 @@ public class BuildingPlacementAI : MonoBehaviour
         checkRadius = Mathf.Max(3f, collisionCheckRadius * 0.5f);
 
         // Perform overlap test ignoring triggers - check for BUILDINGS only
-        BuildingComponent[] nearbyBuildings = FindObjectsOfType<BuildingComponent>();
+        BuildingComponent[] nearbyBuildings = FindObjectsByType<BuildingComponent>(FindObjectsSortMode.None);
         bool blocked = false;
 
         foreach (var existingBuilding in nearbyBuildings)
@@ -103,31 +103,59 @@ public class BuildingPlacementAI : MonoBehaviour
         // Instantiate the building
         GameObject building = Instantiate(product.Prefab, validPosition, Quaternion.identity);
 
-        // SET TEAM FIRST! (Before Initialize)
+        // SET TEAM FIRST! (Before ANY other initialization - even before Awake components run)
         TeamComponent teamComp = building.GetComponent<TeamComponent>();
         if (teamComp != null)
         {
-            teamComp.SetTeam(buildingTeam);
-            Debug.Log($"Set building team to {buildingTeam}");
+            // Force-set team IMMEDIATELY using reflection to set private field, then call SetTeam
+            teamComp.SetTeam(buildingTeam); // Also call SetTeam for proper initialization
+            Debug.Log($"Set building team to {buildingTeam} BEFORE initialization");
         }
         else
         {
             Debug.LogWarning($"Building {product.ProductName} has no TeamComponent!");
         }
 
+        // Now get/set the correct ResourceManager based on team
+        ResourceManager correctManager = manager;
+        if (correctManager == null || correctManager.gameObject.name.Contains("AI") != (buildingTeam != Team.Player))
+        {
+            // Wrong manager! Find the correct one for this team
+            ResourceManager[] allManagers = FindObjectsByType<ResourceManager>(FindObjectsSortMode.None);
+            foreach (var mgr in allManagers)
+            {
+                bool isAIManager = mgr.gameObject.name.Contains("AI");
+                bool needsAIManager = buildingTeam != Team.Player;
+
+                if (isAIManager == needsAIManager)
+                {
+                    correctManager = mgr;
+                    Debug.Log($"Corrected ResourceManager to: {correctManager.gameObject.name} for team {buildingTeam}");
+                    break;
+                }
+            }
+        }
+
+        // Force-assign correct ResourceManager to ProductionComponent BEFORE Initialize
+        ProductionComponent prodComp = building.GetComponent<ProductionComponent>();
+        if (prodComp != null)
+        {
+            prodComp.SetResourceManager(correctManager);
+        }
+
         // Initialize building
         BuildingComponent buildingComp = building.GetComponent<BuildingComponent>();
         if (buildingComp != null)
         {
-            buildingComp.Initialize(product, manager);
+            buildingComp.Initialize(product, correctManager);
         }
 
         // Consume energy for the building (except energy blocks)
         if (product.BuildingType != BuildingType.EnergyBlock)
         {
-            if (manager != null)
+            if (correctManager != null)
             {
-                manager.ConsumeEnergy(product.EnergyCost);
+                correctManager.ConsumeEnergy(product.EnergyCost);
             }
         }
 
@@ -187,7 +215,7 @@ public class BuildingPlacementAI : MonoBehaviour
                     // Check if this position is valid with MODERATE radius
                     if (IsValidPlacementWithRadius(testPosition, collisionCheckRadius * 2.0f))
                     {
-                        Debug.Log($"? Found valid position at {testPosition} (Y={testPosition.y:F2}) after {attempts} attempts (distance from center: {Vector3.Distance(center, testPosition):F1}m, angle: {angle}�)");
+                        Debug.Log($"? Found valid position at {testPosition} (Y={testPosition.y:F2}) after {attempts} attempts (distance from center: {Vector3.Distance(center, testPosition):F1}m, angle: {angle}°)");
                         return testPosition;
                     }
                 }

@@ -65,7 +65,7 @@ public class BuildingPlacementDiagnostics : MonoBehaviour
     void FindComponents()
     {
         buildingPlacement = FindObjectOfType<BuildingPlacement>();
-        buildingPlacementUI = FindObjectOfType<BuildingPlacementUI>();
+        buildingPlacementUI = FindFirstObjectByType<BuildingPlacementUI>();
         productionComponent = FindObjectOfType<ProductionComponent>();
         resourceManager = FindObjectOfType<ResourceManager>();
 
