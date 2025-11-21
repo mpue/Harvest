@@ -19,7 +19,7 @@ public class Collectable : MonoBehaviour
     [SerializeField] private bool depleteVisually = true;
     [SerializeField] private Vector3 depletedScale = new Vector3(0.5f, 0.5f, 0.5f);
 
-  [Header("Effects")]
+    [Header("Effects")]
     [SerializeField] private GameObject harvestEffect;
     [SerializeField] private GameObject depleteEffect;
     [SerializeField] private AudioClip harvestSound;
@@ -31,10 +31,10 @@ public class Collectable : MonoBehaviour
     // Properties
     public ResourceType ResourceType => resourceType;
     public int CurrentAmount => currentAmount;
-  public int ResourceAmount => resourceAmount;
+    public int ResourceAmount => resourceAmount;
     public bool IsDepleted => isDepleted;
     public float HarvestTime => harvestTime;
- public int AmountPerHarvest => amountPerHarvest;
+    public int AmountPerHarvest => amountPerHarvest;
 
     void Awake()
     {
@@ -47,19 +47,19 @@ public class Collectable : MonoBehaviour
 
     /// <summary>
     /// Harvest resources from this collectable
-  /// </summary>
+    /// </summary>
     public int Harvest(int requestedAmount)
     {
         if (isDepleted)
         {
- return 0;
+            return 0;
         }
 
         int harvestedAmount = Mathf.Min(requestedAmount, currentAmount);
         currentAmount -= harvestedAmount;
 
         // Visual feedback
-    PlayHarvestEffect();
+        PlayHarvestEffect();
         UpdateVisuals();
 
         // Check if depleted
@@ -80,7 +80,7 @@ public class Collectable : MonoBehaviour
     {
         if (!depleteVisually || visualModel == null)
         {
-      return;
+            return;
         }
 
         float percentage = (float)currentAmount / resourceAmount;
@@ -95,77 +95,77 @@ public class Collectable : MonoBehaviour
     {
         if (harvestEffect != null)
         {
-    Instantiate(harvestEffect, transform.position, Quaternion.identity);
-    }
+            Instantiate(harvestEffect, transform.position, Quaternion.identity);
+        }
 
         if (harvestSound != null)
-    {
-      if (AudioManager.Instance != null)
-   {
-       AudioManager.Instance.PlayOneShot2D(harvestSound, AudioManager.AudioCategory.SFX);
-     }
-  else
-       {
-       AudioSource.PlayClipAtPoint(harvestSound, transform.position);
-      }
-   }
+        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayOneShot2D(harvestSound, AudioManager.AudioCategory.SFX);
+            }
+            else
+            {
+                AudioSource.PlayClipAtPoint(harvestSound, transform.position);
+            }
+        }
     }
 
     /// <summary>
     /// Called when resource is fully depleted
     /// </summary>
-  private void Deplete()
+    private void Deplete()
     {
         isDepleted = true;
 
-   // Play depletion effect
-   if (depleteEffect != null)
+        // Play depletion effect
+        if (depleteEffect != null)
         {
-    Instantiate(depleteEffect, transform.position, Quaternion.identity);
-}
+            Instantiate(depleteEffect, transform.position, Quaternion.identity);
+        }
 
         if (depleteSound != null)
         {
-if (AudioManager.Instance != null)
-    {
-    AudioManager.Instance.PlayOneShot2D(depleteSound, AudioManager.AudioCategory.SFX);
-      }
-     else
-    {
-   AudioSource.PlayClipAtPoint(depleteSound, transform.position);
-   }
-   }
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayOneShot2D(depleteSound, AudioManager.AudioCategory.SFX);
+            }
+            else
+            {
+                AudioSource.PlayClipAtPoint(depleteSound, transform.position);
+            }
+        }
 
         Debug.Log($"{gameObject.name}: Depleted!");
 
-  // Destroy after a short delay
+        // Destroy after a short delay
         Destroy(gameObject, 2f);
     }
 
     void OnDrawGizmos()
     {
-    if (isDepleted)
+        if (isDepleted)
         {
-     Gizmos.color = Color.red;
-     }
-  else
-    {
-        Gizmos.color = resourceType == ResourceType.Gold ? Color.yellow : Color.white;
+            Gizmos.color = Color.red;
+        }
+        else
+        {
+            Gizmos.color = resourceType == ResourceType.Gold ? Color.yellow : Color.white;
         }
 
-     Gizmos.DrawWireSphere(transform.position, 1f);
+        Gizmos.DrawWireSphere(transform.position, 1f);
     }
 
     void OnDrawGizmosSelected()
     {
-     // Draw resource amount indicator
+        // Draw resource amount indicator
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position + Vector3.up * 2f, 0.5f);
 
-     #if UNITY_EDITOR
-        UnityEditor.Handles.Label(transform.position + Vector3.up * 2.5f, 
+#if UNITY_EDITOR
+        UnityEditor.Handles.Label(transform.position + Vector3.up * 2.5f,
    $"{resourceType}\n{currentAmount}/{resourceAmount}");
-        #endif
+#endif
     }
 }
 
