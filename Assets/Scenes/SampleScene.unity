@@ -2928,6 +2928,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5693873897701989000, guid: 7788bbc210d96aa49a8852597c4e3124, type: 3}
+      propertyPath: slotRadius
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 5693873897701989000, guid: 7788bbc210d96aa49a8852597c4e3124, type: 3}
+      propertyPath: maxHarvesters
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 8302730063903281810, guid: 7788bbc210d96aa49a8852597c4e3124, type: 3}
       propertyPath: m_LocalPosition.x
       value: -217.4

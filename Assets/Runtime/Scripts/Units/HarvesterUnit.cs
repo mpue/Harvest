@@ -57,17 +57,17 @@ public class HarvesterUnit : MonoBehaviour
         {
             // Find team-specific ResourceManager
             TeamComponent myTeam = GetComponent<TeamComponent>();
-            
+
             if (myTeam != null)
             {
                 ResourceManager[] allManagers = FindObjectsOfType<ResourceManager>();
-                
+
                 // Find matching team-specific manager
                 foreach (var manager in allManagers)
                 {
                     bool isAIManager = manager.gameObject.name.Contains("AI");
                     bool needsAIManager = myTeam.CurrentTeam != Team.Player;
-                    
+
                     if (isAIManager == needsAIManager)
                     {
                         resourceManager = manager;
@@ -76,7 +76,7 @@ public class HarvesterUnit : MonoBehaviour
                     }
                 }
             }
-            
+
             // Fallback
             if (resourceManager == null)
             {
@@ -97,6 +97,14 @@ public class HarvesterUnit : MonoBehaviour
     {
         switch (currentState)
         {
+            case HarvesterState.Idle:
+                // Auto-gather if idle and empty
+                if (IsEmpty)
+                {
+                    AutoGather();
+                }
+                break;
+
             case HarvesterState.MovingToResource:
                 UpdateMovingToResource();
                 break;
@@ -126,16 +134,57 @@ public class HarvesterUnit : MonoBehaviour
             return;
         }
 
+        // Check if resource has available slot
+        if (!collectable.HasAvailableSlot)
+        {
+            Debug.LogWarning($"{gameObject.name}: {collectable.gameObject.name} has no available harvest slots - searching for alternative...");
+            
+            // Try to find another collectable with available slot
+            Collectable alternative = FindNearestCollectableWithSlot();
+            if (alternative != null && alternative != collectable)
+            {
+                Debug.Log($"{gameObject.name}: Found alternative collectable {alternative.gameObject.name}");
+                GatherFrom(alternative);
+            }
+            else
+            {
+                Debug.LogWarning($"{gameObject.name}: No collectables with available slots found - going idle");
+                currentState = HarvesterState.Idle;
+            }
+            return;
+        }
+
         targetCollectable = collectable;
         currentState = HarvesterState.MovingToResource;
 
-        // Move to collectable using Controllable
-        if (controllable != null)
+        // Request harvest position from collectable
+        Vector3 harvestPosition = collectable.RequestHarvestPosition(this);
+        
+        if (harvestPosition == Vector3.zero)
         {
-            controllable.MoveTo(collectable.transform.position);
+            Debug.LogWarning($"{gameObject.name}: Could not get harvest position from {collectable.gameObject.name} - trying alternative");
+            
+            // Try alternative
+            Collectable alternative = FindNearestCollectableWithSlot();
+            if (alternative != null && alternative != collectable)
+            {
+                GatherFrom(alternative);
+            }
+            else
+            {
+                currentState = HarvesterState.Idle;
+            }
+            targetCollectable = null;
+            return;
         }
 
-        Debug.Log($"{gameObject.name}: Moving to harvest {collectable.ResourceType}");
+        // Move to assigned harvest slot position
+        if (controllable != null)
+        {
+            controllable.MoveTo(harvestPosition);
+        }
+
+        Debug.Log($"{gameObject.name}: Moving to harvest {collectable.ResourceType} at slot position {harvestPosition}");
     }
 
     /// <summary>
@@ -150,8 +199,18 @@ public class HarvesterUnit : MonoBehaviour
             return;
         }
 
-        // Check if reached collectable
-        float distance = Vector3.Distance(transform.position, targetCollectable.transform.position);
+        // Get our assigned harvest position
+        Vector3 harvestPosition = targetCollectable.RequestHarvestPosition(this);
+
+        if (harvestPosition == Vector3.zero)
+        {
+            Debug.LogWarning($"{gameObject.name}: Lost harvest slot for {targetCollectable.gameObject.name}");
+            StopHarvesting();
+            return;
+        }
+
+        // Check if reached harvest slot position (not collectable center!)
+        float distance = Vector3.Distance(transform.position, harvestPosition);
         if (distance <= harvestRange)
         {
             // Start harvesting
@@ -163,7 +222,7 @@ public class HarvesterUnit : MonoBehaviour
                 controllable.Stop();
             }
 
-            Debug.Log($"{gameObject.name}: Started harvesting");
+            Debug.Log($"{gameObject.name}: Started harvesting at slot position");
         }
     }
 
@@ -263,10 +322,10 @@ public class HarvesterUnit : MonoBehaviour
 
         // NEW: Check for DeployZone
         DeployZone deployZone = targetCollector.GetComponent<DeployZone>();
-        
+
         float checkDistance;
         Vector3 targetPosition;
-        
+
         if (deployZone != null)
         {
             // Use DeployZone system
@@ -282,22 +341,22 @@ public class HarvesterUnit : MonoBehaviour
 
         // Check if reached collector/deploy zone
         float distance = Vector3.Distance(transform.position, targetPosition);
-        
+
         if (distance <= checkDistance)
         {
             if (deployZone != null && deployZone.CanDeploy(this))
             {
                 // NEW: Use DeployZone system
                 currentState = HarvesterState.Unloading;
-                
+
                 if (controllable != null)
                 {
                     controllable.Stop();
                 }
-                    
+
                 // Start deploy through DeployZone
                 deployZone.StartDeploy(this);
-                
+
                 Debug.Log($"{gameObject.name}: Started deploying at DeployZone");
             }
             else if (deployZone == null)
@@ -317,7 +376,7 @@ public class HarvesterUnit : MonoBehaviour
             {
                 // DeployZone exists but can't deploy (full, wrong team, etc.)
                 Debug.LogWarning($"{gameObject.name}: Cannot deploy at DeployZone - waiting...");
-                
+
                 // Wait a bit and try again
                 if (controllable != null)
                 {
@@ -340,7 +399,7 @@ public class HarvesterUnit : MonoBehaviour
 
         // NEW: Check if using DeployZone
         DeployZone deployZone = targetCollector.GetComponent<DeployZone>();
-        
+
         if (deployZone != null)
         {
             // DeployZone handles everything!
@@ -349,11 +408,11 @@ public class HarvesterUnit : MonoBehaviour
             {
                 // Unloading complete!
                 Debug.Log($"{gameObject.name}: Deploy complete via DeployZone");
-                
+
                 // Return to gathering
                 currentState = HarvesterState.Idle;
                 targetCollector = null;
-                
+
                 // Auto-return to last collectable if it still exists
                 if (targetCollectable != null && !targetCollectable.IsDepleted)
                 {
@@ -374,7 +433,7 @@ public class HarvesterUnit : MonoBehaviour
                 {
                     targetCollector.DepositResources(carriedResourceType, currentCarried, resourceManager);
                 }
-                
+
                 currentCarried = 0;
                 UpdateCarryVisual();
 
@@ -398,6 +457,12 @@ public class HarvesterUnit : MonoBehaviour
     /// </summary>
     public void StopHarvesting()
     {
+        // Release harvest slot if we have one
+        if (targetCollectable != null)
+        {
+            targetCollectable.ReleaseHarvestSlot(this);
+        }
+
         currentState = HarvesterState.Idle;
         targetCollectable = null;
         targetCollector = null;
@@ -444,14 +509,26 @@ public class HarvesterUnit : MonoBehaviour
         ResourceCollector nearest = null;
         float nearestDistance = float.MaxValue;
 
+        Debug.Log($"{gameObject.name} (Team: {(teamComponent != null ? teamComponent.CurrentTeam.ToString() : "NULL")}): Searching for collector among {collectors.Length} total collectors");
+
         foreach (var collector in collectors)
         {
             // Check if same team
             TeamComponent collectorTeam = collector.GetComponent<TeamComponent>();
-            if (collectorTeam == null || teamComponent == null)
+
+            if (collectorTeam == null)
             {
+                Debug.LogWarning($"  Collector '{collector.gameObject.name}' has NO TeamComponent!");
                 continue;
             }
+
+            if (teamComponent == null)
+            {
+                Debug.LogWarning($"  Harvester '{gameObject.name}' has NO TeamComponent!");
+                continue;
+            }
+
+            Debug.Log($"  Checking collector '{collector.gameObject.name}' (Team: {collectorTeam.CurrentTeam}) - Match: {collectorTeam.CurrentTeam == teamComponent.CurrentTeam}");
 
             if (collectorTeam.CurrentTeam != teamComponent.CurrentTeam)
             {
@@ -464,6 +541,15 @@ public class HarvesterUnit : MonoBehaviour
                 nearest = collector;
                 nearestDistance = distance;
             }
+        }
+
+        if (nearest != null)
+        {
+            Debug.Log($"? {gameObject.name}: Found nearest collector '{nearest.gameObject.name}' at distance {nearestDistance:F1}m");
+        }
+        else
+        {
+            Debug.LogError($"? {gameObject.name}: NO collector found for team {teamComponent.CurrentTeam}!");
         }
 
         return nearest;
@@ -502,6 +588,33 @@ public class HarvesterUnit : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Find nearest collectable with available slot
+    /// </summary>
+    private Collectable FindNearestCollectableWithSlot()
+    {
+        Collectable[] collectables = FindObjectsByType<Collectable>(FindObjectsSortMode.None);
+        Collectable nearest = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (var collectable in collectables)
+        {
+            if (collectable.IsDepleted || !collectable.HasAvailableSlot)
+            {
+                continue;
+            }
+
+            float distance = Vector3.Distance(transform.position, collectable.transform.position);
+            if (distance < nearestDistance)
+            {
+                nearest = collectable;
+                nearestDistance = distance;
+            }
+        }
+
+        return nearest;
+    }
+
     void OnDrawGizmos()
     {
         // Draw state
@@ -532,7 +645,7 @@ public class HarvesterUnit : MonoBehaviour
 
     /// <summary>
     /// Get amount of resources currently carried
-  /// </summary>
+    /// </summary>
     public int GetCarriedAmount() => currentCarried;
 
     /// <summary>

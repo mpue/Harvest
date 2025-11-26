@@ -79,6 +79,12 @@ public class AIControllerModular : MonoBehaviour, IAIController
             SwitchStrategy();
             strategyTimer = 0f;
         }
+
+        // Execute AI tasks
+        if (taskManager != null)
+        {
+            taskManager.Update();
+        }
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Collectable resource that can be harvested
@@ -14,6 +14,11 @@ public class Collectable : MonoBehaviour
     [SerializeField] private float harvestTime = 2f;
     [SerializeField] private int amountPerHarvest = 10;
 
+    [Header("Harvest Slots")]
+    [SerializeField] private int maxHarvesters = 4; // Maximum harvesters that can work simultaneously
+    [SerializeField] private float slotRadius = 2f; // Radius around resource for harvest positions
+    [SerializeField] private bool showSlotGizmos = true;
+
     [Header("Visual Settings")]
     [SerializeField] private GameObject visualModel;
     [SerializeField] private bool depleteVisually = true;
@@ -28,6 +33,10 @@ public class Collectable : MonoBehaviour
     private Vector3 originalScale;
     private bool isDepleted = false;
 
+    // Harvest slot management
+    private HarvesterUnit[] harvestSlots; // Track which harvester is in which slot
+    private Vector3[] slotPositions; // Pre-calculated positions around resource
+
     // Properties
     public ResourceType ResourceType => resourceType;
     public int CurrentAmount => currentAmount;
@@ -35,6 +44,7 @@ public class Collectable : MonoBehaviour
     public bool IsDepleted => isDepleted;
     public float HarvestTime => harvestTime;
     public int AmountPerHarvest => amountPerHarvest;
+    public bool HasAvailableSlot => GetAvailableSlotIndex() != -1;
 
     void Awake()
     {
@@ -42,6 +52,94 @@ public class Collectable : MonoBehaviour
         if (visualModel != null)
         {
             originalScale = visualModel.transform.localScale;
+        }
+
+        // Initialize harvest slots
+        harvestSlots = new HarvesterUnit[maxHarvesters];
+        slotPositions = new Vector3[maxHarvesters];
+        CalculateSlotPositions();
+    }
+
+    /// <summary>
+    /// Calculate harvest slot positions around the resource
+    /// </summary>
+    private void CalculateSlotPositions()
+    {
+        for (int i = 0; i < maxHarvesters; i++)
+        {
+            float angle = (360f / maxHarvesters) * i * Mathf.Deg2Rad;
+            Vector3 offset = new Vector3(Mathf.Cos(angle) * slotRadius, 0, Mathf.Sin(angle) * slotRadius);
+            slotPositions[i] = transform.position + offset;
+        }
+    }
+
+    /// <summary>
+    /// Get an available harvest slot index
+    /// </summary>
+    private int GetAvailableSlotIndex()
+    {
+        for (int i = 0; i < harvestSlots.Length; i++)
+        {
+            if (harvestSlots[i] == null)
+                return i;
+        }
+        return -1; // No available slots
+    }
+
+    /// <summary>
+    /// Request a harvest position (returns Vector3.zero if no slots available)
+    /// </summary>
+    public Vector3 RequestHarvestPosition(HarvesterUnit harvester)
+    {
+        // Check if harvester already has a slot
+        for (int i = 0; i < harvestSlots.Length; i++)
+        {
+            if (harvestSlots[i] == harvester)
+            {
+                Debug.Log($"{harvester.name} already has slot {i} at {slotPositions[i]}");
+                return slotPositions[i];
+            }
+        }
+
+        // Find available slot
+        int slotIndex = GetAvailableSlotIndex();
+        if (slotIndex == -1)
+        {
+            Debug.LogWarning($"{harvester.name} cannot harvest {gameObject.name} - all slots full!");
+            return Vector3.zero;
+        }
+
+        // Assign slot
+        harvestSlots[slotIndex] = harvester;
+        Debug.Log($"✓ {harvester.name} assigned to slot {slotIndex} at {slotPositions[slotIndex]}");
+        return slotPositions[slotIndex];
+    }
+
+    /// <summary>
+    /// Release a harvest slot when harvester leaves
+    /// </summary>
+    public void ReleaseHarvestSlot(HarvesterUnit harvester)
+    {
+        for (int i = 0; i < harvestSlots.Length; i++)
+        {
+            if (harvestSlots[i] == harvester)
+            {
+                harvestSlots[i] = null;
+                Debug.Log($"✓ {harvester.name} released slot {i}");
+                return;
+            }
+        }
+    }
+
+    void Update()
+    {
+        // Clean up null references (harvesters that were destroyed)
+        for (int i = 0; i < harvestSlots.Length; i++)
+        {
+            if (harvestSlots[i] != null && harvestSlots[i].gameObject == null)
+            {
+                harvestSlots[i] = null;
+            }
         }
     }
 
@@ -154,6 +252,18 @@ public class Collectable : MonoBehaviour
         }
 
         Gizmos.DrawWireSphere(transform.position, 1f);
+
+        // Draw harvest slots
+        if (showSlotGizmos && slotPositions != null)
+        {
+            for (int i = 0; i < slotPositions.Length; i++)
+            {
+                bool isOccupied = harvestSlots != null && i < harvestSlots.Length && harvestSlots[i] != null;
+                Gizmos.color = isOccupied ? Color.red : Color.green;
+                Gizmos.DrawWireSphere(slotPositions[i], 0.3f);
+                Gizmos.DrawLine(transform.position, slotPositions[i]);
+            }
+        }
     }
 
     void OnDrawGizmosSelected()
@@ -163,8 +273,19 @@ public class Collectable : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position + Vector3.up * 2f, 0.5f);
 
 #if UNITY_EDITOR
-        UnityEditor.Handles.Label(transform.position + Vector3.up * 2.5f,
-   $"{resourceType}\n{currentAmount}/{resourceAmount}");
+        string info = $"{resourceType}\n{currentAmount}/{resourceAmount}";
+
+        if (harvestSlots != null)
+        {
+            int occupiedSlots = 0;
+            for (int i = 0; i < harvestSlots.Length; i++)
+            {
+                if (harvestSlots[i] != null) occupiedSlots++;
+            }
+            info += $"\nSlots: {occupiedSlots}/{maxHarvesters}";
+        }
+
+        UnityEditor.Handles.Label(transform.position + Vector3.up * 2.5f, info);
 #endif
     }
 }

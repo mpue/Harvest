@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 5afe8e9f899dda045bac60fab8e270ac, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 18.8
+      value: -217.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5afe8e9f899dda045bac60fab8e270ac, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.32796267
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5afe8e9f899dda045bac60fab8e270ac, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 65.3
+      value: -61.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5afe8e9f899dda045bac60fab8e270ac, type: 3}
       propertyPath: m_LocalRotation.w
@@ -85,6 +85,9 @@ MonoBehaviour:
   currentAmount: 0
   harvestTime: 2
   amountPerHarvest: 10
+  maxHarvesters: 4
+  slotRadius: 15
+  showSlotGizmos: 1
   visualModel: {fileID: 0}
   depleteVisually: 1
   depletedScale: {x: 0.5, y: 0.5, z: 0.5}
