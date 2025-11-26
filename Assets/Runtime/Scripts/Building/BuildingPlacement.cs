@@ -372,6 +372,19 @@ debugStyle.normal.textColor = Color.yellow;
             }
         }
 
+        // Also assign to ResourceCollector if present
+        ResourceCollector resCollector = building.GetComponent<ResourceCollector>();
+        if (resCollector != null)
+        {
+            var field = typeof(ResourceCollector).GetField("resourceManager",
+ System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null)
+            {
+                field.SetValue(resCollector, correctManager);
+                Debug.Log($"? Pre-assigned ResourceManager to ResourceCollector");
+            }
+        }
+
         // Initialize building
         BuildingComponent buildingComp = building.GetComponent<BuildingComponent>();
         if (buildingComp != null)
@@ -720,6 +733,32 @@ debugStyle.normal.textColor = Color.yellow;
                 {
                     field.SetValue(prodComp, resourceManager);
                     Debug.Log($"? Pre-assigned Player ResourceManager to building ProductionComponent");
+                }
+            }
+
+            // Also assign to ResourceCollector if present
+            ResourceCollector resCollector = building.GetComponent<ResourceCollector>();
+            if (resCollector != null)
+            {
+                var field = typeof(ResourceCollector).GetField("resourceManager",
+ System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    field.SetValue(resCollector, resourceManager);
+                    Debug.Log($"? Pre-assigned Player ResourceManager to building ResourceCollector");
+                }
+            }
+
+            // Also assign to DeployZone if present
+            DeployZone deployZone = building.GetComponent<DeployZone>();
+            if (deployZone != null)
+            {
+                var field = typeof(DeployZone).GetField("resourceManager",
+ System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    field.SetValue(deployZone, resourceManager);
+                    Debug.Log($"? Pre-assigned Player ResourceManager to building DeployZone");
                 }
             }
         }

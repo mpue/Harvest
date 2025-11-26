@@ -227,6 +227,7 @@ MonoBehaviour:
   unloadTime: 2
   acceptAllResources: 1
   acceptedResources: 00000000
+  resourceManager: {fileID: 0}
   unloadEffect: {fileID: 0}
   unloadSound: {fileID: 0}
   unloadPoint: {fileID: 0}

@@ -12,6 +12,9 @@ public class ResourceCollector : MonoBehaviour
     [SerializeField] private bool acceptAllResources = true;
     [SerializeField] private ResourceType[] acceptedResources = { ResourceType.Gold };
 
+    [Header("References")]
+    [SerializeField] private ResourceManager resourceManager; // Own ResourceManager reference
+
     [Header("Visual Feedback")]
     [SerializeField] private GameObject unloadEffect;
     [SerializeField] private AudioClip unloadSound;
@@ -33,15 +36,52 @@ public class ResourceCollector : MonoBehaviour
     void Awake()
     {
         buildingComponent = GetComponent<BuildingComponent>();
+
+        // Auto-find team-specific ResourceManager if not set
+        if (resourceManager == null)
+        {
+            TeamComponent myTeam = GetComponent<TeamComponent>();
+
+            if (myTeam != null)
+            {
+                ResourceManager[] allManagers = FindObjectsOfType<ResourceManager>();
+
+                // Find matching team-specific manager
+                foreach (var manager in allManagers)
+                {
+                    bool isAIManager = manager.gameObject.name.Contains("AI");
+                    bool needsAIManager = myTeam.CurrentTeam != Team.Player;
+
+                    if (isAIManager == needsAIManager)
+                    {
+                        resourceManager = manager;
+                        Debug.Log($"{gameObject.name}: Found team-specific ResourceManager: {manager.gameObject.name} for team {myTeam.CurrentTeam}");
+                        break;
+                    }
+                }
+            }
+
+            // Fallback
+            if (resourceManager == null)
+            {
+                resourceManager = FindObjectOfType<ResourceManager>();
+                Debug.LogWarning($"{gameObject.name}: Using fallback ResourceManager: {(resourceManager != null ? resourceManager.gameObject.name : "NONE")}");
+            }
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name}: ResourceManager already assigned: {resourceManager.gameObject.name}");
+        }
     }
 
     /// <summary>
     /// Deposit resources from harvester
     /// </summary>
-    public void DepositResources(ResourceType resourceType, int amount, ResourceManager resourceManager)
+    public void DepositResources(ResourceType resourceType, int amount, ResourceManager harvesterResourceManager)
     {
         if (amount <= 0)
         {
+            Debug.LogWarning($"{gameObject.name}: DepositResources called with amount={amount} - ignoring");
             return;
         }
 
@@ -52,43 +92,54 @@ public class ResourceCollector : MonoBehaviour
             return;
         }
 
-        // Check if resourceManager is valid
-        if (resourceManager == null)
+        // IMPORTANT: Use OUR OWN ResourceManager, not the one from harvester!
+        // This ensures resources go to the correct team
+        ResourceManager targetManager = resourceManager; // Use our own!
+
+        if (targetManager == null)
         {
-            Debug.LogError($"{gameObject.name}: ResourceManager is NULL! Cannot deposit resources!");
+            Debug.LogError($"{gameObject.name}: OWN ResourceManager is NULL! Cannot deposit resources!");
+            Debug.LogError($"  Harvester passed ResourceManager: {(harvesterResourceManager != null ? harvesterResourceManager.gameObject.name : "NULL")}");
             return;
         }
 
-        Debug.Log($"{gameObject.name}: Depositing {amount} {resourceType} to ResourceManager '{resourceManager.gameObject.name}'");
+        Debug.Log($"=== {gameObject.name}: DepositResources START ===");
+        Debug.Log($"  ResourceType: {resourceType}");
+        Debug.Log($"  Amount: {amount}");
+        Debug.Log($"  Using OWN ResourceManager: {targetManager.gameObject.name}");
+        Debug.Log($"  (Harvester ResourceManager was: {(harvesterResourceManager != null ? harvesterResourceManager.gameObject.name : "NULL")})");
+        Debug.Log($"  ResourceManager Gold BEFORE: {targetManager.Gold}");
 
         // Add to resource manager
         switch (resourceType)
         {
             case ResourceType.Gold:
-                int goldBefore = resourceManager.Gold;
-                resourceManager.AddResources(0, 0, 0, amount);
-                int goldAfter = resourceManager.Gold;
+                int goldBefore = targetManager.Gold;
+                targetManager.AddResources(0, 0, 0, amount);
+                int goldAfter = targetManager.Gold;
                 totalCollectedGold += amount;
-                Debug.Log($"  ? Gold: {goldBefore} + {amount} = {goldAfter} ?");
+                Debug.Log($"  ? Gold: {goldBefore} + {amount} = {goldAfter}");
                 break;
             case ResourceType.Food:
-                resourceManager.AddResources(amount, 0, 0, 0);
+                targetManager.AddResources(amount, 0, 0, 0);
                 totalCollectedFood += amount;
-                Debug.Log($"  ? Food: +{amount} ?");
+                Debug.Log($"  ? Food: +{amount}");
                 break;
             case ResourceType.Wood:
-                resourceManager.AddResources(0, amount, 0, 0);
+                targetManager.AddResources(0, amount, 0, 0);
                 totalCollectedWood += amount;
-                Debug.Log($"  ? Wood: +{amount} ?");
+                Debug.Log($"  ? Wood: +{amount}");
                 break;
             case ResourceType.Stone:
-                resourceManager.AddResources(0, 0, amount, 0);
+                targetManager.AddResources(0, 0, amount, 0);
                 totalCollectedStone += amount;
-                Debug.Log($"  ? Stone: +{amount} ?");
+                Debug.Log($"  ? Stone: +{amount}");
                 break;
         }
 
+        Debug.Log($"  ResourceManager Gold AFTER: {targetManager.Gold}");
         Debug.Log($"{gameObject.name}: Total {resourceType} collected: {GetTotalCollected(resourceType)}");
+        Debug.Log($"=== DepositResources END ===");
 
         // Visual feedback
         PlayUnloadEffect();

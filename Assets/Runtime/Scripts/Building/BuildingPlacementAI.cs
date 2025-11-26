@@ -143,6 +143,44 @@ public class BuildingPlacementAI : MonoBehaviour
             prodComp.SetResourceManager(correctManager);
         }
 
+        // Pre-assign ResourceManager to ProductionComponent
+        if (prodComp != null && correctManager != null)
+        {
+            var field = typeof(ProductionComponent).GetField("resourceManager",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null)
+            {
+                field.SetValue(prodComp, correctManager);
+                Debug.Log($"✓ Pre-assigned ResourceManager to ProductionComponent");
+            }
+        }
+
+        // Pre-assign ResourceManager to ResourceCollector too!
+        ResourceCollector resCollector = building.GetComponent<ResourceCollector>();
+        if (resCollector != null && correctManager != null)
+        {
+            var field = typeof(ResourceCollector).GetField("resourceManager",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null)
+            {
+                field.SetValue(resCollector, correctManager);
+                Debug.Log($"✓ Pre-assigned ResourceManager to ResourceCollector");
+            }
+        }
+
+        // Pre-assign ResourceManager to DeployZone too!
+        DeployZone deployZone = building.GetComponent<DeployZone>();
+        if (deployZone != null && correctManager != null)
+        {
+            var field = typeof(DeployZone).GetField("resourceManager",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null)
+            {
+                field.SetValue(deployZone, correctManager);
+                Debug.Log($"✓ Pre-assigned ResourceManager to DeployZone");
+            }
+        }
+
         // Initialize building
         BuildingComponent buildingComp = building.GetComponent<BuildingComponent>();
         if (buildingComp != null)

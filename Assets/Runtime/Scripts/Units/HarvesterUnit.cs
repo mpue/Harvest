@@ -52,9 +52,41 @@ public class HarvesterUnit : MonoBehaviour
 
     void Start()
     {
+        // Only auto-find if still null (don't override if already set via reflection/production)
         if (resourceManager == null)
         {
-            resourceManager = FindObjectOfType<ResourceManager>();
+            // Find team-specific ResourceManager
+            TeamComponent myTeam = GetComponent<TeamComponent>();
+            
+            if (myTeam != null)
+            {
+                ResourceManager[] allManagers = FindObjectsOfType<ResourceManager>();
+                
+                // Find matching team-specific manager
+                foreach (var manager in allManagers)
+                {
+                    bool isAIManager = manager.gameObject.name.Contains("AI");
+                    bool needsAIManager = myTeam.CurrentTeam != Team.Player;
+                    
+                    if (isAIManager == needsAIManager)
+                    {
+                        resourceManager = manager;
+                        Debug.Log($"{gameObject.name}: Found team-specific ResourceManager: {manager.gameObject.name} for team {myTeam.CurrentTeam}");
+                        break;
+                    }
+                }
+            }
+            
+            // Fallback
+            if (resourceManager == null)
+            {
+                resourceManager = FindObjectOfType<ResourceManager>();
+                Debug.LogWarning($"{gameObject.name}: Using fallback ResourceManager: {(resourceManager != null ? resourceManager.gameObject.name : "NONE")}");
+            }
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name}: ResourceManager already assigned: {resourceManager.gameObject.name}");
         }
 
         UpdateCarryVisual();

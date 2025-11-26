@@ -89,10 +89,18 @@ public class ResourceManager : MonoBehaviour
     /// </summary>
     public void AddResources(int foodAmount, int woodAmount, int stoneAmount, int goldAmount)
     {
+        Debug.Log($"ResourceManager '{gameObject.name}' AddResources called: Food+{foodAmount}, Wood+{woodAmount}, Stone+{stoneAmount}, Gold+{goldAmount}");
+        
+        int goldBefore = gold;
+        
         food += foodAmount;
         wood += woodAmount;
         stone += stoneAmount;
         gold += goldAmount;
+
+        int goldAfter = gold;
+        
+        Debug.Log($"ResourceManager '{gameObject.name}' Gold: {goldBefore} + {goldAmount} = {goldAfter}");
 
         NotifyResourcesChanged();
     }

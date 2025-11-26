@@ -38,25 +38,25 @@ public class DeployZone : MonoBehaviour
     {
         teamComponent = GetComponent<TeamComponent>();
 
-        // Auto-find resource manager if not set
+        // Auto-find resource manager if not set - WITH TEAM CHECK!
         if (resourceManager == null)
         {
-            if (teamComponent != null)
+            TeamComponent myTeam = GetComponent<TeamComponent>();
+
+            if (myTeam != null)
             {
                 // Find resource manager for this team
-                ResourceManager[] allManagers = FindObjectsByType<ResourceManager>(FindObjectsSortMode.None);
+                ResourceManager[] allManagers = FindObjectsOfType<ResourceManager>();
+
                 foreach (var manager in allManagers)
                 {
-                    if (teamComponent.CurrentTeam != Team.Player && manager.gameObject.name.Contains("AI"))
+                    bool isAIManager = manager.gameObject.name.Contains("AI");
+                    bool needsAIManager = myTeam.CurrentTeam != Team.Player;
+
+                    if (isAIManager == needsAIManager)
                     {
                         resourceManager = manager;
-                        Debug.Log($"DeployZone: Found AI ResourceManager");
-                        break;
-                    }
-                    else if (teamComponent.CurrentTeam == Team.Player && !manager.gameObject.name.Contains("AI"))
-                    {
-                        resourceManager = manager;
-                        Debug.Log($"DeployZone: Found Player ResourceManager");
+                        Debug.Log($"DeployZone '{gameObject.name}': Found team-specific ResourceManager '{manager.gameObject.name}' for team {myTeam.CurrentTeam}");
                         break;
                     }
                 }
@@ -64,9 +64,13 @@ public class DeployZone : MonoBehaviour
 
             if (resourceManager == null)
             {
-                resourceManager = FindFirstObjectByType<ResourceManager>();
-                Debug.LogWarning($"DeployZone: Using fallback ResourceManager");
+                resourceManager = FindObjectOfType<ResourceManager>();
+                Debug.LogWarning($"DeployZone '{gameObject.name}': Using fallback ResourceManager: {(resourceManager != null ? resourceManager.gameObject.name : "NONE")}");
             }
+        }
+        else
+        {
+            Debug.Log($"DeployZone '{gameObject.name}': ResourceManager already assigned: {resourceManager.gameObject.name}");
         }
 
         // Create default deploy point if not set
