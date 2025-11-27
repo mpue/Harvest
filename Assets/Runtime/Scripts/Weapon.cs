@@ -42,6 +42,8 @@ public class Weapon : MonoBehaviour
     public bool IsAimed => isAimed;
     public Transform CurrentTarget => currentTarget;
     public string WeaponName => weaponName;
+    public float Damage => damage;
+    public float FireRate => fireRate;
 
     void Awake()
     {
@@ -60,12 +62,18 @@ public class Weapon : MonoBehaviour
         // Validate setup
         if (shotPoints == null || shotPoints.Length == 0)
         {
-            Debug.LogWarning($"Weapon '{weaponName}' has no shot points assigned!");
+            Debug.LogWarning($"? Weapon '{weaponName}' on {gameObject.name} has NO shot points assigned!");
         }
 
         if (projectilePrefab == null)
         {
-            Debug.LogWarning($"Weapon '{weaponName}' has no projectile prefab assigned!");
+            Debug.LogWarning($"? Weapon '{weaponName}' on {gameObject.name} has NO projectile prefab assigned!");
+        }
+        
+        // Log successful initialization
+      if (shotPoints != null && shotPoints.Length > 0 && projectilePrefab != null)
+        {
+   Debug.Log($"? Weapon '{weaponName}' on {gameObject.name} initialized successfully (Range: {range}, Damage: {damage}, FireRate: {fireRate})");
         }
     }
 
@@ -172,38 +180,52 @@ public class Weapon : MonoBehaviour
     {
         // Check if can fire
         if (!CanFire())
-        {
+   {
             return false;
-        }
+    }
 
-        // Check if target is valid
-        if (currentTarget == null)
-        {
-            return false;
-        }
+ // Check if target is valid
+      if (currentTarget == null)
+     {
+      return false;
+   }
 
-        // Check if target is in range
+   // Check if target is in range
         float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
         if (distanceToTarget > range)
-        {
-            return false;
-        }
+ {
+  // Debug every few seconds
+    if (Time.frameCount % 300 == 0)
+    {
+         Debug.Log($"?? {weaponName}: Target {currentTarget.name} out of range ({distanceToTarget:F1}m > {range}m)");
+    }
+     return false;
+ }
 
-        // Check if aimed
-        if (!isAimed)
-        {
-            return false;
-        }
-
-        // Check team (don't shoot allies)
-        TeamComponent targetTeam = currentTarget.GetComponent<TeamComponent>();
-        if (targetTeam != null && ownerTeam != null)
-        {
-            if (!ownerTeam.IsEnemy(targetTeam))
+  // Check if aimed (relaxed - allow firing even if not perfectly aimed)
+        if (!isAimed && turretTransform != null)
+  {
+   // Be more lenient - fire if reasonably close to target
+            Vector3 directionToTarget = (currentTarget.position - turretTransform.position).normalized;
+ Vector3 turretForward = turretTransform.forward;
+          float angle = Vector3.Angle(directionToTarget, turretForward);
+            
+     // Allow firing if within 15 degrees (was 5 degrees)
+            if (angle > 15f)
             {
-                return false; // Don't shoot allies or same team
-            }
-        }
+         return false;
+    }
+   }
+
+    // Check team (don't shoot allies)
+        TeamComponent targetTeam = currentTarget.GetComponent<TeamComponent>();
+     if (targetTeam != null && ownerTeam != null)
+        {
+       if (!ownerTeam.IsEnemy(targetTeam))
+            {
+         return false; // Don't shoot allies or same team
+     }
+  }
 
         // Fire!
         Fire();
@@ -228,41 +250,51 @@ public class Weapon : MonoBehaviour
         lastFireTime = Time.time;
 
         // Get shot point
-        Transform shotPoint = GetNextShotPoint();
-        if (shotPoint == null)
+  Transform shotPoint = GetNextShotPoint();
+      if (shotPoint == null)
+   {
+Debug.LogWarning($"Weapon '{weaponName}' tried to fire but has no valid shot point!");
+       return;
+   }
+
+   // Spawn projectile
+      if (projectilePrefab != null)
         {
-            Debug.LogWarning($"Weapon '{weaponName}' tried to fire but has no valid shot point!");
-            return;
-        }
+       GameObject projectileObj = Instantiate(projectilePrefab, shotPoint.position, shotPoint.rotation);
+     Projectile projectile = projectileObj.GetComponent<Projectile>();
 
-        // Spawn projectile
-        if (projectilePrefab != null)
-        {
-            GameObject projectileObj = Instantiate(projectilePrefab, shotPoint.position, shotPoint.rotation);
-            Projectile projectile = projectileObj.GetComponent<Projectile>();
+      if (projectile != null)
+       {
+             // Calculate direction to target
+            Vector3 direction = (currentTarget.position - shotPoint.position).normalized;
 
-            if (projectile != null)
-            {
-                // Calculate direction to target
-                Vector3 direction = (currentTarget.position - shotPoint.position).normalized;
-
-                projectile.Initialize(direction, projectileSpeed, damage, range, ownerTeam);
+        projectile.Initialize(direction, projectileSpeed, damage, range, ownerTeam);
+            
+        Debug.Log($"?? {weaponName} FIRED at {currentTarget.name}! (Distance: {Vector3.Distance(transform.position, currentTarget.position):F1}m)");
             }
-        }
+            else
+         {
+     Debug.LogError($"? Projectile prefab '{projectilePrefab.name}' has no Projectile component!");
+     }
+ }
+  else
+  {
+      Debug.LogError($"? {weaponName}: Cannot fire - no projectile prefab assigned!");
+  }
 
         // Visual effects
         if (muzzleFlash != null)
-        {
-            muzzleFlash.Play();
-        }
+  {
+ muzzleFlash.Play();
+ }
 
         // Audio
-        if (audioSource != null && fireSound != null)
-        {
-            audioSource.PlayOneShot(fireSound);
+   if (audioSource != null && fireSound != null)
+      {
+    audioSource.PlayOneShot(fireSound);
         }
 
-        // Callback
+  // Callback
         OnWeaponFired();
     }
 

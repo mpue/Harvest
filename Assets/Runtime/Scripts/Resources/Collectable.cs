@@ -96,7 +96,7 @@ public class Collectable : MonoBehaviour
         {
             if (harvestSlots[i] == harvester)
             {
-                Debug.Log($"{harvester.name} already has slot {i} at {slotPositions[i]}");
+                // Debug.Log($"{harvester.name} already has slot {i} at {slotPositions[i]}");
                 return slotPositions[i];
             }
         }

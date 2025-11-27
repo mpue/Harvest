@@ -47,6 +47,16 @@ public class WeaponController : MonoBehaviour
         {
             Debug.LogWarning($"WeaponController on {gameObject.name} has no weapons assigned!");
         }
+        
+        // Debug team configuration
+        if (ownerTeam == null)
+        {
+          Debug.LogError($"? {gameObject.name}: WeaponController has NO TeamComponent!");
+      }
+        else
+      {
+            Debug.Log($"? {gameObject.name}: WeaponController initialized (Team: {ownerTeam.CurrentTeam}, AutoAcquire: {autoAcquireTargets}, AutoFire: {autoFire})");
+        }
     }
 
     void Update()
@@ -127,6 +137,11 @@ public class WeaponController : MonoBehaviour
             Transform bestTarget = SelectBestTarget(potentialTargets);
             SetTarget(bestTarget);
         }
+        else if (Time.frameCount % 300 == 0) // Debug every 5 seconds at 60fps
+        {
+            // Debug why no targets found
+            Debug.Log($"?? {gameObject.name}: No valid targets found in range {maxRange}m. Found {collidersInRange.Length} colliders.");
+        }
     }
 
     /// <summary>
@@ -169,28 +184,37 @@ public class WeaponController : MonoBehaviour
     {
         if (target == null) return false;
 
-        // Check if target has team component
+     // Check if target has team component
         TeamComponent targetTeam = target.GetComponent<TeamComponent>();
         if (targetTeam == null)
         {
             // No team = can't determine if enemy
-            return false;
+ return false;
         }
 
-        // Check if enemy
-        if (ownerTeam != null && !ownerTeam.IsEnemy(targetTeam))
+        // IMPORTANT: If we have no team, we can't determine enemies!
+        if (ownerTeam == null)
         {
+            Debug.LogWarning($"{gameObject.name}: WeaponController has no TeamComponent - cannot determine enemies!");
+ return false;
+        }
+
+ // Check if enemy
+    if (!ownerTeam.IsEnemy(targetTeam))
+   {
             return false; // Not an enemy
         }
 
-        // Optional: Check if target has BaseUnit (is a valid unit)
+  // Check if target is a valid unit OR building
         BaseUnit targetUnit = target.GetComponent<BaseUnit>();
-        if (targetUnit == null)
-        {
-            return false;
+        BuildingComponent targetBuilding = target.GetComponent<BuildingComponent>();
+      
+        if (targetUnit == null && targetBuilding == null)
+   {
+   return false; // Neither unit nor building
         }
 
-        // Target is valid
+ // Target is valid (enemy unit or enemy building)
         return true;
     }
 
@@ -324,7 +348,9 @@ public class WeaponController : MonoBehaviour
     /// </summary>
     protected virtual void OnTargetAcquired(Transform target)
     {
-        Debug.Log($"{gameObject.name} acquired target: {target.name}");
+        TeamComponent targetTeam = target.GetComponent<TeamComponent>();
+        string targetType = target.GetComponent<BuildingComponent>() != null ? "Building" : "Unit";
+        Debug.Log($"?? {gameObject.name} acquired target: {target.name} ({targetType}, Team: {targetTeam?.CurrentTeam})");
     }
 
     /// <summary>

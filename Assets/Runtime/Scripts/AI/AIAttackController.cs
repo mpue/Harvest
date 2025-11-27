@@ -8,10 +8,15 @@ using System.Linq;
 public class AIAttackController : MonoBehaviour
 {
     [Header("Attack Settings")]
-    [SerializeField] private float attackInterval = 120f; // Attack every 2 minutes
-    [SerializeField] private float firstAttackDelay = 180f; // First attack after 3 minutes
-    [SerializeField] private int minAttackForce = 3; // Minimum units to send
-    [SerializeField] private int maxAttackForce = 8; // Maximum units to send
+    [SerializeField] private float attackInterval = 60f; // Attack every 1 minute (REDUCED from 2min)
+    [SerializeField] private float firstAttackDelay = 90f; // First attack after 1.5 minutes (REDUCED from 3min)
+    [SerializeField] private int minAttackForce = 2; // Minimum units to send (REDUCED from 3)
+    [SerializeField] private int maxAttackForce = 6; // Maximum units to send (REDUCED from 8)
+
+    [Header("Adaptive Attack")]
+    [SerializeField] private bool useAdaptiveAttacks = true; // Attack when enough units available
+    [SerializeField] private int adaptiveAttackThreshold = 4; // Attack immediately if this many military units available
+    [SerializeField] private float adaptiveCheckInterval = 10f; // Check every 10 seconds
 
     [Header("Unit Selection")]
     [SerializeField] private bool includeTanks = true;
@@ -28,6 +33,7 @@ public class AIAttackController : MonoBehaviour
     [SerializeField] private Team targetTeam = Team.Player;
 
     private float attackTimer = 0f;
+    private float adaptiveCheckTimer = 0f;
     private bool firstAttackSent = false;
     private List<BaseUnit> attackForce = new List<BaseUnit>();
     private Vector3 attackTarget = Vector3.zero;
@@ -35,17 +41,35 @@ public class AIAttackController : MonoBehaviour
     void Start()
     {
         attackTimer = firstAttackDelay;
-        Debug.Log($"AIAttackController: First attack in {firstAttackDelay}s, then every {attackInterval}s");
+        Debug.Log($"AIAttackController (AGGRESSIVE): First attack in {firstAttackDelay}s, then every {attackInterval}s");
     }
 
     void Update()
     {
         attackTimer -= Time.deltaTime;
+        adaptiveCheckTimer -= Time.deltaTime;
 
+        // Regular timed attacks
         if (attackTimer <= 0f)
         {
             LaunchAttack();
             attackTimer = attackInterval;
+        }
+
+        // Adaptive attacks - attack early if enough units available
+        if (useAdaptiveAttacks && adaptiveCheckTimer <= 0f)
+        {
+            adaptiveCheckTimer = adaptiveCheckInterval;
+
+            // Check if we have enough units for an opportunistic attack
+            List<BaseUnit> availableUnits = FindAvailableMilitaryUnits();
+
+            if (availableUnits.Count >= adaptiveAttackThreshold)
+            {
+                Debug.Log($"?? AIAttackController: ADAPTIVE ATTACK triggered! ({availableUnits.Count} units >= {adaptiveAttackThreshold} threshold)");
+                LaunchAttack();
+                attackTimer = attackInterval; // Reset normal timer
+            }
         }
     }
 
@@ -88,6 +112,20 @@ public class AIAttackController : MonoBehaviour
 
         Debug.Log($"?? AIAttackController: Launching attack with {attackForce.Count} units to {attackTarget}!");
         firstAttackSent = true;
+    }
+
+    /// <summary>
+    /// Check for adaptive attack opportunities based on available units
+    /// </summary>
+    private void CheckAdaptiveAttack()
+    {
+        List<BaseUnit> availableUnits = FindAvailableMilitaryUnits();
+
+        if (availableUnits.Count >= adaptiveAttackThreshold)
+        {
+            Debug.Log("AIAttackController: Adaptive attack triggered!");
+            LaunchAttack();
+        }
     }
 
     /// <summary>
@@ -221,11 +259,21 @@ public class AIAttackController : MonoBehaviour
             if (unit == null) continue;
 
             Controllable controllable = unit.GetComponent<Controllable>();
+            WeaponController weaponController = unit.GetComponent<WeaponController>();
+            
             if (controllable != null)
             {
-                // Move to attack target directly (units will engage enemies on the way)
+                // Move to attack target directly
                 controllable.MoveTo(attackTarget);
             }
+         
+            // Make sure weapons are active and auto-firing
+            if (weaponController != null)
+ {
+                weaponController.SetAutoAcquireTargets(true);
+                weaponController.SetAutoFire(true);
+      Debug.Log($"? {unit.name} weapon auto-targeting enabled for attack");
+    }
         }
     }
 

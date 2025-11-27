@@ -19,7 +19,7 @@ public class AIStrategyBuilder
     /// </summary>
     public void BuildEarlyGameStrategy()
     {
-        Debug.Log("AI: Building Early Game Strategy");
+        Debug.Log("AI: Building Early Game Strategy (AGGRESSIVE)");
         taskManager.ClearTasks();
 
         // PRIORITY 100: Build 3 Energy Blocks (FOUNDATION!)
@@ -33,88 +33,100 @@ public class AIStrategyBuilder
             checkExisting: true
         ));
 
-        // PRIORITY 90: Build Factory
+        // PRIORITY 95: Build Factory FAST
         taskManager.AddTask(new BuildStructureTask(
             controller,
             "Factory",
             requiredGold: 250,
+            requiredEnergy: 10,
+            priority: 95,
+            maxCount: 1,
+            checkExisting: true
+        ));
+
+        // PRIORITY 90: Build Resource Collector EARLY
+        taskManager.AddTask(new BuildStructureTask(
+            controller,
+            "ResourceCollector",
+            requiredGold: 200,
             requiredEnergy: 10,
             priority: 90,
             maxCount: 1,
             checkExisting: true
         ));
 
-        // PRIORITY 80: Produce 3 Harvesters
+        // PRIORITY 85: Only 2 Harvesters initially (REDUCED from 3)
         taskManager.AddTask(new ProduceUnitTask(
             controller,
             unitName: "Harvester",
             producerBuildingName: "Factory",
             requiredGold: 100,
             requiredEnergy: 0,
-            priority: 80,
-            targetCount: 3,
+            priority: 85,
+            targetCount: 2, // REDUCED!
             getCurrentCount: () => controller.GetUnitCount("Harvester")
         ));
 
-        // PRIORITY 70: Build Resource Collector
-        taskManager.AddTask(new BuildStructureTask(
-            controller,
-            "ResourceCollector",
-            requiredGold: 200,
-            requiredEnergy: 10,
-            priority: 70,
-            maxCount: 1,
-            checkExisting: true
-         ));
-
-        // PRIORITY 60: Produce more Harvesters (up to 5)
+        // PRIORITY 80: Start building MK3 Tanks EARLY
         taskManager.AddTask(new ProduceUnitTask(
             controller,
-            unitName: "Harvester",
+            unitName: "MK3",
             producerBuildingName: "Factory",
-            requiredGold: 200,
-            requiredEnergy: 5,
-            priority: 60,
-            targetCount: 5,
-            getCurrentCount: () => controller.GetUnitCount("Harvester")
+            requiredGold: 250,
+            requiredEnergy: 10,
+            priority: 80,
+            targetCount: 3, // First wave
+            getCurrentCount: () => controller.GetUnitCount("MK3")
         ));
 
-        // PRIORITY 50: Build Barracks
+        // PRIORITY 70: Build Barracks
         taskManager.AddTask(new BuildStructureTask(
             controller,
             "Barracks",
             requiredGold: 250,
             requiredEnergy: 10,
-            priority: 50,
+            priority: 70,
             maxCount: 1,
             checkExisting: true
         ));
 
-        // PRIORITY 40: Produce MK3 Tanks
+        // PRIORITY 60: More MK3 Tanks (aggressive!)
         taskManager.AddTask(new ProduceUnitTask(
             controller,
             unitName: "MK3",
             producerBuildingName: "Factory",
-            requiredGold: 50,
-            requiredEnergy: 0,
-            priority: 40,
-            targetCount: 3,
+            requiredGold: 250,
+            requiredEnergy: 10,
+            priority: 60,
+            targetCount: 6, // Second wave
             getCurrentCount: () => controller.GetUnitCount("MK3")
         ));
 
-        // PRIORITY 30: Produce Soldiers
-        //taskManager.AddTask(new ProduceUnitTask(
-        //    controller,
-        //    unitName: "Soldier",
-        //    producerBuildingName: "Barracks",
-        //    requiredGold: 150,
-        //    requiredEnergy: 8,
-        //    priority: 30,
-        //    targetCount: 5,
-        //    getCurrentCount: () => controller.GetUnitCount("Soldier")
-        //));
+        // PRIORITY 50: Only add ONE more Harvester later (total 3)
+        taskManager.AddTask(new ProduceUnitTask(
+            controller,
+            unitName: "Harvester",
+            producerBuildingName: "Factory",
+            requiredGold: 100,
+            requiredEnergy: 0,
+            priority: 50,
+            targetCount: 3, // REDUCED from 5!
+            getCurrentCount: () => controller.GetUnitCount("Harvester")
+        ));
 
-        Debug.Log($"AI: Early Game Strategy loaded with {taskManager.ActiveTaskCount} tasks");
+        // PRIORITY 40: Even MORE tanks!
+        taskManager.AddTask(new ProduceUnitTask(
+            controller,
+            unitName: "MK3",
+            producerBuildingName: "Factory",
+            requiredGold: 250,
+            requiredEnergy: 10,
+            priority: 40,
+            targetCount: 10, // Big army!
+            getCurrentCount: () => controller.GetUnitCount("MK3")
+        ));
+
+        Debug.Log($"AI: AGGRESSIVE Early Game Strategy loaded with {taskManager.ActiveTaskCount} tasks");
     }
 
     /// <summary>

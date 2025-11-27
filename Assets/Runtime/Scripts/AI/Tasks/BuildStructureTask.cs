@@ -48,7 +48,7 @@ public class BuildStructureTask : AITask
         if (controller.IsBuildingInProgress(structureName))
         {
             CanExecute = false;
-            Debug.Log($"BuildStructureTask: {structureName} already in production queue");
+            // Debug.Log($"BuildStructureTask: {structureName} already in production queue");
             return false;
         }
 
