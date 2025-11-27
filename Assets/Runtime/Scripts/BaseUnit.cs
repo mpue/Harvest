@@ -6,10 +6,15 @@ public class BaseUnit : MonoBehaviour
     [SerializeField] private GameObject selectionIndicator;
     [SerializeField] private Color selectedColor = Color.green;
     [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private bool useColorTint = false;
 
     [Header("Unit Info")]
     [SerializeField] private string unitName = "Unit";
     [SerializeField] private bool isBuilding = false;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip[] unitSelectSounds; // Unit-specific selection sounds
+    [SerializeField] private AudioClip[] unitMoveSounds; // Unit-specific move command sounds
 
     private bool isSelected = false;
     private Renderer[] unitRenderers;
@@ -24,6 +29,12 @@ public class BaseUnit : MonoBehaviour
     public string UnitName => unitName;
     public ProductionComponent ProductionComponent => productionComponent;
     public TeamComponent TeamComponent => teamComponent;
+    
+    // Audio properties
+    public AudioClip[] UnitSelectSounds => unitSelectSounds;
+    public AudioClip[] UnitMoveSounds => unitMoveSounds;
+    public bool HasCustomSelectSounds => unitSelectSounds != null && unitSelectSounds.Length > 0;
+    public bool HasCustomMoveSounds => unitMoveSounds != null && unitMoveSounds.Length > 0;
 
     void Awake()
     {
@@ -102,27 +113,31 @@ public class BaseUnit : MonoBehaviour
             selectionIndicator.SetActive(show);
         }
 
-        // Change material color or add outline effect
-        if (unitRenderers != null && unitRenderers.Length > 0)
+        if (useColorTint)
         {
-            foreach (Renderer renderer in unitRenderers)
+            // Change material color or add outline effect
+            if (unitRenderers != null && unitRenderers.Length > 0)
             {
-                if (renderer != null && renderer.material != null)
+                foreach (Renderer renderer in unitRenderers)
                 {
-                    // Set emission color for selected units
-                    if (show)
+                    if (renderer != null && renderer.material != null)
                     {
-                        renderer.material.EnableKeyword("_EMISSION");
-                        renderer.material.SetColor("_EmissionColor", selectedColor * 0.3f);
-                    }
-                    else
-                    {
-                        renderer.material.DisableKeyword("_EMISSION");
-                        renderer.material.SetColor("_EmissionColor", Color.black);
+                        // Set emission color for selected units
+                        if (show)
+                        {
+                            renderer.material.EnableKeyword("_EMISSION");
+                            renderer.material.SetColor("_EmissionColor", selectedColor * 0.3f);
+                        }
+                        else
+                        {
+                            renderer.material.DisableKeyword("_EMISSION");
+                            renderer.material.SetColor("_EmissionColor", Color.black);
+                        }
                     }
                 }
             }
         }
+
     }
 
     /// <summary>

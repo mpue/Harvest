@@ -235,8 +235,11 @@ MonoBehaviour:
   selectionIndicator: {fileID: 79229971917164183}
   selectedColor: {r: 1, g: 0, b: 0.21223831, a: 0.53333336}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
+  useColorTint: 0
   unitName: Factory
   isBuilding: 1
+  unitSelectSounds: []
+  unitMoveSounds: []
 --- !u!65 &476113649839098598
 BoxCollider:
   m_ObjectHideFlags: 0

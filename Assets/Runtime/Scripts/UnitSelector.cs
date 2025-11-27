@@ -180,8 +180,8 @@ public class UnitSelector : MonoBehaviour
 
             if (controllableUnits.Count > 0)
             {
-                // Play random move command sound
-                PlayRandomSound(unitMoveSounds);
+                // Play random move command sound (check for unit-specific sound first)
+                PlayMoveSound();
 
                 if (useFormations && controllableUnits.Count > 1)
                 {
@@ -272,10 +272,10 @@ public class UnitSelector : MonoBehaviour
                     // Select the unit
                     SelectUnit(unit);
 
-                    // Play selection sound only for non-building units
+                    // Play selection sound (check for unit-specific sound first)
                     if (!unit.IsBuilding)
                     {
-                        PlayRandomSound(unitSelectSounds);
+                        PlaySelectionSound(unit);
                     }
                 }
             }
@@ -340,7 +340,12 @@ public class UnitSelector : MonoBehaviour
         // Play one sound for the entire box selection if non-buildings were selected
         if (hasSelectedNonBuilding)
         {
-            PlayRandomSound(unitSelectSounds);
+            // Play selection sound for first selected non-building unit
+            BaseUnit firstUnit = selectedUnits.Find(u => u != null && !u.IsBuilding);
+            if (firstUnit != null)
+            {
+                PlaySelectionSound(firstUnit);
+            }
         }
     }
 
@@ -492,6 +497,54 @@ public class UnitSelector : MonoBehaviour
         if (clip != null)
         {
             audioSource.PlayOneShot(clip, audioVolume);
+        }
+    }
+
+    /// <summary>
+    /// Plays selection sound - prefers unit-specific sound over default
+    /// </summary>
+    private void PlaySelectionSound(BaseUnit unit)
+    {
+        if (audioSource == null) return;
+
+        // Check if unit has custom selection sounds
+        if (unit != null && unit.HasCustomSelectSounds)
+        {
+            PlayRandomSound(unit.UnitSelectSounds);
+        }
+        else
+        {
+            // Fall back to default selector sounds
+            PlayRandomSound(unitSelectSounds);
+        }
+    }
+
+    /// <summary>
+    /// Plays move command sound - prefers unit-specific sound over default
+    /// </summary>
+    private void PlayMoveSound()
+    {
+        if (audioSource == null || selectedUnits.Count == 0) return;
+
+        // Try to find first selected unit with custom move sounds
+        BaseUnit unitWithCustomSound = null;
+        foreach (BaseUnit unit in selectedUnits)
+        {
+            if (unit != null && !unit.IsBuilding && unit.HasCustomMoveSounds)
+            {
+                unitWithCustomSound = unit;
+                break;
+            }
+        }
+
+        // Play unit-specific sound if available, otherwise use default
+        if (unitWithCustomSound != null)
+        {
+            PlayRandomSound(unitWithCustomSound.UnitMoveSounds);
+        }
+        else
+        {
+            PlayRandomSound(unitMoveSounds);
         }
     }
 

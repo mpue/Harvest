@@ -195,8 +195,11 @@ MonoBehaviour:
   selectionIndicator: {fileID: 8713010603202177754}
   selectedColor: {r: 0, g: 1, b: 0, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
+  useColorTint: 0
   unitName: Energy Block
   isBuilding: 1
+  unitSelectSounds: []
+  unitMoveSounds: []
 --- !u!114 &5521579727759971795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -217,6 +220,8 @@ MonoBehaviour:
   indicatorLifetime: 1
   pathColor: {r: 0, g: 1, b: 1, a: 1}
   showPath: 1
+  useAnimation: 1
+  updateAnimationSpeed: 1
 --- !u!1001 &8741709543039367553
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -329,8 +334,11 @@ MonoBehaviour:
   selectionIndicator: {fileID: 8713010603202177754}
   selectedColor: {r: 0, g: 1, b: 0, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
+  useColorTint: 0
   unitName: Unit
   isBuilding: 1
+  unitSelectSounds: []
+  unitMoveSounds: []
 --- !u!114 &6398871026094639921
 MonoBehaviour:
   m_ObjectHideFlags: 0

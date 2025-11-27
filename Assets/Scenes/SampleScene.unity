@@ -4503,7 +4503,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -512, y: 0, z: -512}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5327,8 +5327,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 859b1c1bb2cfba64ba456913ac4b5411, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIAttackController
-  attackInterval: 120
-  firstAttackDelay: 180
+  attackInterval: 60
+  firstAttackDelay: 90
   minAttackForce: 3
   maxAttackForce: 8
   useAdaptiveAttacks: 1
@@ -5462,6 +5462,63 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1001 &740378026540989924
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6096530693387234759, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_Name
+      value: RobotSoldier2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 61.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714112684894720629, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5358e2dbffa4dbc4db4269d2775c4b7a, type: 3}
 --- !u!1001 &1048290070035404700
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6155,6 +6212,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1244029066}
     - target: {fileID: 4925887825472655474, guid: a5f4205e111e18e479f11cf3033d02bd, type: 3}
+      propertyPath: playerStartPositions.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4925887825472655474, guid: a5f4205e111e18e479f11cf3033d02bd, type: 3}
       propertyPath: playerResourceManagers.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -6162,6 +6223,10 @@ PrefabInstance:
       propertyPath: 'playerResourceManagers.Array.data[0]'
       value: 
       objectReference: {fileID: 1126122410}
+    - target: {fileID: 4925887825472655474, guid: a5f4205e111e18e479f11cf3033d02bd, type: 3}
+      propertyPath: playerStartPositions.Array.data[0].x
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7602153014328618013, guid: a5f4205e111e18e479f11cf3033d02bd, type: 3}
       propertyPath: m_Name
       value: GameManager
@@ -6272,3 +6337,4 @@ SceneRoots:
   - {fileID: 1892636420}
   - {fileID: 2046290227}
   - {fileID: 1360740457}
+  - {fileID: 740378026540989924}

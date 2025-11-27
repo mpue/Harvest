@@ -1,5 +1,101 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5566813214912207954
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6416472963361014663}
+  - component: {fileID: 7307601799301116361}
+  m_Layer: 6
+  m_Name: SpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6416472963361014663
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5566813214912207954}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 20.91}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8833848184512310216}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7307601799301116361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5566813214912207954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ed657fd0ef18f54a9b2bfd107c84d71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnPoint
+  gizmoColor: {r: 0, g: 1, b: 0, a: 1}
+  gizmoSize: 1
+  showLabel: 1
+  showArrow: 1
+--- !u!1 &6977359088057442786
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1857978079027980848}
+  - component: {fileID: 5574602518876340148}
+  m_Layer: 6
+  m_Name: RallyPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1857978079027980848
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6977359088057442786}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 20.91}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8833848184512310216}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5574602518876340148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6977359088057442786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8bc276015b86ce49bfb7783728dfa04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RallyPoint
+  gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+  gizmoSize: 1
+  showLabel: 1
+  showFlag: 1
 --- !u!1001 &2129136961031403000
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -234,6 +330,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 792e332df1cda5842b7ad1a2eed46123, type: 3}
       insertIndex: -1
       addedObject: {fileID: 942134849955621248}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 792e332df1cda5842b7ad1a2eed46123, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6416472963361014663}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 792e332df1cda5842b7ad1a2eed46123, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1857978079027980848}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 792e332df1cda5842b7ad1a2eed46123, type: 3}
       insertIndex: -1
@@ -250,6 +352,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 792e332df1cda5842b7ad1a2eed46123, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1308128388042487365}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 792e332df1cda5842b7ad1a2eed46123, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5593534538881197650}
   m_SourcePrefab: {fileID: 100100000, guid: 792e332df1cda5842b7ad1a2eed46123, type: 3}
 --- !u!1 &8202166193346687346 stripped
 GameObject:
@@ -271,8 +376,11 @@ MonoBehaviour:
   selectionIndicator: {fileID: 457381491717878586}
   selectedColor: {r: 1, g: 0, b: 0, a: 0.54509807}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
+  useColorTint: 0
   unitName: Baracks
   isBuilding: 1
+  unitSelectSounds: []
+  unitMoveSounds: []
 --- !u!65 &1201683041914233093
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -364,6 +472,27 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 3.8950002, z: 0}
   m_TimeToStationary: 0.5
+--- !u!114 &5593534538881197650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8202166193346687346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e614c87a40cff84e806723f40137dbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProductionComponent
+  availableProducts:
+  - {fileID: 11400000, guid: d0d489e785631184bb4ef76a4c001fcf, type: 2}
+  spawnPoint: {fileID: 6416472963361014663}
+  maxQueueSize: 5
+  rallyPoint: {fileID: 1857978079027980848}
+  showRallyPointGizmo: 1
+  resourceManager: {fileID: 0}
+  buildingPlacement: {fileID: 0}
+  aiBuildingPlacement: {fileID: 0}
 --- !u!4 &8833848184512310216 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 792e332df1cda5842b7ad1a2eed46123, type: 3}

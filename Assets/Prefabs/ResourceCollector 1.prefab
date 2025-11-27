@@ -250,8 +250,11 @@ MonoBehaviour:
   selectionIndicator: {fileID: 7447867401434146215}
   selectedColor: {r: 0, g: 1, b: 0, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
+  useColorTint: 0
   unitName: Resource Collector
   isBuilding: 1
+  unitSelectSounds: []
+  unitMoveSounds: []
 --- !u!65 &2366926937878284218
 BoxCollider:
   m_ObjectHideFlags: 0

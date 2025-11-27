@@ -18,8 +18,13 @@ public class Controllable : MonoBehaviour
     [SerializeField] private Color pathColor = Color.cyan;
     [SerializeField] private bool showPath = true;
 
+    [Header("Animation")]
+    [SerializeField] private bool useAnimation = true;
+    [SerializeField] private bool updateAnimationSpeed = true;
+
     private NavMeshAgent navAgent;
     private BaseUnit baseUnit;
+    private Animatable animatable;
     private Vector3 targetPosition;
     private bool hasTarget = false;
     private bool isMoving = false;
@@ -34,6 +39,7 @@ public class Controllable : MonoBehaviour
     void Awake()
     {
         baseUnit = GetComponent<BaseUnit>();
+        animatable = GetComponent<Animatable>();
 
         if (useNavMesh)
         {
@@ -68,6 +74,24 @@ public class Controllable : MonoBehaviour
             {
                 UpdateManualMovement();
             }
+
+            // Update animation speed based on current velocity
+            if (useAnimation && animatable != null && updateAnimationSpeed)
+            {
+                float currentSpeed = 0f;
+
+                if (useNavMesh && navAgent != null && navAgent.isOnNavMesh)
+                {
+                    currentSpeed = navAgent.velocity.magnitude;
+                }
+                else
+                {
+                    // For manual movement, use moveSpeed
+                    currentSpeed = isMoving ? moveSpeed : 0f;
+                }
+
+                animatable.SetMovementSpeed(currentSpeed);
+            }
         }
     }
 
@@ -98,6 +122,12 @@ public class Controllable : MonoBehaviour
         // Show visual feedback
         ShowMoveIndicator(targetPosition);
 
+        // Set animation state to moving
+        if (useAnimation && animatable != null)
+        {
+            animatable.SetMoving(true);
+        }
+
         OnMoveCommand(targetPosition);
     }
 
@@ -113,6 +143,12 @@ public class Controllable : MonoBehaviour
         {
             navAgent.isStopped = true;
             navAgent.ResetPath();
+        }
+
+        // Set animation state to idle
+        if (useAnimation && animatable != null)
+        {
+            animatable.SetMoving(false);
         }
 
         OnStop();
@@ -132,6 +168,13 @@ public class Controllable : MonoBehaviour
             {
                 hasTarget = false;
                 isMoving = false;
+
+                // Set animation to idle
+                if (useAnimation && animatable != null)
+                {
+                    animatable.SetMoving(false);
+                }
+
                 OnReachedDestination();
             }
         }
@@ -150,6 +193,13 @@ public class Controllable : MonoBehaviour
         {
             hasTarget = false;
             isMoving = false;
+
+            // Set animation to idle
+            if (useAnimation && animatable != null)
+            {
+                animatable.SetMoving(false);
+            }
+
             OnReachedDestination();
             return;
         }
@@ -272,5 +322,21 @@ public class Controllable : MonoBehaviour
         {
             navAgent.enabled = use;
         }
+    }
+
+    /// <summary>
+    /// Get the Animatable component if present
+    /// </summary>
+    public Animatable GetAnimatable()
+    {
+        return animatable;
+    }
+
+    /// <summary>
+    /// Enable/Disable animation updates
+    /// </summary>
+    public void SetUseAnimation(bool use)
+    {
+        useAnimation = use;
     }
 }
