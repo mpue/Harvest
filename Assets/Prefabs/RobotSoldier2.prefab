@@ -6636,10 +6636,16 @@ MonoBehaviour:
   fireSound: {fileID: 8300000, guid: b6635e7d4e48a524e86559b3696e155f, type: 3}
   muzzleFlashDuration: 0.1
   useAnimation: 1
-  aimParameterName: RunAim
+  aimParameterName: IdleAim
   fireTriggerName: ArmShot
   useBoolForAim: 0
   useTriggerForFire: 1
+  useMovementBasedAnimation: 1
+  aimMovingParameterName: RunAim
+  aimStationaryParameterName: ArmAim
+  fireMovingTriggerName: RunAim
+  fireStationaryTriggerName: IdleAim
+  movementThreshold: 0.1
 --- !u!114 &4437286338766089719
 MonoBehaviour:
   m_ObjectHideFlags: 0

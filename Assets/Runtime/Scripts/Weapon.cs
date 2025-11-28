@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Base class for all weapons
@@ -19,6 +19,11 @@ public class Weapon : MonoBehaviour
     [SerializeField] private float turretRotationSpeed = 90f; // Degrees per second
     [SerializeField] private float barrelRotationSpeed = 45f;
 
+    [Header("Unit Rotation (No Turret)")]
+    [SerializeField] private bool rotateUnitToTarget = true; // Rotate entire unit if no turret
+    [SerializeField] private float unitRotationSpeed = 180f; // Degrees per second for unit rotation
+    [SerializeField] private float aimAngleTolerance = 15f; // Degrees tolerance for aiming without turret
+
     [Header("Shot Points")]
     [SerializeField] private Transform[] shotPoints; // Where projectiles spawn
     [SerializeField] private int currentShotPointIndex = 0; // For alternating fire
@@ -38,6 +43,14 @@ public class Weapon : MonoBehaviour
     [SerializeField] private bool useBoolForAim = true; // Use bool parameter for IsAiming
     [SerializeField] private bool useTriggerForFire = true; // Use trigger for Fire
 
+    [Header("Movement-Based Animation")]
+    [SerializeField] private bool useMovementBasedAnimation = true;
+    [SerializeField] private string aimMovingParameterName = "IsAimingMoving";
+    [SerializeField] private string aimStationaryParameterName = "IsAimingStationary";
+    [SerializeField] private string fireMovingTriggerName = "FireMoving";
+    [SerializeField] private string fireStationaryTriggerName = "FireStationary";
+    [SerializeField] private float movementThreshold = 0.1f; // Speed threshold to consider unit as moving
+
     // Internal state
     private Transform currentTarget;
     private float lastFireTime = 0f;
@@ -45,7 +58,9 @@ public class Weapon : MonoBehaviour
     private TeamComponent ownerTeam;
     private AudioSource audioSource;
     private Animatable animatable;
+    private Controllable controllable;
     private bool wasAiming = false; // Track previous aiming state
+    private bool wasMoving = false; // Track previous movement state
 
     public float Range => range;
     public bool IsAimed => isAimed;
@@ -58,6 +73,7 @@ public class Weapon : MonoBehaviour
     {
         ownerTeam = GetComponentInParent<TeamComponent>();
         animatable = GetComponentInParent<Animatable>();
+        controllable = GetComponentInParent<Controllable>();
         audioSource = GetComponent<AudioSource>();
 
         if (audioSource == null && fireSound != null)
@@ -72,18 +88,18 @@ public class Weapon : MonoBehaviour
         // Validate setup
         if (shotPoints == null || shotPoints.Length == 0)
         {
-            Debug.LogWarning($"? Weapon '{weaponName}' on {gameObject.name} has NO shot points assigned!");
+            Debug.LogWarning($"Weapon '{weaponName}' on {gameObject.name} has NO shot points assigned!");
         }
 
         if (projectilePrefab == null)
         {
-            Debug.LogWarning($"? Weapon '{weaponName}' on {gameObject.name} has NO projectile prefab assigned!");
+            Debug.LogWarning($"Weapon '{weaponName}' on {gameObject.name} has NO projectile prefab assigned!");
         }
 
         // Log successful initialization
         if (shotPoints != null && shotPoints.Length > 0 && projectilePrefab != null)
         {
-            Debug.Log($"? Weapon '{weaponName}' on {gameObject.name} initialized successfully (Range: {range}, Damage: {damage}, FireRate: {fireRate})");
+            Debug.Log($"Weapon '{weaponName}' on {gameObject.name} initialized successfully (Range: {range}, Damage: {damage}, FireRate: {fireRate})");
         }
 
         // Log animation component status
@@ -91,12 +107,31 @@ public class Weapon : MonoBehaviour
         {
             if (animatable != null)
             {
-                Debug.Log($"? Weapon '{weaponName}': Animation support enabled (Aim: {aimParameterName}, Fire: {fireTriggerName})");
+                Debug.Log($"Weapon '{weaponName}': Animation support enabled (Aim: {aimParameterName}, Fire: {fireTriggerName})");
             }
             else
             {
-                Debug.Log($"?? Weapon '{weaponName}': Animation enabled but no Animatable component found on parent");
+                Debug.Log($"Weapon '{weaponName}': Animation enabled but no Animatable component found on parent");
             }
+        }
+
+        // Log movement-based animation status
+        if (useMovementBasedAnimation)
+        {
+            if (controllable != null && animatable != null)
+            {
+                Debug.Log($"Weapon '{weaponName}': Movement-based animation enabled (Moving: {aimMovingParameterName}/{fireMovingTriggerName}, Stationary: {aimStationaryParameterName}/{fireStationaryTriggerName})");
+            }
+            else
+            {
+                Debug.LogWarning($"Weapon '{weaponName}': Movement-based animation enabled but missing Controllable ({controllable != null}) or Animatable ({animatable != null})");
+            }
+        }
+
+        // Log unit rotation status
+        if (turretTransform == null && rotateUnitToTarget)
+        {
+            Debug.Log($"Weapon '{weaponName}': Unit rotation enabled (no turret) - Speed: {unitRotationSpeed}°/s, Tolerance: {aimAngleTolerance}°");
         }
     }
 
@@ -122,6 +157,12 @@ public class Weapon : MonoBehaviour
 
                 wasAiming = isAiming;
             }
+        }
+
+        // Update movement-based animations
+        if (useMovementBasedAnimation && animatable != null && controllable != null)
+        {
+            UpdateMovementBasedAnimations();
         }
     }
 
@@ -173,7 +214,7 @@ public class Weapon : MonoBehaviour
         // Aim turret (horizontal rotation)
         if (turretTransform != null)
         {
-            // Arbeite im World Space f�r pr�zisere Berechnungen
+            // Arbeite im World Space für präzisere Berechnungen
             Vector3 directionToTarget = targetPosition - turretTransform.position;
 
             // Projiziere auf die horizontale Ebene
@@ -196,22 +237,27 @@ public class Weapon : MonoBehaviour
 
                 // Interpoliere nur die Y-Rotation
                 float newYAngle = Mathf.MoveTowardsAngle(
-                    currentEuler.y,
+              currentEuler.y,
                     targetEuler.y,
-                    turretRotationSpeed * Time.deltaTime
+                turretRotationSpeed * Time.deltaTime
                 );
 
                 // Setze neue Rotation - WICHTIG: Bewahre X und Z exakt
                 turretTransform.localRotation = Quaternion.Euler(
-                    currentEuler.x,
-                    newYAngle,
-                    currentEuler.z
-                );
+                 currentEuler.x,
+              newYAngle,
+           currentEuler.z
+                       );
 
-                // Pr�fe ob ausgerichtet
+                // Prüfe ob ausgerichtet
                 float angleDiff = Mathf.Abs(Mathf.DeltaAngle(currentEuler.y, targetEuler.y));
                 isAimed = angleDiff < 5f;
             }
+        }
+        else if (rotateUnitToTarget)
+        {
+            // Kein Turret → Drehe gesamte Unit zum Ziel
+            RotateUnitToTarget(targetPosition);
         }
         else
         {
@@ -228,6 +274,36 @@ public class Weapon : MonoBehaviour
             float newAngle = Mathf.MoveTowards(currentAngles.x, -targetAngle, barrelRotationSpeed * Time.deltaTime);
             barrelTransform.localEulerAngles = new Vector3(newAngle, currentAngles.y, currentAngles.z);
         }
+    }
+
+    /// <summary>
+    /// Rotate entire unit to face target (for units without turret)
+    /// </summary>
+    private void RotateUnitToTarget(Vector3 targetPosition)
+    {
+        // Calculate direction to target on horizontal plane
+        Vector3 directionToTarget = targetPosition - transform.position;
+        directionToTarget.y = 0;
+
+        if (directionToTarget.sqrMagnitude < 0.001f)
+        {
+            isAimed = true;
+            return;
+        }
+
+        // Calculate target rotation
+        Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+
+        // Smoothly rotate unit towards target
+        transform.rotation = Quaternion.RotateTowards(
+      transform.rotation,
+       targetRotation,
+          unitRotationSpeed * Time.deltaTime
+             );
+
+        // Check if aimed (within tolerance)
+        float angle = Quaternion.Angle(transform.rotation, targetRotation);
+        isAimed = angle <= aimAngleTolerance;
     }
 
     /// <summary>
@@ -307,9 +383,23 @@ public class Weapon : MonoBehaviour
     {
         lastFireTime = Time.time;
 
-        // Trigger fire animation
-        if (useAnimation && animatable != null)
+        // Trigger fire animation based on movement state
+        if (useMovementBasedAnimation && animatable != null && controllable != null)
         {
+            bool isMoving = IsUnitMoving();
+
+            if (isMoving)
+            {
+                animatable.SetTrigger(fireMovingTriggerName);
+            }
+            else
+            {
+                animatable.SetTrigger(fireStationaryTriggerName);
+            }
+        }
+        else if (useAnimation && animatable != null)
+        {
+            // Fallback to standard fire animation
             if (useTriggerForFire)
             {
                 animatable.SetTrigger(fireTriggerName);
@@ -337,16 +427,16 @@ public class Weapon : MonoBehaviour
 
                 projectile.Initialize(direction, projectileSpeed, damage, range, ownerTeam);
 
-                Debug.Log($"?? {weaponName} FIRED at {currentTarget.name}! (Distance: {Vector3.Distance(transform.position, currentTarget.position):F1}m)");
+                Debug.Log($" {weaponName} FIRED at {currentTarget.name}! (Distance: {Vector3.Distance(transform.position, currentTarget.position):F1}m)");
             }
             else
             {
-                Debug.LogError($"? Projectile prefab '{projectilePrefab.name}' has no Projectile component!");
+                Debug.LogError($" Projectile prefab '{projectilePrefab.name}' has no Projectile component!");
             }
         }
         else
         {
-            Debug.LogError($"? {weaponName}: Cannot fire - no projectile prefab assigned!");
+            Debug.LogError($" {weaponName}: Cannot fire - no projectile prefab assigned!");
         }
 
         // Visual effects
@@ -363,7 +453,6 @@ public class Weapon : MonoBehaviour
 
         // Callback
         OnWeaponFired();
-        UpdateAnimation();
     }
 
     /// <summary>
@@ -434,29 +523,53 @@ public class Weapon : MonoBehaviour
     }
 
     /// <summary>
-    /// Update animation states
+    /// Update movement-based animations
     /// </summary>
-    private void UpdateAnimation()
+    private void UpdateMovementBasedAnimations()
     {
-        if (!useAnimation || animatable == null) return;
+        if (controllable == null || animatable == null) return;
 
-        // Update aiming animation
-        if (useBoolForAim)
-        {
-            animatable.SetBool(aimParameterName, isAimed);
-        }
-        else
-        {
-            // Use float parameter for more control
-            float aimWeight = isAimed ? 1f : 0f;
-            animatable.SetFloat(aimParameterName, aimWeight);
-        }
+        // Check if unit is moving
+        bool isMoving = IsUnitMoving();
 
-        // Update firing animation
-        if (useTriggerForFire)
+        // Only update if state changed
+        if (isMoving != wasMoving || currentTarget != null)
         {
-            animatable.SetTrigger(fireTriggerName);
+            // Update aim animations based on movement and target
+            if (currentTarget != null)
+            {
+                if (isMoving)
+                {
+                    // Unit is moving and has target → Aiming while moving
+                    animatable.SetBool(aimMovingParameterName, true);
+                    animatable.SetBool(aimStationaryParameterName, false);
+                }
+                else
+                {
+                    // Unit is stationary and has target → Aiming while stationary
+                    animatable.SetBool(aimMovingParameterName, false);
+                    animatable.SetBool(aimStationaryParameterName, true);
+                }
+            }
+            else
+            {
+                // No target → Clear all aim animations
+                animatable.SetBool(aimMovingParameterName, false);
+                animatable.SetBool(aimStationaryParameterName, false);
+            }
+
+            wasMoving = isMoving;
         }
+    }
+
+    /// <summary>
+    /// Check if unit is currently moving
+    /// </summary>
+    private bool IsUnitMoving()
+    {
+        if (controllable == null) return false;
+
+        return controllable.IsMoving;
     }
 
     /// <summary>
@@ -468,7 +581,23 @@ public class Weapon : MonoBehaviour
     }
 
     /// <summary>
-    /// Get the Animatable component
+    /// Enable/disable movement-based animation
+    /// </summary>
+    public void SetUseMovementBasedAnimation(bool use)
+    {
+        useMovementBasedAnimation = use;
+    }
+
+    /// <summary>
+    /// Enable/disable unit rotation to target (for units without turret)
+    /// </summary>
+    public void SetRotateUnitToTarget(bool rotate)
+    {
+        rotateUnitToTarget = rotate;
+    }
+
+    /// <summary>
+    /// Get Animatable component
     /// </summary>
     public Animatable GetAnimatable()
     {
