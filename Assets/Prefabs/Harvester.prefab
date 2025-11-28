@@ -297,8 +297,11 @@ MonoBehaviour:
   selectionIndicator: {fileID: 768859510140909064}
   selectedColor: {r: 0, g: 1, b: 0, a: 0}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
+  useColorTint: 0
   unitName: Harvester
   isBuilding: 0
+  unitSelectSounds: []
+  unitMoveSounds: []
 --- !u!114 &87504612856061553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -402,10 +405,12 @@ MonoBehaviour:
   rotationSpeed: 10
   stoppingDistance: 0.5
   useNavMesh: 1
-  moveTargetIndicator: {fileID: 0}
+  moveTargetIndicator: {fileID: 8891531869104849278, guid: f5e248137ffd1a44d9bcee8399079988, type: 3}
   indicatorLifetime: 1
   pathColor: {r: 0, g: 1, b: 1, a: 1}
   showPath: 1
+  useAnimation: 1
+  updateAnimationSpeed: 1
 --- !u!195 &6151656917324889744
 NavMeshAgent:
   m_ObjectHideFlags: 0

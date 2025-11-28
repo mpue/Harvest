@@ -126,6 +126,18 @@ public class AIStrategyBuilder
             getCurrentCount: () => controller.GetUnitCount("MK3")
         ));
 
+        taskManager.AddTask(new ProduceUnitTask(
+            controller,
+            unitName: "Soldier",
+            producerBuildingName: "Barracks",
+            requiredGold: 50,
+            requiredEnergy: 0,
+            priority: 51,
+            targetCount: 10, // Big army!
+            getCurrentCount: () => controller.GetUnitCount("MK3")
+        ));
+
+
         Debug.Log($"AI: AGGRESSIVE Early Game Strategy loaded with {taskManager.ActiveTaskCount} tasks");
     }
 

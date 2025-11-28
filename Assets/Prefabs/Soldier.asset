@@ -22,6 +22,6 @@ MonoBehaviour:
   foodCost: 0
   woodCost: 0
   stoneCost: 0
-  goldCost: 0
+  goldCost: 50
   energyCost: 0
   energyProduction: 0

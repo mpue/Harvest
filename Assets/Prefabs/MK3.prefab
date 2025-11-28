@@ -622,6 +622,9 @@ MonoBehaviour:
   barrelTransform: {fileID: 237174542069254631}
   turretRotationSpeed: 90
   barrelRotationSpeed: 45
+  rotateUnitToTarget: 1
+  unitRotationSpeed: 180
+  aimAngleTolerance: 15
   shotPoints:
   - {fileID: 7829260797988496316}
   - {fileID: 3544602462729030380}
@@ -630,6 +633,17 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   fireSound: {fileID: 8300000, guid: b6635e7d4e48a524e86559b3696e155f, type: 3}
   muzzleFlashDuration: 0.1
+  useAnimation: 1
+  aimParameterName: IsAiming
+  fireTriggerName: Fire
+  useBoolForAim: 1
+  useTriggerForFire: 1
+  useMovementBasedAnimation: 1
+  aimMovingParameterName: IsAimingMoving
+  aimStationaryParameterName: IsAimingStationary
+  fireMovingTriggerName: FireMoving
+  fireStationaryTriggerName: FireStationary
+  movementThreshold: 0.1
 --- !u!114 &4209687926760397413
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -645,8 +659,11 @@ MonoBehaviour:
   selectionIndicator: {fileID: 3499448070980593947}
   selectedColor: {r: 0, g: 1, b: 0, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
+  useColorTint: 0
   unitName: MK3
   isBuilding: 0
+  unitSelectSounds: []
+  unitMoveSounds: []
 --- !u!114 &3985236834475023799
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -698,10 +715,12 @@ MonoBehaviour:
   rotationSpeed: 10
   stoppingDistance: 0.5
   useNavMesh: 1
-  moveTargetIndicator: {fileID: 0}
+  moveTargetIndicator: {fileID: 8891531869104849278, guid: f5e248137ffd1a44d9bcee8399079988, type: 3}
   indicatorLifetime: 1
   pathColor: {r: 0, g: 1, b: 1, a: 1}
   showPath: 1
+  useAnimation: 1
+  updateAnimationSpeed: 1
 --- !u!195 &3904101791465009691
 NavMeshAgent:
   m_ObjectHideFlags: 0
