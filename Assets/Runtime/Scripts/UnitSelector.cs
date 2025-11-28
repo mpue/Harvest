@@ -244,6 +244,8 @@ public class UnitSelector : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
+        Debug.DrawRay(ray.origin, ray.direction * 500f, Color.red, 3f);
+
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, selectableLayer))
         {
             BaseUnit unit = hit.collider.GetComponent<BaseUnit>();
