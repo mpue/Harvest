@@ -58,46 +58,46 @@ public class Weapon : MonoBehaviour
     {
         ownerTeam = GetComponentInParent<TeamComponent>();
         animatable = GetComponentInParent<Animatable>();
-     audioSource = GetComponent<AudioSource>();
+        audioSource = GetComponent<AudioSource>();
 
         if (audioSource == null && fireSound != null)
-  {
-  audioSource = gameObject.AddComponent<AudioSource>();
-          audioSource.playOnAwake = false;
- }
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+        }
     }
 
     void Start()
     {
         // Validate setup
-     if (shotPoints == null || shotPoints.Length == 0)
-   {
-   Debug.LogWarning($"? Weapon '{weaponName}' on {gameObject.name} has NO shot points assigned!");
- }
+        if (shotPoints == null || shotPoints.Length == 0)
+        {
+            Debug.LogWarning($"? Weapon '{weaponName}' on {gameObject.name} has NO shot points assigned!");
+        }
 
         if (projectilePrefab == null)
- {
-   Debug.LogWarning($"? Weapon '{weaponName}' on {gameObject.name} has NO projectile prefab assigned!");
-   }
-   
-        // Log successful initialization
-      if (shotPoints != null && shotPoints.Length > 0 && projectilePrefab != null)
         {
-   Debug.Log($"? Weapon '{weaponName}' on {gameObject.name} initialized successfully (Range: {range}, Damage: {damage}, FireRate: {fireRate})");
+            Debug.LogWarning($"? Weapon '{weaponName}' on {gameObject.name} has NO projectile prefab assigned!");
         }
-        
+
+        // Log successful initialization
+        if (shotPoints != null && shotPoints.Length > 0 && projectilePrefab != null)
+        {
+            Debug.Log($"? Weapon '{weaponName}' on {gameObject.name} initialized successfully (Range: {range}, Damage: {damage}, FireRate: {fireRate})");
+        }
+
         // Log animation component status
         if (useAnimation)
         {
-    if (animatable != null)
-       {
-  Debug.Log($"? Weapon '{weaponName}': Animation support enabled (Aim: {aimParameterName}, Fire: {fireTriggerName})");
-     }
-      else
-       {
-     Debug.Log($"?? Weapon '{weaponName}': Animation enabled but no Animatable component found on parent");
-      }
-  }
+            if (animatable != null)
+            {
+                Debug.Log($"? Weapon '{weaponName}': Animation support enabled (Aim: {aimParameterName}, Fire: {fireTriggerName})");
+            }
+            else
+            {
+                Debug.Log($"?? Weapon '{weaponName}': Animation enabled but no Animatable component found on parent");
+            }
+        }
     }
 
     void Update()
@@ -106,23 +106,23 @@ public class Weapon : MonoBehaviour
         {
             AimAtTarget();
         }
-        
+
         // Update animation state based on aiming
         if (useAnimation && animatable != null)
-   {
-   bool isAiming = currentTarget != null;
+        {
+            bool isAiming = currentTarget != null;
 
-      // Only update if state changed
-   if (isAiming != wasAiming)
-    {
- if (useBoolForAim)
-   {
-         animatable.SetBool(aimParameterName, isAiming);
-     }
-      
-       wasAiming = isAiming;
-      }
-  }
+            // Only update if state changed
+            if (isAiming != wasAiming)
+            {
+                if (useBoolForAim)
+                {
+                    animatable.SetBool(aimParameterName, isAiming);
+                }
+
+                wasAiming = isAiming;
+            }
+        }
     }
 
     /// <summary>
@@ -130,17 +130,17 @@ public class Weapon : MonoBehaviour
     /// </summary>
     public void SetTarget(Transform target)
     {
-     currentTarget = target;
-  isAimed = false;
-        
+        currentTarget = target;
+        isAimed = false;
+
         // Set aiming animation when target is acquired
-    if (useAnimation && animatable != null && target != null)
- {
-if (useBoolForAim)
-    {
-   animatable.SetBool(aimParameterName, true);
+        if (useAnimation && animatable != null && target != null)
+        {
+            if (useBoolForAim)
+            {
+                animatable.SetBool(aimParameterName, true);
             }
-   }
+        }
     }
 
     /// <summary>
@@ -148,16 +148,16 @@ if (useBoolForAim)
     /// </summary>
     public void ClearTarget()
     {
-      currentTarget = null;
+        currentTarget = null;
         isAimed = false;
-      
-   // Clear aiming animation when target is lost
+
+        // Clear aiming animation when target is lost
         if (useAnimation && animatable != null)
- {
-    if (useBoolForAim)
-       {
-animatable.SetBool(aimParameterName, false);
-     }
+        {
+            if (useBoolForAim)
+            {
+                animatable.SetBool(aimParameterName, false);
+            }
         }
     }
 
@@ -238,52 +238,52 @@ animatable.SetBool(aimParameterName, false);
     {
         // Check if can fire
         if (!CanFire())
-   {
+        {
             return false;
-    }
+        }
 
- // Check if target is valid
-      if (currentTarget == null)
-     {
-      return false;
-   }
+        // Check if target is valid
+        if (currentTarget == null)
+        {
+            return false;
+        }
 
-   // Check if target is in range
+        // Check if target is in range
         float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
         if (distanceToTarget > range)
- {
-  // Debug every few seconds
-    if (Time.frameCount % 300 == 0)
-    {
-         Debug.Log($"?? {weaponName}: Target {currentTarget.name} out of range ({distanceToTarget:F1}m > {range}m)");
-    }
-     return false;
- }
+        {
+            // Debug every few seconds
+            if (Time.frameCount % 300 == 0)
+            {
+                Debug.Log($"?? {weaponName}: Target {currentTarget.name} out of range ({distanceToTarget:F1}m > {range}m)");
+            }
+            return false;
+        }
 
-  // Check if aimed (relaxed - allow firing even if not perfectly aimed)
+        // Check if aimed (relaxed - allow firing even if not perfectly aimed)
         if (!isAimed && turretTransform != null)
-  {
-   // Be more lenient - fire if reasonably close to target
+        {
+            // Be more lenient - fire if reasonably close to target
             Vector3 directionToTarget = (currentTarget.position - turretTransform.position).normalized;
- Vector3 turretForward = turretTransform.forward;
-          float angle = Vector3.Angle(directionToTarget, turretForward);
-            
-     // Allow firing if within 15 degrees (was 5 degrees)
+            Vector3 turretForward = turretTransform.forward;
+            float angle = Vector3.Angle(directionToTarget, turretForward);
+
+            // Allow firing if within 15 degrees (was 5 degrees)
             if (angle > 15f)
             {
-         return false;
-    }
-   }
+                return false;
+            }
+        }
 
-    // Check team (don't shoot allies)
+        // Check team (don't shoot allies)
         TeamComponent targetTeam = currentTarget.GetComponent<TeamComponent>();
-     if (targetTeam != null && ownerTeam != null)
+        if (targetTeam != null && ownerTeam != null)
         {
-       if (!ownerTeam.IsEnemy(targetTeam))
+            if (!ownerTeam.IsEnemy(targetTeam))
             {
-         return false; // Don't shoot allies or same team
-     }
-  }
+                return false; // Don't shoot allies or same team
+            }
+        }
 
         // Fire!
         Fire();
@@ -308,61 +308,62 @@ animatable.SetBool(aimParameterName, false);
         lastFireTime = Time.time;
 
         // Trigger fire animation
- if (useAnimation && animatable != null)
+        if (useAnimation && animatable != null)
         {
-  if (useTriggerForFire)
-    {
-     animatable.SetTrigger(fireTriggerName);
-   }
+            if (useTriggerForFire)
+            {
+                animatable.SetTrigger(fireTriggerName);
+            }
         }
 
-  // Get shot point
-  Transform shotPoint = GetNextShotPoint();
-      if (shotPoint == null)
-   {
-Debug.LogWarning($"Weapon '{weaponName}' tried to fire but has no valid shot point!");
-       return;
-   }
-
-   // Spawn projectile
-      if (projectilePrefab != null)
+        // Get shot point
+        Transform shotPoint = GetNextShotPoint();
+        if (shotPoint == null)
         {
-     GameObject projectileObj = Instantiate(projectilePrefab, shotPoint.position, shotPoint.rotation);
-     Projectile projectile = projectileObj.GetComponent<Projectile>();
+            Debug.LogWarning($"Weapon '{weaponName}' tried to fire but has no valid shot point!");
+            return;
+        }
 
-      if (projectile != null)
- {
-             // Calculate direction to target
-            Vector3 direction = (currentTarget.position - shotPoint.position).normalized;
+        // Spawn projectile
+        if (projectilePrefab != null)
+        {
+            GameObject projectileObj = Instantiate(projectilePrefab, shotPoint.position, shotPoint.rotation);
+            Projectile projectile = projectileObj.GetComponent<Projectile>();
 
-        projectile.Initialize(direction, projectileSpeed, damage, range, ownerTeam);
-   
-        Debug.Log($"?? {weaponName} FIRED at {currentTarget.name}! (Distance: {Vector3.Distance(transform.position, currentTarget.position):F1}m)");
+            if (projectile != null)
+            {
+                // Calculate direction to target
+                Vector3 direction = (currentTarget.position - shotPoint.position).normalized;
+
+                projectile.Initialize(direction, projectileSpeed, damage, range, ownerTeam);
+
+                Debug.Log($"?? {weaponName} FIRED at {currentTarget.name}! (Distance: {Vector3.Distance(transform.position, currentTarget.position):F1}m)");
             }
-         else
- {
-     Debug.LogError($"? Projectile prefab '{projectilePrefab.name}' has no Projectile component!");
-     }
- }
-  else
-  {
-      Debug.LogError($"? {weaponName}: Cannot fire - no projectile prefab assigned!");
-  }
+            else
+            {
+                Debug.LogError($"? Projectile prefab '{projectilePrefab.name}' has no Projectile component!");
+            }
+        }
+        else
+        {
+            Debug.LogError($"? {weaponName}: Cannot fire - no projectile prefab assigned!");
+        }
 
         // Visual effects
         if (muzzleFlash != null)
-  {
- muzzleFlash.Play();
- }
-
-        // Audio
-   if (audioSource != null && fireSound != null)
-      {
-    audioSource.PlayOneShot(fireSound);
+        {
+            muzzleFlash.Play();
         }
 
-  // Callback
+        // Audio
+        if (audioSource != null && fireSound != null)
+        {
+            audioSource.PlayOneShot(fireSound);
+        }
+
+        // Callback
         OnWeaponFired();
+        UpdateAnimation();
     }
 
     /// <summary>
@@ -437,35 +438,35 @@ Debug.LogWarning($"Weapon '{weaponName}' tried to fire but has no valid shot poi
     /// </summary>
     private void UpdateAnimation()
     {
-     if (!useAnimation || animatable == null) return;
+        if (!useAnimation || animatable == null) return;
 
-     // Update aiming animation
+        // Update aiming animation
         if (useBoolForAim)
         {
-         animatable.SetBool(aimParameterName, isAimed);
-     }
+            animatable.SetBool(aimParameterName, isAimed);
+        }
         else
         {
-  // Use float parameter for more control
+            // Use float parameter for more control
             float aimWeight = isAimed ? 1f : 0f;
-   animatable.SetFloat(aimParameterName, aimWeight);
+            animatable.SetFloat(aimParameterName, aimWeight);
         }
 
         // Update firing animation
         if (useTriggerForFire)
         {
-  animatable.SetTrigger(fireTriggerName);
+            animatable.SetTrigger(fireTriggerName);
         }
     }
-    
+
     /// <summary>
     /// Enable/disable animation support
     /// </summary>
     public void SetUseAnimation(bool use)
     {
-    useAnimation = use;
+        useAnimation = use;
     }
-    
+
     /// <summary>
     /// Get the Animatable component
     /// </summary>
@@ -473,26 +474,26 @@ Debug.LogWarning($"Weapon '{weaponName}' tried to fire but has no valid shot poi
     {
         return animatable;
     }
- 
+
     /// <summary>
     /// Manually trigger fire animation (useful for testing or custom behavior)
     /// </summary>
     public void TriggerFireAnimation()
     {
         if (useAnimation && animatable != null && useTriggerForFire)
-{
+        {
             animatable.SetTrigger(fireTriggerName);
         }
     }
-    
+
     /// <summary>
     /// Manually set aim animation (useful for custom behavior)
     /// </summary>
     public void SetAimAnimation(bool aiming)
     {
-    if (useAnimation && animatable != null && useBoolForAim)
+        if (useAnimation && animatable != null && useBoolForAim)
         {
-         animatable.SetBool(aimParameterName, aiming);
+            animatable.SetBool(aimParameterName, aiming);
         }
     }
 }

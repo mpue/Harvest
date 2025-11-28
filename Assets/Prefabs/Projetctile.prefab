@@ -155,7 +155,7 @@ MonoBehaviour:
   lifetime: 5
   useGravity: 0
   destroyOnImpact: 1
-  impactEffectPrefab: {fileID: 0}
-  trail: {fileID: 0}
+  impactEffectPrefab: {fileID: 1921079115439858272, guid: 52b352ce2fd6c8f49bbe119991661b48, type: 3}
+  trail: {fileID: 4820859594669151670, guid: 8b577ac2678a4674580d2146db86b886, type: 3}
   impactEffectLifetime: 2
-  impactSound: {fileID: 0}
+  impactSound: {fileID: 8300000, guid: 16ca8065c48a9954ba3b52edbbe1541f, type: 3}

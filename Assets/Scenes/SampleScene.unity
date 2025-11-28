@@ -895,7 +895,7 @@ MonoBehaviour:
   panSpeed: 10
   mouseSensitivity: 3
   freeLookKey: 324
-  minHeight: 100
+  minHeight: 20
   maxHeight: 800
   controlMode: 0
   focusKey: 102
