@@ -329,6 +329,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProductionComponent
   availableProducts:
   - {fileID: 11400000, guid: c4f3e5c4703998f44b8b69e25f7bf276, type: 2}
+  - {fileID: 11400000, guid: 973033ba9e4b4744a99c34333e326133, type: 2}
   - {fileID: 11400000, guid: b4fef49e56a72134599ef254a365978c, type: 2}
   spawnPoint: {fileID: 7939704780402286420}
   maxQueueSize: 5

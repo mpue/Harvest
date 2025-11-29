@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEditor;
 using UnityEngine.AI;
 using UnityEngine.Audio;
@@ -40,6 +40,7 @@ public class UnitEditorWindow : EditorWindow
     private bool showAudioSettings = true;
     private bool showCreateNewUnit = true;
     private bool showModelImport = true;
+    private bool showLayerSettings = true; // NEW
 
     private GUIStyle headerStyle;
     private GUIStyle subHeaderStyle;
@@ -423,7 +424,7 @@ public class UnitEditorWindow : EditorWindow
             for (int i = 0; i < weaponPoints.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"• {weaponPoints[i].name}", GUILayout.Width(200));
+                EditorGUILayout.LabelField($"â€¢ {weaponPoints[i].name}", GUILayout.Width(200));
                 if (GUILayout.Button("Remove", GUILayout.Width(70)))
                 {
                     weaponPoints.RemoveAt(i);
@@ -442,7 +443,7 @@ public class UnitEditorWindow : EditorWindow
             for (int i = 0; i < turretTransforms.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"• {turretTransforms[i].name}", GUILayout.Width(200));
+                EditorGUILayout.LabelField($"â€¢ {turretTransforms[i].name}", GUILayout.Width(200));
                 if (GUILayout.Button("Remove", GUILayout.Width(70)))
                 {
                     turretTransforms.RemoveAt(i);
@@ -685,11 +686,11 @@ public class UnitEditorWindow : EditorWindow
         TryLoadUnit(newUnit);
 
         string configSummary = "Configuration:\n" +
-     $"• Weapon Points: {weaponPoints.Count}\n" +
-        $"• Turrets: {turretTransforms.Count}\n" +
-           $"• Selection Indicator: {(selectionIndicatorTransform != null ? "Set" : "Not Set")}\n" +
-      $"• Movement: {(addMovementComponents ? "Enabled" : "Disabled")}\n" +
-      $"• Weapons: {(addWeaponController ? "Enabled" : "Disabled")}";
+     $"â€¢ Weapon Points: {weaponPoints.Count}\n" +
+        $"â€¢ Turrets: {turretTransforms.Count}\n" +
+           $"â€¢ Selection Indicator: {(selectionIndicatorTransform != null ? "Set" : "Not Set")}\n" +
+      $"â€¢ Movement: {(addMovementComponents ? "Enabled" : "Disabled")}\n" +
+      $"â€¢ Weapons: {(addWeaponController ? "Enabled" : "Disabled")}";
 
         EditorUtility.DisplayDialog("Success",
        $"Unit '{importedModel.name}' created successfully!\n\n{configSummary}",
@@ -782,10 +783,10 @@ public class UnitEditorWindow : EditorWindow
         EditorUtility.SetDirty(selectedUnit);
 
         string configSummary = "Configuration Applied:\n" +
- $"• Weapon Points: {weaponPoints.Count}\n" +
-  $"• Turrets: {turretTransforms.Count}\n" +
-  $"• Movement Added: {(addMovementComponents ? "Yes" : "No")}\n" +
-  $"• Weapons: {(addWeaponController ? "Yes" : "No")}";
+ $"â€¢ Weapon Points: {weaponPoints.Count}\n" +
+  $"â€¢ Turrets: {turretTransforms.Count}\n" +
+  $"â€¢ Movement Added: {(addMovementComponents ? "Yes" : "No")}\n" +
+  $"â€¢ Weapons: {(addWeaponController ? "Yes" : "No")}";
 
         EditorUtility.DisplayDialog("Success",
             configSummary,
@@ -908,6 +909,58 @@ public class UnitEditorWindow : EditorWindow
         GUILayout.EndHorizontal();
 
         EditorGUILayout.Space(5);
+        DrawSeparator();
+
+        // NEW: UI Elements Management
+        EditorGUILayout.LabelField("UI Elements", EditorStyles.miniBoldLabel);
+
+        GUILayout.BeginHorizontal();
+
+        // Check if SelectionIndicator exists
+        GameObject selectionIndicator = GetSelectionIndicator();
+        if (selectionIndicator == null)
+        {
+            if (GUILayout.Button("Create SelectionIndicator", GUILayout.Height(25)))
+            {
+                CreateSelectionIndicatorForUnit();
+            }
+        }
+        else
+        {
+            GUI.backgroundColor = new Color(0.5f, 1f, 0.5f);
+            if (GUILayout.Button($"âœ“ Indicator: {selectionIndicator.name}", GUILayout.Height(25)))
+            {
+                Selection.activeGameObject = selectionIndicator;
+                EditorGUIUtility.PingObject(selectionIndicator);
+            }
+            GUI.backgroundColor = Color.white;
+        }
+
+        // Check if HealthBar exists
+        Transform healthBarTransform = selectedUnit.transform.Find("HealthBar");
+        if (healthBarTransform == null)
+        {
+            if (GUILayout.Button("Create HealthBar", GUILayout.Height(25)))
+            {
+                CreateHealthBarForUnit();
+            }
+        }
+        else
+        {
+            GUI.backgroundColor = new Color(0.5f, 1f, 0.5f);
+            if (GUILayout.Button($"âœ“ HealthBar", GUILayout.Height(25)))
+            {
+                Selection.activeGameObject = healthBarTransform.gameObject;
+                EditorGUIUtility.PingObject(healthBarTransform.gameObject);
+            }
+            GUI.backgroundColor = Color.white;
+        }
+
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.Space(5);
+        DrawSeparator();
+
         EditorGUILayout.LabelField("Setup Templates", EditorStyles.miniBoldLabel);
 
         GUILayout.BeginHorizontal();
@@ -1525,22 +1578,22 @@ public class UnitEditorWindow : EditorWindow
         switch (type)
         {
             case UnitType.Infantry:
-                return "Infantry Unit:\n• BaseUnit\n• TeamComponent\n• Health (100 HP)\n• Controllable (Speed: 5)\n• NavMeshAgent\n• Collider & Rigidbody";
+                return "Infantry Unit:\nâ€¢ BaseUnit\nâ€¢ TeamComponent\nâ€¢ Health (100 HP)\nâ€¢ Controllable (Speed: 5)\nâ€¢ NavMeshAgent\nâ€¢ Collider & Rigidbody";
 
             case UnitType.Vehicle:
-                return "Vehicle Unit:\n• BaseUnit\n• TeamComponent\n• Health (200 HP)\n• Controllable (Speed: 8)\n• NavMeshAgent\n• Collider & Rigidbody";
+                return "Vehicle Unit:\nâ€¢ BaseUnit\nâ€¢ TeamComponent\nâ€¢ Health (200 HP)\nâ€¢ Controllable (Speed: 8)\nâ€¢ NavMeshAgent\nâ€¢ Collider & Rigidbody";
 
             case UnitType.Archer:
-                return "Archer Unit:\n• BaseUnit\n• TeamComponent\n• Health (75 HP)\n• Controllable (Speed: 4)\n• NavMeshAgent\n• WeaponController\n• Collider & Rigidbody";
+                return "Archer Unit:\nâ€¢ BaseUnit\nâ€¢ TeamComponent\nâ€¢ Health (75 HP)\nâ€¢ Controllable (Speed: 4)\nâ€¢ NavMeshAgent\nâ€¢ WeaponController\nâ€¢ Collider & Rigidbody";
 
             case UnitType.Building:
-                return "Building:\n• BaseUnit (IsBuilding: true)\n• TeamComponent\n• Health (500 HP)\n• Collider\n• No movement components";
+                return "Building:\nâ€¢ BaseUnit (IsBuilding: true)\nâ€¢ TeamComponent\nâ€¢ Health (500 HP)\nâ€¢ Collider\nâ€¢ No movement components";
 
             case UnitType.Worker:
-                return "Worker Unit:\n• BaseUnit\n• TeamComponent\n• Health (50 HP)\n• Controllable (Speed: 4.5)\n• NavMeshAgent\n• Collider & Rigidbody\n• No weapons";
+                return "Worker Unit:\nâ€¢ BaseUnit\nâ€¢ TeamComponent\nâ€¢ Health (50 HP)\nâ€¢ Controllable (Speed: 4.5)\nâ€¢ NavMeshAgent\nâ€¢ Collider & Rigidbody\nâ€¢ No weapons";
 
             case UnitType.Custom:
-                return "Custom Unit:\n• BaseUnit\n• TeamComponent\n• Health (100 HP)\n• You can add other components manually";
+                return "Custom Unit:\nâ€¢ BaseUnit\nâ€¢ TeamComponent\nâ€¢ Health (100 HP)\nâ€¢ You can add other components manually";
 
             default:
                 return "Unknown type";
@@ -1961,7 +2014,173 @@ public class UnitEditorWindow : EditorWindow
         EditorGUIUtility.PingObject(audioManagerObj);
 
         EditorUtility.DisplayDialog("AudioManager Created",
-         "AudioManager has been created. Please assign AudioMixer and MixerGroups in the Inspector.",
-       "OK");
+       "AudioManager has been created. Please assign AudioMixer and MixerGroups in the Inspector.",
+     "OK");
+    }
+
+    /// <summary>
+    /// Get the current SelectionIndicator from BaseUnit
+    /// </summary>
+    GameObject GetSelectionIndicator()
+    {
+        if (baseUnit == null) return null;
+
+        // Use reflection to access private selectionIndicator field
+        var field = typeof(BaseUnit).GetField("selectionIndicator",
+              System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        if (field != null)
+        {
+            return field.GetValue(baseUnit) as GameObject;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Create a SelectionIndicator for the selected unit
+    /// </summary>
+    void CreateSelectionIndicatorForUnit()
+    {
+        if (selectedUnit == null || baseUnit == null)
+        {
+            EditorUtility.DisplayDialog("Error", "No unit selected or BaseUnit component missing!", "OK");
+            return;
+        }
+
+        // Check if already exists
+        GameObject existing = GetSelectionIndicator();
+        if (existing != null)
+        {
+            bool replace = EditorUtility.DisplayDialog("Replace Indicator",
+          $"SelectionIndicator '{existing.name}' already exists. Replace it?",
+             "Replace", "Cancel");
+
+            if (!replace) return;
+
+            Undo.DestroyObjectImmediate(existing);
+        }
+
+        Undo.RecordObject(selectedUnit, "Create SelectionIndicator");
+
+        GameObject indicator = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        indicator.name = "SelectionIndicator";
+        indicator.transform.SetParent(selectedUnit.transform);
+        indicator.transform.localPosition = new Vector3(0, 0.05f, 0);
+        indicator.transform.localRotation = Quaternion.Euler(90, 0, 0);
+        indicator.transform.localScale = new Vector3(1f, 0.05f, 1f);
+
+        // Remove collider
+        Collider indicatorCollider = indicator.GetComponent<Collider>();
+        if (indicatorCollider != null)
+        {
+            Undo.DestroyObjectImmediate(indicatorCollider);
+        }
+
+        // Setup material
+        Renderer renderer = indicator.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            Material mat = new Material(Shader.Find("Standard"));
+            mat.color = new Color(0f, 1f, 0f, 0.5f);
+            mat.SetFloat("_Mode", 3); // Transparent
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.DisableKeyword("_ALPHATEST_ON");
+            mat.EnableKeyword("_ALPHABLEND_ON");
+            mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            mat.renderQueue = 3000;
+            renderer.material = mat;
+        }
+
+        // Assign to BaseUnit using reflection
+        var field = typeof(BaseUnit).GetField("selectionIndicator",
+        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        if (field != null)
+        {
+            field.SetValue(baseUnit, indicator);
+            EditorUtility.SetDirty(baseUnit);
+        }
+
+        indicator.SetActive(false);
+        Undo.RegisterCreatedObjectUndo(indicator, "Create SelectionIndicator");
+
+        Selection.activeGameObject = indicator;
+        EditorGUIUtility.PingObject(indicator);
+
+        EditorUtility.DisplayDialog("Success",
+          "SelectionIndicator created and assigned to BaseUnit!\n\n" +
+             "The indicator will show when the unit is selected.",
+          "OK");
+    }
+
+    /// <summary>
+    /// Create a HealthBar for the selected unit
+    /// </summary>
+    void CreateHealthBarForUnit()
+    {
+        if (selectedUnit == null)
+        {
+            EditorUtility.DisplayDialog("Error", "No unit selected!", "OK");
+            return;
+        }
+
+        if (health == null)
+        {
+            bool addHealth = EditorUtility.DisplayDialog("Missing Health Component",
+       "HealthBar requires a Health component. Add it now?",
+               "Add Health", "Cancel");
+
+            if (addHealth)
+            {
+                AddHealth();
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        // Check if already exists
+        Transform existingHealthBar = selectedUnit.transform.Find("HealthBar");
+        if (existingHealthBar != null)
+        {
+            bool replace = EditorUtility.DisplayDialog("Replace HealthBar",
+        "HealthBar already exists. Replace it?",
+                "Replace", "Cancel");
+
+            if (!replace) return;
+
+            Undo.DestroyObjectImmediate(existingHealthBar.gameObject);
+        }
+
+        Undo.RecordObject(selectedUnit, "Create HealthBar");
+
+        GameObject healthBarObj = new GameObject("HealthBar");
+        healthBarObj.transform.SetParent(selectedUnit.transform);
+        healthBarObj.transform.localPosition = new Vector3(0, 2f, 0);
+        healthBarObj.transform.localRotation = Quaternion.identity;
+
+        HealthBar healthBar = healthBarObj.AddComponent<HealthBar>();
+
+        // Configure HealthBar
+        SerializedObject so = new SerializedObject(healthBar);
+        so.FindProperty("healthComponent").objectReferenceValue = health;
+        so.FindProperty("offset").vector3Value = new Vector3(0, 2f, 0);
+        so.FindProperty("barWidth").floatValue = 1f;
+        so.FindProperty("barHeight").floatValue = 0.1f;
+        so.ApplyModifiedProperties();
+
+        Undo.RegisterCreatedObjectUndo(healthBarObj, "Create HealthBar");
+
+        Selection.activeGameObject = healthBarObj;
+        EditorGUIUtility.PingObject(healthBarObj);
+
+        EditorUtility.DisplayDialog("Success",
+       "HealthBar created and configured!\n\n" +
+        "The HealthBar is positioned above the unit and linked to the Health component.",
+      "OK");
     }
 }
