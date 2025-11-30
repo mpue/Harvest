@@ -280,7 +280,7 @@ public class Health : MonoBehaviour
     /// </summary>
     private void PlayHitSound()
     {
-        if (hitSounds == null || hitSounds.Length == 0 || audioSource == null)
+        if (hitSounds == null || hitSounds.Length == 0)
             return;
 
         int randomIndex = Random.Range(0, hitSounds.Length);
@@ -288,7 +288,32 @@ public class Health : MonoBehaviour
 
         if (clip != null)
         {
-            audioSource.PlayOneShot(clip, audioVolume);
+            // For short hit sounds, use PlayOneShot on the existing AudioSource
+            // For longer sounds or if we're dying, create a temporary source
+            if (audioSource != null && !isDead && clip.length < 1f)
+            {
+                audioSource.PlayOneShot(clip, audioVolume);
+            }
+            else
+            {
+                // Create temporary audio source for longer sounds or when dying
+                GameObject tempAudio = new GameObject("HitSound_" + gameObject.name);
+                tempAudio.transform.position = transform.position;
+                AudioSource tempSource = tempAudio.AddComponent<AudioSource>();
+
+                // Setup with AudioManager if available
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.SetupAudioSource(tempSource, AudioManager.AudioCategory.UnitSounds);
+                }
+
+                tempSource.clip = clip;
+                tempSource.volume = audioVolume;
+                tempSource.spatialBlend = 1f;
+                tempSource.Play();
+
+                Destroy(tempAudio, clip.length + 0.1f);
+            }
         }
     }
 
@@ -306,14 +331,23 @@ public class Health : MonoBehaviour
         if (clip != null)
         {
             // Create temporary audio source that destroys itself
-            GameObject tempAudio = new GameObject("DeathSound");
+            GameObject tempAudio = new GameObject("DeathSound_" + gameObject.name);
             tempAudio.transform.position = transform.position;
             AudioSource tempSource = tempAudio.AddComponent<AudioSource>();
+
+            // Setup with AudioManager if available
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.SetupAudioSource(tempSource, AudioManager.AudioCategory.UnitSounds);
+            }
+
             tempSource.clip = clip;
             tempSource.volume = audioVolume;
             tempSource.spatialBlend = 1f;
             tempSource.Play();
-            Destroy(tempAudio, clip.length);
+
+            // Destroy after clip finishes playing
+            Destroy(tempAudio, clip.length + 0.1f);
         }
     }
 

@@ -445,10 +445,26 @@ public class Weapon : MonoBehaviour
             muzzleFlash.Play();
         }
 
-        // Audio
-        if (audioSource != null && fireSound != null)
+        // Audio - Use optimized system for large battles
+        if (fireSound != null)
         {
-            audioSource.PlayOneShot(fireSound);
+            Vector3 soundPosition = shotPoint != null ? shotPoint.position : transform.position;
+
+            // Try to use WeaponAudioPlayer for better performance in battles
+            if (WeaponAudioPlayer.Instance != null)
+            {
+                WeaponAudioPlayer.Instance.PlayWeaponSound(fireSound, soundPosition);
+            }
+            // Fallback to AudioManager
+            else if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayOneShot(fireSound, soundPosition, AudioManager.AudioCategory.WeaponSounds);
+            }
+            // Last resort: use local AudioSource
+            else if (audioSource != null)
+            {
+                audioSource.PlayOneShot(fireSound);
+            }
         }
 
         // Callback

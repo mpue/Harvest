@@ -320,17 +320,9 @@ debugStyle.normal.textColor = Color.yellow;
         // Instantiate the building
         GameObject building = Instantiate(product.Prefab, validPosition, Quaternion.identity);
 
-        // SET TEAM FIRST! (Use reflection to set before Awake runs)
         TeamComponent teamComp = building.GetComponent<TeamComponent>();
         if (teamComp != null)
         {
-            // Use reflection to set team BEFORE Awake runs
-            var teamField = typeof(TeamComponent).GetField("team",
- System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (teamField != null)
-            {
-                teamField.SetValue(teamComp, buildingTeam);
-            }
             teamComp.SetTeam(buildingTeam);
             Debug.Log($"? Set building team to {buildingTeam} (via reflection)");
         }
@@ -349,7 +341,7 @@ debugStyle.normal.textColor = Color.yellow;
             {
                 bool isAIManager = mgr.gameObject.name.Contains("AI");
                 bool needsAIManager = buildingTeam != Team.Player;
-                
+
                 if (isAIManager == needsAIManager)
                 {
                     correctManager = mgr;
@@ -364,7 +356,7 @@ debugStyle.normal.textColor = Color.yellow;
         if (prodComp != null && correctManager != null)
         {
             var field = typeof(ProductionComponent).GetField("resourceManager",
- System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (field != null)
             {
                 field.SetValue(prodComp, correctManager);
@@ -377,7 +369,7 @@ debugStyle.normal.textColor = Color.yellow;
         if (resCollector != null)
         {
             var field = typeof(ResourceCollector).GetField("resourceManager",
- System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (field != null)
             {
                 field.SetValue(resCollector, correctManager);

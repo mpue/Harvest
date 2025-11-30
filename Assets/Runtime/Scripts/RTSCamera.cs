@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// RTS Camera Controller with Smart Control Mode
@@ -7,23 +7,26 @@ using UnityEngine;
 /// ==============
 /// 
 /// 1. SMART MODE (Default - Recommended):
-///    No units selected  ? Right Click = Camera Rotation
-///    Units selected   ? Right Click = Move Command
-///    
+///No units selected  → Right Click = Camera Rotation
+///    Units selected   → Right Click = Move Command
+///  
 /// 2. MODIFIER KEY MODE:
-///    Right Click        ? Move Command
-///    Alt + Right Click  ? Camera Rotation
+///    Right Click    → Move Command
+///    Alt + Right Click  → Camera Rotation
 ///  
 /// 3. ALWAYS FREE-LOOK:
-///    Right Click    ? Camera Rotation (always)
+///  Right Click    → Camera Rotation (always)
 ///    
 /// Controls:
 /// ---------
-/// WASD      = Move camera
-/// Q/E       = Move up/down
-/// Shift     = Faster movement
-/// Right MB  = Free-look rotation (context dependent)
-/// Middle MB = Pan camera
+/// WASD         = Move camera
+/// Q/E    = Move up/down
+/// Shift  = Faster movement
+/// Right MB     = Free-look rotation (context dependent)
+/// Middle MB    = Pan camera
+/// Mouse Wheel  = Zoom in/out
+/// F            = Focus on selected unit/building
+/// Ctrl+F       = Focus on player's Headquarter
 /// 
 /// See: CameraControl_Conflict_Solution.md for details
 /// </summary>
@@ -45,6 +48,13 @@ public class RTSCamera : MonoBehaviour
     [SerializeField] private float minHeight = 5f;
     [SerializeField] private float maxHeight = 50f;
 
+    [Header("Zoom Settings")]
+    [SerializeField] private float zoomSpeed = 5f;
+    [SerializeField] private float zoomSmoothness = 10f;
+    [Tooltip("Wenn aktiv, wird die Kamera beim Zoomen näher/weiter von der Blickrichtung bewegt")]
+    [SerializeField] private bool useDirectionalZoom = true;
+    [SerializeField] private bool invertZoom = true;
+
     [Header("Control Mode")]
     [SerializeField] private CameraControlMode controlMode = CameraControlMode.Smart;
 
@@ -53,6 +63,8 @@ public class RTSCamera : MonoBehaviour
     [SerializeField] private float focusSpeed = 5f;
     [SerializeField] private float focusDistance = 15f; // Distance from target
     [SerializeField] private float focusHeightOffset = 5f; // Height above target
+    [Tooltip("Wenn aktiv, kann das Hauptquartier mit STRG+F fokussiert werden")]
+    [SerializeField] private bool enableHeadquarterFocus = true;
 
     private bool isFreeLook = false;
     private Vector3 lastMousePosition;
@@ -69,9 +81,9 @@ public class RTSCamera : MonoBehaviour
 
     public enum CameraControlMode
     {
-        Smart,      // Rechtsklick f�r Kamera nur wenn keine Units selektiert
-        AlwaysFreeLook,     // Rechtsklick immer f�r Kamera
-        ModifierKey    // Alt/Strg + Rechtsklick f�r Kamera
+        Smart,      // Rechtsklick für Kamera nur wenn keine Units selektiert
+        AlwaysFreeLook,     // Rechtsklick immer für Kamera
+        ModifierKey    // Alt/Strg + Rechtsklick für Kamera
     }
 
     void Start()
@@ -97,6 +109,7 @@ public class RTSCamera : MonoBehaviour
         HandleFreeLook();
         HandleWASDMovement();
         HandlePan();
+        HandleMouseWheelZoom();
         ClampCameraHeight();
         UpdateFocusMovement();
     }
@@ -108,23 +121,31 @@ public class RTSCamera : MonoBehaviour
     {
         if (Input.GetKeyDown(focusKey))
         {
-            FocusOnSelection();
+            // Check if Control is held for Headquarter focus
+            if (enableHeadquarterFocus && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+ {
+           FocusOnHeadquarter();
+            }
+   else
+         {
+FocusOnSelection();
+  }
         }
 
         // Cancel focus on any manual movement input
-        if (isFocusing)
-        {
-            bool hasManualInput = Input.GetAxis("Horizontal") !=0 ||
-                Input.GetAxis("Vertical") !=0 ||
-                Input.GetKey(KeyCode.Q) ||
-                Input.GetKey(KeyCode.E) ||
-                Input.GetMouseButton(1) ||
-                Input.GetMouseButton(2);
+     if (isFocusing)
+    {
+            bool hasManualInput = Input.GetAxis("Horizontal") != 0 ||
+        Input.GetAxis("Vertical") != 0 ||
+   Input.GetKey(KeyCode.Q) ||
+         Input.GetKey(KeyCode.E) ||
+      Input.GetMouseButton(1) ||
+      Input.GetMouseButton(2);
 
-            if (hasManualInput)
-            {
-                CancelFocus();
-            }
+    if (hasManualInput)
+        {
+         CancelFocus();
+   }
         }
     }
 
@@ -133,7 +154,7 @@ public class RTSCamera : MonoBehaviour
     /// </summary>
     private void FocusOnSelection()
     {
-        if (unitSelector == null || unitSelector.SelectedCount ==0)
+        if (unitSelector == null || unitSelector.SelectedCount == 0)
         {
             Debug.Log("RTSCamera: No selection to focus on");
             return;
@@ -141,14 +162,14 @@ public class RTSCamera : MonoBehaviour
 
         // Get first selected unit/building
         var selected = unitSelector.SelectedUnits;
-        if (selected == null || selected.Count ==0)
+        if (selected == null || selected.Count == 0)
             return;
 
         Transform target = selected[0].transform;
-        
+
         // Calculate target position (behind and above the target)
         Vector3 directionToTarget = (target.position - transform.position).normalized;
-        directionToTarget.y =0;
+        directionToTarget.y = 0;
         directionToTarget.Normalize();
 
         // Position camera behind target at specified distance and height
@@ -169,6 +190,49 @@ public class RTSCamera : MonoBehaviour
     }
 
     /// <summary>
+ /// Focus camera on player's headquarter building (STRG+F)
+ /// </summary>
+    private void FocusOnHeadquarter()
+    {
+  // Find all buildings with BuildingComponent
+        BuildingComponent[] buildings = FindObjectsByType<BuildingComponent>(FindObjectsSortMode.None);
+        
+        BuildingComponent playerHeadquarter = null;
+  
+        // Find player's headquarter
+        foreach (BuildingComponent building in buildings)
+{
+   if (building.IsHeadquarter)
+     {
+     // Check if it belongs to the player's team
+       TeamComponent teamComp = building.GetComponent<TeamComponent>();
+  if (teamComp != null && teamComp.CurrentTeam == Team.Player)
+        {
+ playerHeadquarter = building;
+        break;
+      }
+     // If no team component, assume it's player's building
+  else if (teamComp == null)
+     {
+playerHeadquarter = building;
+     break;
+    }
+     }
+ }
+  
+        if (playerHeadquarter == null)
+        {
+      Debug.LogWarning("RTSCamera: No player headquarter found!");
+     return;
+        }
+        
+  // Focus on the headquarter using the existing focus method
+      FocusOnTarget(playerHeadquarter.transform);
+        
+     Debug.Log($"RTSCamera: Focusing on Headquarter - {playerHeadquarter.name}");
+    }
+
+    /// <summary>
     /// Update smooth camera movement when focusing
     /// </summary>
     private void UpdateFocusMovement()
@@ -186,8 +250,8 @@ public class RTSCamera : MonoBehaviour
         rotationY = euler.y;
 
         // Check if close enough to target
-        if (Vector3.Distance(transform.position, targetPosition) <0.1f &&
-            Quaternion.Angle(transform.rotation, targetRotation) <1f)
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f &&
+            Quaternion.Angle(transform.rotation, targetRotation) < 1f)
         {
             // Arrived at target
             isFocusing = false;
@@ -332,6 +396,52 @@ public class RTSCamera : MonoBehaviour
         }
     }
 
+    private void HandleMouseWheelZoom()
+    {
+        float scrollInput = Input.GetAxis("Mouse ScrollWheel");
+
+        if (scrollInput != 0)
+        {
+            // Cancel focus when zooming
+            if (isFocusing)
+            {
+                CancelFocus();
+            }
+
+            if (useDirectionalZoom)
+            {
+                // Zoom in the direction the camera is looking
+                Vector3 zoomDirection = transform.forward;
+
+                // In standard RTS mode (not free-look), keep zoom on XZ plane
+                if (!isFreeLook)
+                {
+                    zoomDirection.y = 0;
+                    zoomDirection.Normalize();
+                }
+
+                // Calculate zoom movement
+                Vector3 zoomMovement = zoomDirection * scrollInput * zoomSpeed;
+
+                // Apply zoom with smoothness
+                transform.position += zoomMovement;
+            }
+            else
+            {
+                // Simple vertical zoom (up/down only)
+                Vector3 pos = transform.position;
+
+                if (invertZoom)
+                {
+                    scrollInput = -scrollInput;
+                }
+
+                pos.y += scrollInput * zoomSpeed;
+                transform.position = pos;
+            }
+        }
+    }
+
     private void ClampCameraHeight()
     {
         // Clamp camera height to stay within bounds
@@ -374,7 +484,7 @@ public class RTSCamera : MonoBehaviour
 
         // Calculate target position (behind and above the target)
         Vector3 directionToTarget = (target.position - transform.position).normalized;
-        directionToTarget.y =0;
+        directionToTarget.y = 0;
         directionToTarget.Normalize();
 
         // Position camera behind target at specified distance and height
